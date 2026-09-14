@@ -1,21 +1,26 @@
-# React + TypeScript + Vite + shadcn/ui
+# NexCart Admin
 
-This is a template for a new Vite project with React, TypeScript, and shadcn/ui.
+React dashboard for NexCart platform operations.
 
-## Adding components
+## Stack
 
-To add components to your app, run the following command:
+- Vite
+- React 19 + TypeScript
+- Tailwind CSS v4
+- shadcn/ui
+
+## Scripts
 
 ```bash
-npx shadcn@latest add button
+npm run dev        # http://localhost:5174
+npm run build
+npm run preview
+npm run lint
+npm run typecheck
 ```
 
-This will place the ui components in the `src/components` directory.
+## Add UI components
 
-## Using components
-
-To use the components in your app, import them as follows:
-
-```tsx
-import { Button } from "@/components/ui/button"
+```bash
+npx shadcn@latest add table
 ```
