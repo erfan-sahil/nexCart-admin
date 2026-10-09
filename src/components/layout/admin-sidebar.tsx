@@ -1,56 +1,72 @@
+import { useState } from "react"
+import { NavLink, useLocation } from "react-router"
+
 import { cn } from "@/lib/utils"
-import { NAV_GROUPS, type NavItem } from "@/lib/navigation"
-import { X } from "lucide-react"
+import { isNavGroup, NAV, type NavPage } from "@/lib/navigation"
+import { ChevronRight, X } from "lucide-react"
 
 type AdminSidebarProps = {
-  activeId: string
   collapsed: boolean
   mobileOpen: boolean
-  onNavigate: (id: string) => void
+  onNavigate: () => void
   onClose: () => void
 }
 
-function NavButton({
-  item,
-  active,
+const itemClass =
+  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 focus-visible:outline-none"
+
+const activeClass =
+  "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground"
+
+function PageLink({
+  page,
   collapsed,
+  nested,
   onNavigate,
 }: {
-  item: NavItem
-  active: boolean
+  page: NavPage
   collapsed: boolean
-  onNavigate: (id: string) => void
+  nested?: boolean
+  onNavigate: () => void
 }) {
-  const Icon = item.icon
+  const Icon = page.icon
 
   return (
-    <button
-      type="button"
-      title={item.label}
-      aria-current={active ? "page" : undefined}
-      onClick={() => onNavigate(item.id)}
-      className={cn(
-        "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 focus-visible:outline-none",
-        active &&
-          "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",
-        collapsed && "lg:justify-center lg:px-2"
-      )}
+    <NavLink
+      to={page.path}
+      end
+      title={page.label}
+      onClick={onNavigate}
+      className={({ isActive }) =>
+        cn(
+          itemClass,
+          nested && "pl-9",
+          isActive && activeClass,
+          collapsed && !nested && "lg:justify-center lg:px-2"
+        )
+      }
     >
       <Icon className="size-4 shrink-0" aria-hidden="true" />
-      <span className={cn("truncate", collapsed && "lg:sr-only")}>
-        {item.label}
+      <span className={cn("truncate", collapsed && !nested && "lg:sr-only")}>
+        {page.label}
       </span>
-    </button>
+    </NavLink>
   )
 }
 
 export function AdminSidebar({
-  activeId,
   collapsed,
   mobileOpen,
   onNavigate,
   onClose,
 }: AdminSidebarProps) {
+  const { pathname } = useLocation()
+  const [manual, setManual] = useState<{
+    path: string
+    open: Record<string, boolean>
+  } | null>(null)
+  const openGroups = manual?.path === pathname ? manual.open : {}
+
   return (
     <aside
       id="admin-sidebar"
@@ -84,30 +100,85 @@ export function AdminSidebar({
       </div>
 
       <nav
-        className="flex-1 space-y-5 overflow-y-auto px-3 py-4"
+        className="flex-1 space-y-1 overflow-y-auto px-3 py-4"
         aria-label="Admin"
       >
-        {NAV_GROUPS.map((group) => (
-          <div key={group.label} className="space-y-1">
-            <p
-              className={cn(
-                "px-3 pb-1 text-xs font-medium tracking-wide text-sidebar-foreground/50 uppercase",
-                collapsed && "lg:sr-only"
-              )}
-            >
-              {group.label}
-            </p>
-            {group.items.map((item) => (
-              <NavButton
-                key={item.id}
-                item={item}
-                active={item.id === activeId}
+        {NAV.map((entry) => {
+          if (!isNavGroup(entry)) {
+            return (
+              <PageLink
+                key={entry.path}
+                page={entry}
                 collapsed={collapsed}
                 onNavigate={onNavigate}
               />
-            ))}
-          </div>
-        ))}
+            )
+          }
+
+          const activeChild = entry.children.find(
+            (page) => page.path === pathname
+          )
+          const groupActive = Boolean(activeChild)
+          const open = openGroups[entry.label] ?? groupActive
+          const Icon = entry.icon
+          const iconTarget = activeChild?.path ?? entry.children[0].path
+
+          return (
+            <div key={entry.label} className="space-y-1">
+              <div className={cn("space-y-1", collapsed && "lg:hidden")}>
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  onClick={() =>
+                    setManual({
+                      path: pathname,
+                      open: { ...openGroups, [entry.label]: !open },
+                    })
+                  }
+                  className={cn(itemClass, "cursor-pointer")}
+                >
+                  <Icon className="size-4 shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 flex-1 truncate">{entry.label}</span>
+                  <ChevronRight
+                    className={cn(
+                      "size-4 shrink-0 text-sidebar-foreground/50 transition-transform",
+                      open && "rotate-90"
+                    )}
+                    aria-hidden="true"
+                  />
+                </button>
+                {open
+                  ? entry.children.map((page) => (
+                      <PageLink
+                        key={page.path}
+                        page={page}
+                        collapsed={false}
+                        nested
+                        onNavigate={onNavigate}
+                      />
+                    ))
+                  : null}
+              </div>
+
+              {collapsed ? (
+                <NavLink
+                  to={iconTarget}
+                  end
+                  title={entry.label}
+                  onClick={onNavigate}
+                  className={cn(
+                    itemClass,
+                    "hidden lg:flex lg:justify-center lg:px-2",
+                    groupActive && activeClass
+                  )}
+                >
+                  <Icon className="size-4 shrink-0" aria-hidden="true" />
+                  <span className="sr-only">{entry.label}</span>
+                </NavLink>
+              ) : null}
+            </div>
+          )
+        })}
       </nav>
 
       <div className="border-t border-sidebar-border p-3">

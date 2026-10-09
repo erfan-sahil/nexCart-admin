@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react"
+import { Outlet } from "react-router"
 
-import { DashboardHome } from "@/components/dashboard/dashboard-home"
-import { SectionView } from "@/components/dashboard/section-view"
 import { AdminHeader } from "@/components/layout/admin-header"
 import { AdminSidebar } from "@/components/layout/admin-sidebar"
-import { DEFAULT_NAV_ID, getNavItem } from "@/lib/navigation"
 
 export function AdminShell() {
-  const [activeId, setActiveId] = useState(DEFAULT_NAV_ID)
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const activeItem = getNavItem(activeId)
 
   useEffect(() => {
     if (!mobileOpen) {
@@ -33,11 +29,6 @@ export function AdminShell() {
     }
   }, [mobileOpen])
 
-  const navigate = (id: string) => {
-    setActiveId(id)
-    setMobileOpen(false)
-  }
-
   return (
     <div className="flex min-h-svh bg-background text-foreground">
       {mobileOpen ? (
@@ -50,31 +41,21 @@ export function AdminShell() {
       ) : null}
 
       <AdminSidebar
-        activeId={activeId}
         collapsed={collapsed}
         mobileOpen={mobileOpen}
-        onNavigate={navigate}
+        onNavigate={() => setMobileOpen(false)}
         onClose={() => setMobileOpen(false)}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminHeader
-          title={activeItem?.label ?? "Dashboard"}
-          description={activeItem?.description ?? ""}
           collapsed={collapsed}
           mobileOpen={mobileOpen}
           onOpenMobile={() => setMobileOpen(true)}
           onToggleCollapsed={() => setCollapsed((current) => !current)}
         />
         <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
-          {activeId === "dashboard" ? (
-            <DashboardHome />
-          ) : (
-            <SectionView
-              title={activeItem?.label ?? "Section"}
-              description={activeItem?.description ?? ""}
-            />
-          )}
+          <Outlet />
         </main>
       </div>
     </div>

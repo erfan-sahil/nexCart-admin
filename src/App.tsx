@@ -1,7 +1,9 @@
-import { AdminShell } from "@/components/layout/admin-shell"
+import { RouterProvider } from "react-router"
+
+import { router } from "@/routes/router"
 
 export function App() {
-  return <AdminShell />
+  return <RouterProvider router={router} />
 }
 
 export default App

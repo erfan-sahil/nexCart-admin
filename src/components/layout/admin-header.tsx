@@ -1,10 +1,11 @@
+import { useEffect } from "react"
+
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
+import { usePageMeta } from "@/hooks/use-page-meta"
 import { Menu, Moon, PanelLeft, Sun } from "lucide-react"
 
 type AdminHeaderProps = {
-  title: string
-  description: string
   collapsed: boolean
   mobileOpen: boolean
   onOpenMobile: () => void
@@ -12,20 +13,23 @@ type AdminHeaderProps = {
 }
 
 export function AdminHeader({
-  title,
-  description,
   collapsed,
   mobileOpen,
   onOpenMobile,
   onToggleCollapsed,
 }: AdminHeaderProps) {
   const { theme, setTheme } = useTheme()
+  const { title, description } = usePageMeta()
   const isDark = theme === "dark"
   const today = new Intl.DateTimeFormat("en", {
     weekday: "long",
     month: "short",
     day: "numeric",
   }).format(new Date())
+
+  useEffect(() => {
+    document.title = `${title} · NexCart Admin`
+  }, [title])
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur sm:px-6">
