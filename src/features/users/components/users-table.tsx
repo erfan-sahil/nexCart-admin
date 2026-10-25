@@ -12,7 +12,7 @@ import {
   Trash2,
 } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
+import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -42,18 +42,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { UserStatus } from "@/features/auth/types"
 import { formatDateTime, fullName } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 import type { AdminUser } from "../types"
 
 const PAGE_SIZES = [10, 20, 50] as const
-
-const STATUS_BADGE: Record<UserStatus, string> = {
-  active: "border-transparent bg-brand-soft text-brand-text",
-  suspended: "",
-}
 
 type UsersTableProps = {
   items: AdminUser[]
@@ -166,20 +160,10 @@ export function UsersTable({
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => (
-          <Badge
-            variant={
-              row.original.status === "suspended" ? "destructive" : "secondary"
-            }
-            className={cn("capitalize", STATUS_BADGE[row.original.status])}
-          >
-            <span
-              className={cn(
-                "size-1.5 rounded-full",
-                row.original.status === "active" ? "bg-brand" : "bg-destructive"
-              )}
-            />
-            {row.original.status}
-          </Badge>
+          <UniversalBadge
+            name={row.original.status}
+            colors={badgeColors[row.original.status]}
+          />
         ),
       },
       {

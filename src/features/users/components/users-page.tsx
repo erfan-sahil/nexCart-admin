@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
 import { Loader2, Search } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
+import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   InputGroup,
@@ -142,9 +142,12 @@ export function UsersPage({
         <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2.5">
             <h2 className="text-sm font-semibold">{title}</h2>
-            <Badge variant="secondary" className="tabular-nums">
-              {pagination ? pagination.total : "—"}
-            </Badge>
+            <UniversalBadge
+              name={pagination ? String(pagination.total) : "—"}
+              colors={badgeColors.neutral}
+              showDot={false}
+              className="normal-case tabular-nums"
+            />
           </div>
           {users.isFetching && !users.isLoading ? (
             <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
