@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { NavLink, useLocation } from "react-router"
 
+import { BrandLogo } from "@/components/brand-logo"
 import { cn } from "@/lib/utils"
 import { isNavGroup, NAV, type NavPage } from "@/lib/navigation"
 import { ChevronRight, X } from "lucide-react"
@@ -82,11 +83,12 @@ export function AdminSidebar({
           collapsed && "lg:justify-center lg:px-2"
         )}
       >
-        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-sidebar-primary text-sm font-semibold text-sidebar-primary-foreground">
-          N
-        </span>
+        <BrandLogo className={cn("h-8", collapsed && "lg:hidden")} />
+        <BrandLogo
+          variant="mark"
+          className={cn("hidden", collapsed && "lg:block")}
+        />
         <div className={cn("min-w-0 flex-1", collapsed && "lg:hidden")}>
-          <p className="truncate text-sm font-semibold">NexCart</p>
           <p className="truncate text-xs text-sidebar-foreground/60">Admin</p>
         </div>
         <button
