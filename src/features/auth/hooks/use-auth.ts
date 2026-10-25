@@ -3,10 +3,9 @@ import { useNavigate } from "react-router"
 
 import { ApiError } from "@/lib/api/errors"
 
-import { login, logout } from "./api"
-import { sessionQueryKey } from "./query"
-import { useAuthStore } from "./store"
-import type { AuthSession, LoginPayload } from "./types"
+import { login, logout, sessionQueryKey } from "../services"
+import { useAuthStore } from "../store"
+import type { AuthSession, LoginPayload } from "../types"
 
 export function useLogin() {
   const navigate = useNavigate()

@@ -2,10 +2,10 @@ import { useEffect } from "react"
 import { LogOut, Menu, Moon, PanelLeft, Sun } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { useTheme } from "@/components/theme-provider"
+import { useTheme } from "@/app/providers/theme-provider"
 import { useLogout } from "@/features/auth/hooks"
 import { useAuthStore } from "@/features/auth/store"
-import { usePageMeta } from "@/hooks/use-page-meta"
+import { usePageMeta } from "@/hooks"
 
 type AdminHeaderProps = {
   collapsed: boolean

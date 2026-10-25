@@ -1,10 +1,10 @@
 import { useState } from "react"
+import { ChevronRight, X } from "lucide-react"
 import { NavLink, useLocation } from "react-router"
 
-import { BrandLogo } from "@/components/brand-logo"
+import { isNavGroup, NAV, type NavPage } from "@/app/navigation"
+import { BrandLogo } from "@/components/shared"
 import { cn } from "@/lib/utils"
-import { isNavGroup, NAV, type NavPage } from "@/lib/navigation"
-import { ChevronRight, X } from "lucide-react"
 
 type AdminSidebarProps = {
   collapsed: boolean

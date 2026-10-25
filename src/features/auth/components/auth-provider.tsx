@@ -1,10 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, type ReactNode } from "react"
 
-import { restoreSession } from "./api"
-import { setupAuthInterceptor } from "./interceptor"
-import { sessionQueryKey } from "./query"
-import { useAuthStore } from "./store"
+import {
+  restoreSession,
+  sessionQueryKey,
+  setupAuthInterceptor,
+} from "../services"
+import { useAuthStore } from "../store"
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()

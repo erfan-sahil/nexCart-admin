@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router"
 
-import { useAuthStore } from "./store"
+import { useAuthStore } from "../store"
 
 export function RequireAdmin() {
   const location = useLocation()

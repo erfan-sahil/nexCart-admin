@@ -1,4 +1,4 @@
-import type { ListUsersParams } from "./types"
+import type { ListUsersParams } from "../types"
 
 export const usersQueryKey = {
   all: ["users"] as const,

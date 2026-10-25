@@ -1,8 +1,8 @@
 import { createElement, type ComponentType } from "react"
 import { createBrowserRouter, Navigate, type RouteObject } from "react-router"
 
-import { AdminShell } from "@/components/layout/admin-shell"
-import { RequireAdmin } from "@/features/auth/require-admin"
+import { AdminShell } from "@/components/layout"
+import { RequireAdmin } from "@/features/auth/components"
 import {
   groupBase,
   isNavGroup,
@@ -11,7 +11,7 @@ import {
   type AdminPath,
   type NavPage,
   type PageHandle,
-} from "@/lib/navigation"
+} from "@/app/navigation"
 import { AttributesPage } from "@/pages/catalog/attributes/page"
 import { BrandsPage } from "@/pages/catalog/brands/page"
 import { CategoriesPage } from "@/pages/catalog/categories/page"

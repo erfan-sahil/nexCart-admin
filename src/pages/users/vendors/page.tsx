@@ -1,4 +1,4 @@
-import { UsersPage } from "@/features/users/components/users-page"
+import { UsersPage } from "@/features/users/components"
 
 export function VendorsPage() {
   return (

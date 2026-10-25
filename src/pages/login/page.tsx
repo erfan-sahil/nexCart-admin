@@ -1,8 +1,8 @@
 import { Navigate } from "react-router"
 
-import { BrandLogo } from "@/components/brand-logo"
+import { BrandLogo } from "@/components/shared"
 import { Card, CardContent } from "@/components/ui/card"
-import { LoginForm } from "@/features/auth/components/login-form"
+import { LoginForm } from "@/features/auth/components"
 import { useAuthStore } from "@/features/auth/store"
 
 export function LoginPage() {

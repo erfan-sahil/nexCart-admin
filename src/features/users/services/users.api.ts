@@ -7,7 +7,7 @@ import type {
   ListUsersParams,
   ListUsersResult,
   UpdateUserPayload,
-} from "./types"
+} from "../types"
 
 function cleanParams(params: ListUsersParams) {
   return Object.fromEntries(

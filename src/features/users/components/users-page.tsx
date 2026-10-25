@@ -3,7 +3,7 @@ import { Pencil, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import type { UserStatus } from "@/features/auth/types"
-import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { useDebouncedValue } from "@/hooks"
 import { ApiError } from "@/lib/api/errors"
 import { formatDateTime, fullName } from "@/lib/format"
 import { cn } from "@/lib/utils"

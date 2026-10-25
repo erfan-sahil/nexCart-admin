@@ -3,9 +3,10 @@ import axios, { type InternalAxiosRequestConfig } from "axios"
 
 import { api } from "@/lib/api/client"
 
-import { refreshSession } from "./api"
-import { sessionQueryKey } from "./query"
-import { useAuthStore } from "./store"
+import { useAuthStore } from "../store"
+
+import { refreshSession } from "./auth.api"
+import { sessionQueryKey } from "./auth.query"
 
 type RetryConfig = InternalAxiosRequestConfig & {
   _retry?: boolean

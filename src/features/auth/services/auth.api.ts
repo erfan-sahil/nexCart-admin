@@ -2,8 +2,8 @@ import { api } from "@/lib/api/client"
 import { ApiError, toApiError } from "@/lib/api/errors"
 import type { ApiSuccess } from "@/lib/api/types"
 
-import { sessionFromStore, useAuthStore } from "./store"
-import type { AuthSession, LoginPayload } from "./types"
+import { sessionFromStore, useAuthStore } from "../store"
+import type { AuthSession, LoginPayload } from "../types"
 
 async function postSession(path: string, body?: LoginPayload) {
   try {

@@ -1,6 +1,6 @@
 import { create } from "zustand"
 
-import type { AuthSession, AuthUser } from "./types"
+import type { AuthSession, AuthUser } from "../types"
 
 type AuthStatus = "loading" | "authenticated" | "anonymous"
 

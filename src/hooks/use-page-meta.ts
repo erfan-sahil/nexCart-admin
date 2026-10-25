@@ -1,6 +1,6 @@
 import { useMatches } from "react-router"
 
-import type { PageHandle } from "@/lib/navigation"
+import type { PageHandle } from "@/app/navigation"
 
 const FALLBACK: PageHandle = {
   title: "NexCart",

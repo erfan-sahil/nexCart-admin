@@ -5,9 +5,8 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
-import { deleteUser, listUsers, updateUser } from "./api"
-import { usersQueryKey } from "./query"
-import type { ListUsersParams, UpdateUserPayload } from "./types"
+import { deleteUser, listUsers, updateUser, usersQueryKey } from "../services"
+import type { ListUsersParams, UpdateUserPayload } from "../types"
 
 export function useUsersQuery(params: ListUsersParams) {
   return useQuery({
