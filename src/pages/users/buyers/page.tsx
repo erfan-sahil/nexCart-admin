@@ -5,6 +5,7 @@ export function BuyersPage() {
     <UsersPage
       role="customer"
       emptyLabel="No buyer accounts match these filters."
+      rowDetails
     />
   )
 }

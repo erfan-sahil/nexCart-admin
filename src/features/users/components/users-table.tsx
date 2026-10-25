@@ -70,6 +70,7 @@ type UsersTableProps = {
   onRetry: () => void
   onEdit: (user: AdminUser) => void
   onDelete: (user: AdminUser) => void
+  onRowClick?: (user: AdminUser) => void
 }
 
 function initials(user: AdminUser) {
@@ -123,6 +124,7 @@ export function UsersTable({
   onRetry,
   onEdit,
   onDelete,
+  onRowClick,
 }: UsersTableProps) {
   const columns = useMemo<LegacyColumnDef<AdminUser>[]>(
     () => [
@@ -204,6 +206,7 @@ export function UsersTable({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
+                    className="cursor-pointer"
                     aria-label={`Actions for ${name}`}
                   >
                     <MoreHorizontal />
@@ -338,11 +341,25 @@ export function UsersTable({
             </TableRow>
           ) : (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} className="hover:bg-brand-soft/60">
+              <TableRow
+                key={row.id}
+                className={cn(
+                  "hover:bg-brand-soft/60",
+                  onRowClick && "cursor-pointer"
+                )}
+                onClick={
+                  onRowClick ? () => onRowClick(row.original) : undefined
+                }
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
                     className="px-3 py-2.5 first:pl-4 last:pr-4"
+                    onClick={
+                      cell.column.id === "actions"
+                        ? (event) => event.stopPropagation()
+                        : undefined
+                    }
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>

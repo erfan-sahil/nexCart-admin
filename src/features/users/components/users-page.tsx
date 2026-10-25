@@ -22,12 +22,14 @@ import { ApiError } from "@/lib/api/errors"
 import { useUsersQuery } from "../hooks"
 import type { AdminUser, UsersPageRole } from "../types"
 import { UserDeleteDialog } from "./user-delete-dialog"
+import { UserDetailsDialog } from "./user-details-dialog"
 import { UserEditDialog } from "./user-edit-dialog"
 import { UsersTable } from "./users-table"
 
 type UsersPageProps = {
   role: UsersPageRole
   emptyLabel: string
+  rowDetails?: boolean
 }
 
 const STATUS_FILTERS = [
@@ -36,11 +38,16 @@ const STATUS_FILTERS = [
   { value: "suspended", label: "Suspended" },
 ] as const
 
-export function UsersPage({ role, emptyLabel }: UsersPageProps) {
+export function UsersPage({
+  role,
+  emptyLabel,
+  rowDetails = false,
+}: UsersPageProps) {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<UserStatus | "">("")
+  const [viewing, setViewing] = useState<AdminUser | null>(null)
   const [editing, setEditing] = useState<AdminUser | null>(null)
   const [deleting, setDeleting] = useState<AdminUser | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
@@ -74,6 +81,15 @@ export function UsersPage({ role, emptyLabel }: UsersPageProps) {
 
   const handleDelete = useCallback((user: AdminUser) => {
     setDeleting(user)
+  }, [])
+
+  const handleRowClick = useCallback((user: AdminUser) => {
+    setViewing(user)
+  }, [])
+
+  const handleEditFromDetails = useCallback((user: AdminUser) => {
+    setViewing(null)
+    setEditing(user)
   }, [])
 
   return (
@@ -153,8 +169,18 @@ export function UsersPage({ role, emptyLabel }: UsersPageProps) {
           onRetry={() => void users.refetch()}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onRowClick={rowDetails ? handleRowClick : undefined}
         />
       </section>
+
+      {rowDetails ? (
+        <UserDetailsDialog
+          user={viewing}
+          open={Boolean(viewing)}
+          onClose={() => setViewing(null)}
+          onEdit={handleEditFromDetails}
+        />
+      ) : null}
 
       <UserEditDialog
         user={editing}
