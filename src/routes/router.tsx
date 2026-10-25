@@ -2,6 +2,7 @@ import { createElement, type ComponentType } from "react"
 import { createBrowserRouter, Navigate, type RouteObject } from "react-router"
 
 import { AdminShell } from "@/components/layout/admin-shell"
+import { RequireAdmin } from "@/features/auth/require-admin"
 import {
   groupBase,
   isNavGroup,
@@ -24,6 +25,7 @@ import { CommissionsPage } from "@/pages/finance/commissions/page"
 import { SettlementsPage } from "@/pages/finance/settlements/page"
 import { VendorEarningsPage } from "@/pages/finance/vendor-earnings/page"
 import { WithdrawalsPage } from "@/pages/finance/withdrawals/page"
+import { LoginPage } from "@/pages/login/page"
 import { BannersPage } from "@/pages/marketing/banners/page"
 import { CollectionsPage } from "@/pages/marketing/collections/page"
 import { CouponsPage } from "@/pages/marketing/coupons/page"
@@ -108,17 +110,26 @@ const childRoutes: RouteObject[] = NAV.map((entry) => {
 
 export const router = createBrowserRouter([
   {
-    path: "/",
-    element: <AdminShell />,
+    path: "/login",
+    element: <LoginPage />,
+  },
+  {
+    element: <RequireAdmin />,
     children: [
-      ...childRoutes,
       {
-        path: "*",
-        element: <NotFoundPage />,
-        handle: {
-          title: "Not found",
-          description: "This page is not in the admin.",
-        } satisfies PageHandle,
+        path: "/",
+        element: <AdminShell />,
+        children: [
+          ...childRoutes,
+          {
+            path: "*",
+            element: <NotFoundPage />,
+            handle: {
+              title: "Not found",
+              description: "This page is not in the admin.",
+            } satisfies PageHandle,
+          },
+        ],
       },
     ],
   },

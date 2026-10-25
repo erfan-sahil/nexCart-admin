@@ -1,5 +1,10 @@
-import { PagePlaceholder } from "@/components/layout/page-placeholder"
+import { UsersPage } from "@/features/users/components/users-page"
 
 export function VendorsPage() {
-  return <PagePlaceholder />
+  return (
+    <UsersPage
+      role="vendor"
+      emptyLabel="No vendor accounts match these filters."
+    />
+  )
 }

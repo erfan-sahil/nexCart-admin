@@ -1,0 +1,41 @@
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
+
+import { deleteUser, listUsers, updateUser } from "./api"
+import { usersQueryKey } from "./query"
+import type { ListUsersParams, UpdateUserPayload } from "./types"
+
+export function useUsersQuery(params: ListUsersParams) {
+  return useQuery({
+    queryKey: usersQueryKey.list(params),
+    queryFn: () => listUsers(params),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useUpdateUserMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateUserPayload }) =>
+      updateUser(id, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: usersQueryKey.lists() })
+    },
+  })
+}
+
+export function useDeleteUserMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => deleteUser(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: usersQueryKey.lists() })
+    },
+  })
+}
