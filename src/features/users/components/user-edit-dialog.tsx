@@ -1,6 +1,26 @@
 import { useState, type FormEvent } from "react"
+import { UserRound } from "lucide-react"
 
+import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import type { UserRole, UserStatus } from "@/features/auth/types"
 import { ApiError } from "@/lib/api/errors"
 import { fullName } from "@/lib/format"
@@ -23,8 +43,11 @@ type FormState = {
   status: UserStatus
 }
 
-const fieldClass =
-  "h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+const ROLE_LABEL: Record<UserRole, string> = {
+  customer: "Buyer",
+  vendor: "Vendor",
+  admin: "Admin",
+}
 
 function toForm(user: AdminUser): FormState {
   return {
@@ -70,6 +93,17 @@ function buildPayload(user: AdminUser, form: FormState): UpdateUserPayload {
   return payload
 }
 
+function initials(firstName: string, lastName: string) {
+  const letters = `${firstName} ${lastName}`
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("")
+
+  return letters || "?"
+}
+
 function UserEditForm({
   user,
   onClose,
@@ -80,6 +114,8 @@ function UserEditForm({
   const updateUser = useUpdateUserMutation()
   const [form, setForm] = useState(() => toForm(user))
   const [error, setError] = useState<string | null>(null)
+  const name = fullName(form.firstName, form.lastName) || "Unnamed user"
+  const roleLabel = ROLE_LABEL[form.role]
 
   const setField =
     <K extends keyof FormState>(key: K) =>
@@ -111,129 +147,181 @@ function UserEditForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <button
-        type="button"
-        className="absolute inset-0 bg-foreground/40"
-        aria-label="Close dialog"
-        onClick={onClose}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="edit-user-title"
-        className="relative z-10 w-full max-w-lg rounded-xl border border-border bg-card p-5 text-card-foreground shadow-lg"
-      >
-        <div className="mb-4">
-          <h2 id="edit-user-title" className="text-base font-semibold">
-            Edit user
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {fullName(user.firstName, user.lastName)} · {user.email}
-          </p>
-        </div>
+    <Dialog
+      open
+      onOpenChange={(next) => {
+        if (!next && !updateUser.isPending) {
+          onClose()
+        }
+      }}
+    >
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <DialogHeader className="shrink-0 border-b border-brand/20 bg-brand-soft px-6 py-6 text-left">
+          <div className="flex items-center gap-4 pr-8">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-brand text-base font-semibold text-brand-foreground shadow-sm ring-4 ring-background">
+              {initials(form.firstName, form.lastName)}
+            </span>
+            <div className="min-w-0">
+              <DialogTitle className="truncate text-lg font-semibold">
+                {name}
+              </DialogTitle>
+              <DialogDescription className="mt-1 truncate text-foreground/70">
+                Edit {roleLabel.toLowerCase()} account
+              </DialogDescription>
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                <UniversalBadge
+                  name={form.status}
+                  colors={badgeColors[form.status]}
+                />
+                <UniversalBadge
+                  name={roleLabel}
+                  icon={UserRound}
+                  colors={badgeColors.buyer}
+                  showDot={false}
+                />
+              </div>
+            </div>
+          </div>
+        </DialogHeader>
 
         <form
-          className="space-y-4"
+          className="flex min-h-0 flex-col"
           onSubmit={(event) => void submit(event)}
           noValidate
         >
-          {error ? (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          ) : null}
+          <ScrollArea
+            type="auto"
+            className="max-h-[calc(100dvh-16rem)]"
+            viewportClassName="max-h-[calc(100dvh-16rem)]"
+          >
+            <FieldGroup className="gap-4 px-6 py-5">
+              {error ? (
+                <p role="alert" className="text-sm text-destructive">
+                  {error}
+                </p>
+              ) : null}
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="space-y-1.5 text-sm">
-              <span className="font-medium">First name</span>
-              <input
-                className={fieldClass}
-                value={form.firstName}
-                onChange={(event) => setField("firstName")(event.target.value)}
-                required
-                maxLength={50}
-              />
-            </label>
-            <label className="space-y-1.5 text-sm">
-              <span className="font-medium">Last name</span>
-              <input
-                className={fieldClass}
-                value={form.lastName}
-                onChange={(event) => setField("lastName")(event.target.value)}
-                required
-                maxLength={50}
-              />
-            </label>
-          </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field>
+                  <FieldLabel htmlFor="edit-first-name">First name</FieldLabel>
+                  <Input
+                    id="edit-first-name"
+                    className="h-9"
+                    value={form.firstName}
+                    onChange={(event) =>
+                      setField("firstName")(event.target.value)
+                    }
+                    required
+                    maxLength={50}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="edit-last-name">Last name</FieldLabel>
+                  <Input
+                    id="edit-last-name"
+                    className="h-9"
+                    value={form.lastName}
+                    onChange={(event) =>
+                      setField("lastName")(event.target.value)
+                    }
+                    required
+                    maxLength={50}
+                  />
+                </Field>
+              </div>
 
-          <label className="block space-y-1.5 text-sm">
-            <span className="font-medium">Email</span>
-            <input
-              type="email"
-              className={fieldClass}
-              value={form.email}
-              onChange={(event) => setField("email")(event.target.value)}
-              required
-            />
-          </label>
+              <Field>
+                <FieldLabel htmlFor="edit-email">Email</FieldLabel>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  className="h-9"
+                  value={form.email}
+                  onChange={(event) => setField("email")(event.target.value)}
+                  required
+                />
+              </Field>
 
-          <label className="block space-y-1.5 text-sm">
-            <span className="font-medium">Phone</span>
-            <input
-              className={fieldClass}
-              value={form.phone}
-              onChange={(event) => setField("phone")(event.target.value)}
-              placeholder="+8801712345678"
-            />
-          </label>
+              <Field>
+                <FieldLabel htmlFor="edit-phone">Phone</FieldLabel>
+                <Input
+                  id="edit-phone"
+                  className="h-9"
+                  value={form.phone}
+                  onChange={(event) => setField("phone")(event.target.value)}
+                  placeholder="+8801712345678"
+                />
+              </Field>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="space-y-1.5 text-sm">
-              <span className="font-medium">Role</span>
-              <select
-                className={fieldClass}
-                value={form.role}
-                onChange={(event) =>
-                  setField("role")(event.target.value as UserRole)
-                }
-              >
-                <option value="customer">Customer</option>
-                <option value="vendor">Vendor</option>
-                <option value="admin">Admin</option>
-              </select>
-            </label>
-            <label className="space-y-1.5 text-sm">
-              <span className="font-medium">Status</span>
-              <select
-                className={fieldClass}
-                value={form.status}
-                onChange={(event) =>
-                  setField("status")(event.target.value as UserStatus)
-                }
-              >
-                <option value="active">Active</option>
-                <option value="suspended">Suspended</option>
-              </select>
-            </label>
-          </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field>
+                  <FieldLabel htmlFor="edit-role">Role</FieldLabel>
+                  <Select
+                    value={form.role}
+                    onValueChange={(value) =>
+                      setField("role")(value as UserRole)
+                    }
+                  >
+                    <SelectTrigger
+                      id="edit-role"
+                      className="h-9! w-full cursor-pointer"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(ROLE_LABEL).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="edit-status">Status</FieldLabel>
+                  <Select
+                    value={form.status}
+                    onValueChange={(value) =>
+                      setField("status")(value as UserStatus)
+                    }
+                  >
+                    <SelectTrigger
+                      id="edit-status"
+                      className="h-9! w-full cursor-pointer"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </div>
+            </FieldGroup>
+          </ScrollArea>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <DialogFooter className="shrink-0 border-t border-border bg-card px-6 py-4">
             <Button
               type="button"
               variant="outline"
+              className="cursor-pointer"
               onClick={onClose}
               disabled={updateUser.isPending}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={updateUser.isPending}>
+            <Button
+              type="submit"
+              className="cursor-pointer"
+              disabled={updateUser.isPending}
+            >
               {updateUser.isPending ? "Saving…" : "Save changes"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
