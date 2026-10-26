@@ -6,6 +6,7 @@ export type {
   CreateCategoryPayload,
   ListCategoriesParams,
   ListCategoriesResult,
+  UpdateCategoryPayload,
 } from "./categories.types"
 
 export { CATEGORY_LEVELS } from "./categories.types"

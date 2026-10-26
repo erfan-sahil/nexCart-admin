@@ -30,15 +30,20 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError } from "@/lib/api/errors"
 
-import { useCategoryTreeQuery, useCreateCategoryMutation } from "../hooks"
+import {
+  useCategoryTreeQuery,
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+} from "../hooks"
 import { CATEGORY_LEVEL_LABEL } from "../labels"
 import {
   parseCategoryForm,
   toCreatePayload,
+  toUpdatePayload,
   type CategoryFormValues,
 } from "../schema"
-import { parentChoices } from "../tree"
-import type { CategoryLevel } from "../types"
+import { categoryHasChildren, parentChoices } from "../tree"
+import type { Category, CategoryLevel } from "../types"
 
 type CategoryCreateDialogProps = {
   open: boolean
@@ -50,6 +55,18 @@ type CategoryField =
   "name" | "slug" | "description" | "image" | "parentId" | "sortOrder"
 
 type FieldErrors = Partial<Record<CategoryField, string>>
+
+function toForm(category: Category): CategoryFormValues {
+  return {
+    name: category.name,
+    slug: category.slug,
+    description: category.description,
+    image: category.image,
+    parentId: category.parentId ?? "",
+    sortOrder: String(category.sortOrder),
+    isActive: category.isActive,
+  }
+}
 
 const EMPTY_FORM: CategoryFormValues = {
   name: "",
@@ -127,19 +144,30 @@ function nextLevel(parentLevel: CategoryLevel | null): CategoryLevel {
 }
 
 function CategoryForm({
+  category,
   onClose,
   onCreated,
 }: {
+  category: Category | null
   onClose: () => void
-  onCreated: () => void
+  onCreated?: () => void
 }) {
   const createCategory = useCreateCategoryMutation()
+  const updateCategory = useUpdateCategoryMutation()
   const tree = useCategoryTreeQuery()
-  const saving = createCategory.isPending
-  const [form, setForm] = useState<CategoryFormValues>(EMPTY_FORM)
+  const saving = createCategory.isPending || updateCategory.isPending
+  const [form, setForm] = useState<CategoryFormValues>(() =>
+    category ? toForm(category) : EMPTY_FORM
+  )
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
-  const parents = useMemo(() => parentChoices(tree.data ?? []), [tree.data])
+  const parents = useMemo(
+    () => parentChoices(tree.data ?? [], category?.id),
+    [category?.id, tree.data]
+  )
+  const hasChildren = category
+    ? categoryHasChildren(tree.data ?? [], category.id)
+    : false
   const selectedParent = parents.find((parent) => parent.id === form.parentId)
   const level = nextLevel(selectedParent?.level ?? null)
 
@@ -164,7 +192,7 @@ function CategoryForm({
     event.preventDefault()
     setFormError(null)
 
-    const parsed = parseCategoryForm(form)
+    const parsed = parseCategoryForm(form, { requireSlug: Boolean(category) })
 
     if (!parsed.success) {
       setErrors(toFieldErrors(parsed.error))
@@ -174,8 +202,21 @@ function CategoryForm({
     setErrors({})
 
     try {
+      if (category) {
+        const payload = toUpdatePayload(category, parsed.data)
+
+        if (Object.keys(payload).length === 0) {
+          onClose()
+          return
+        }
+
+        await updateCategory.mutateAsync({ id: category.id, payload })
+        onClose()
+        return
+      }
+
       await createCategory.mutateAsync(toCreatePayload(parsed.data))
-      onCreated()
+      onCreated?.()
       onClose()
     } catch (error) {
       if (error instanceof ApiError) {
@@ -185,7 +226,11 @@ function CategoryForm({
         return
       }
 
-      setFormError("Could not create this category. Please try again.")
+      setFormError(
+        category
+          ? "Could not update this category. Please try again."
+          : "Could not create this category. Please try again."
+      )
     }
   }
 
@@ -206,10 +251,12 @@ function CategoryForm({
             </span>
             <div className="min-w-0">
               <DialogTitle className="truncate text-lg font-semibold">
-                New category
+                {category ? category.name : "New category"}
               </DialogTitle>
               <DialogDescription className="mt-1 text-foreground/70">
-                Add a root, subcategory, or sub-subcategory to the catalog.
+                {category
+                  ? "Update this catalog category."
+                  : "Add a root, subcategory, or sub-subcategory to the catalog."}
               </DialogDescription>
             </div>
           </div>
@@ -259,7 +306,9 @@ function CategoryForm({
                   spellCheck={false}
                 />
                 <FieldDescription>
-                  Leave blank to generate one from the name.
+                  {category
+                    ? "Lowercase and URL-friendly."
+                    : "Leave blank to generate one from the name."}
                 </FieldDescription>
                 <FieldError>{errors.slug}</FieldError>
               </Field>
@@ -271,7 +320,7 @@ function CategoryForm({
                   onValueChange={(value) =>
                     setField("parentId")(value === ROOT_PARENT ? "" : value)
                   }
-                  disabled={saving || tree.isLoading}
+                  disabled={saving || tree.isLoading || hasChildren}
                 >
                   <SelectTrigger
                     id="category-parent"
@@ -307,8 +356,12 @@ function CategoryForm({
                   </SelectContent>
                 </Select>
                 <FieldDescription>
-                  This will be a {CATEGORY_LEVEL_LABEL[level].toLowerCase()}.
-                  {tree.isError
+                  {hasChildren
+                    ? "Move or delete child categories before changing the parent."
+                    : category
+                      ? `This category is a ${CATEGORY_LEVEL_LABEL[level].toLowerCase()}.`
+                      : `This will be a ${CATEGORY_LEVEL_LABEL[level].toLowerCase()}.`}
+                  {!category && tree.isError
                     ? " Parent categories could not be loaded, so only a root category can be created."
                     : null}
                 </FieldDescription>
@@ -381,6 +434,9 @@ function CategoryForm({
                   <span className="block text-sm font-medium">Active</span>
                   <span className="block text-sm text-muted-foreground">
                     Inactive categories stay out of the storefront.
+                    {category
+                      ? " Child categories are deactivated with this one."
+                      : null}
                   </span>
                 </span>
               </label>
@@ -398,7 +454,13 @@ function CategoryForm({
               Cancel
             </Button>
             <Button type="submit" className="cursor-pointer" disabled={saving}>
-              {saving ? "Creating…" : "Create category"}
+              {saving
+                ? category
+                  ? "Saving…"
+                  : "Creating…"
+                : category
+                  ? "Save changes"
+                  : "Create category"}
             </Button>
           </DialogFooter>
         </form>
@@ -416,5 +478,27 @@ export function CategoryCreateDialog({
     return null
   }
 
-  return <CategoryForm onClose={onClose} onCreated={onCreated} />
+  return (
+    <CategoryForm category={null} onClose={onClose} onCreated={onCreated} />
+  )
+}
+
+type CategoryEditDialogProps = {
+  category: Category | null
+  open: boolean
+  onClose: () => void
+}
+
+export function CategoryEditDialog({
+  category,
+  open,
+  onClose,
+}: CategoryEditDialogProps) {
+  if (!open || !category) {
+    return null
+  }
+
+  return (
+    <CategoryForm key={category.id} category={category} onClose={onClose} />
+  )
 }

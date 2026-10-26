@@ -8,6 +8,7 @@ import type {
   CreateCategoryPayload,
   ListCategoriesParams,
   ListCategoriesResult,
+  UpdateCategoryPayload,
 } from "../types"
 
 function cleanParams(params: ListCategoriesParams) {
@@ -64,6 +65,34 @@ export async function createCategory(payload: CreateCategoryPayload) {
     const { data } = await api.post<ApiSuccess<Category>>(
       "/categories",
       payload
+    )
+
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function updateCategory(
+  id: string,
+  payload: UpdateCategoryPayload
+) {
+  try {
+    const { data } = await api.patch<ApiSuccess<Category>>(
+      `/categories/${id}`,
+      payload
+    )
+
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function deleteCategory(id: string) {
+  try {
+    const { data } = await api.delete<ApiSuccess<{ id: string }>>(
+      `/categories/${id}`
     )
 
     return data.data

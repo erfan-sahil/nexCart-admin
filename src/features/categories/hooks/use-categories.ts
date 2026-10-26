@@ -8,10 +8,16 @@ import {
 import {
   categoriesQueryKey,
   createCategory,
+  deleteCategory,
   listCategories,
   listCategoryTree,
+  updateCategory,
 } from "../services"
-import type { CreateCategoryPayload, ListCategoriesParams } from "../types"
+import type {
+  CreateCategoryPayload,
+  ListCategoriesParams,
+  UpdateCategoryPayload,
+} from "../types"
 
 export function useCategoriesQuery(params: ListCategoriesParams) {
   return useQuery({
@@ -34,6 +40,38 @@ export function useCreateCategoryMutation() {
 
   return useMutation({
     mutationFn: (payload: CreateCategoryPayload) => createCategory(payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: categoriesQueryKey.all,
+      })
+    },
+  })
+}
+
+export function useUpdateCategoryMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string
+      payload: UpdateCategoryPayload
+    }) => updateCategory(id, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: categoriesQueryKey.all,
+      })
+    },
+  })
+}
+
+export function useDeleteCategoryMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => deleteCategory(id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: categoriesQueryKey.all,

@@ -50,3 +50,13 @@ export type CreateCategoryPayload = {
   isActive?: boolean
   sortOrder?: number
 }
+
+export type UpdateCategoryPayload = {
+  name?: string
+  slug?: string
+  description?: string
+  image?: string
+  parentId?: string | null
+  isActive?: boolean
+  sortOrder?: number
+}

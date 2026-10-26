@@ -22,9 +22,13 @@ import { ApiError } from "@/lib/api/errors"
 import { useCategoriesQuery, useCategoryTreeQuery } from "../hooks"
 import { CATEGORY_LEVEL_LABEL } from "../labels"
 import { flattenCategories } from "../tree"
-import { CATEGORY_LEVELS, type CategoryLevel } from "../types"
+import { CATEGORY_LEVELS, type Category, type CategoryLevel } from "../types"
 import { CategoriesTable } from "./categories-table"
-import { CategoryCreateDialog } from "./category-create-dialog"
+import {
+  CategoryCreateDialog,
+  CategoryEditDialog,
+} from "./category-create-dialog"
+import { CategoryDeleteDialog } from "./category-delete-dialog"
 
 export function CategoriesPage() {
   const [page, setPage] = useState(1)
@@ -33,6 +37,8 @@ export function CategoriesPage() {
   const [level, setLevel] = useState<CategoryLevel | "">("")
   const [status, setStatus] = useState<"active" | "inactive" | "">("")
   const [creating, setCreating] = useState(false)
+  const [editing, setEditing] = useState<Category | null>(null)
+  const [deleting, setDeleting] = useState<Category | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
 
   const params = useMemo(
@@ -184,6 +190,8 @@ export function CategoriesPage() {
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
           onRetry={() => void categories.refetch()}
+          onEdit={setEditing}
+          onDelete={setDeleting}
         />
       </section>
 
@@ -191,6 +199,21 @@ export function CategoriesPage() {
         open={creating}
         onClose={() => setCreating(false)}
         onCreated={() => setPage(1)}
+      />
+      <CategoryEditDialog
+        category={editing}
+        open={Boolean(editing)}
+        onClose={() => setEditing(null)}
+      />
+      <CategoryDeleteDialog
+        category={deleting}
+        open={Boolean(deleting)}
+        onClose={() => setDeleting(null)}
+        onDeleted={() => {
+          if (items.length === 1 && page > 1) {
+            setPage(page - 1)
+          }
+        }}
       />
     </div>
   )

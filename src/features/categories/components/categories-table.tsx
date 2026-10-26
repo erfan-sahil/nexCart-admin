@@ -4,10 +4,23 @@ import {
   useLegacyTable,
   type LegacyColumnDef,
 } from "@tanstack/react-table/legacy"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Pagination,
   PaginationContent,
@@ -48,6 +61,8 @@ type CategoriesTableProps = {
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
   onRetry: () => void
+  onEdit: (category: Category) => void
+  onDelete: (category: Category) => void
 }
 
 function pageItems(current: number, total: number) {
@@ -88,6 +103,8 @@ export function CategoriesTable({
   onPageChange,
   onPageSizeChange,
   onRetry,
+  onEdit,
+  onDelete,
 }: CategoriesTableProps) {
   const columns = useMemo<LegacyColumnDef<Category>[]>(
     () => [
@@ -157,8 +174,53 @@ export function CategoriesTable({
           />
         ),
       },
+      {
+        id: "actions",
+        header: () => <span className="sr-only">Actions</span>,
+        cell: ({ row }) => {
+          const category = row.original
+
+          return (
+            <div className="flex justify-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="cursor-pointer"
+                    aria-label={`Actions for ${category.name}`}
+                  >
+                    <MoreHorizontal />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      window.setTimeout(() => onEdit(category), 0)
+                    }}
+                  >
+                    <Pencil />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onSelect={() => {
+                      window.setTimeout(() => onDelete(category), 0)
+                    }}
+                  >
+                    <Trash2 />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )
+        },
+      },
     ],
-    [parentNames]
+    [onDelete, onEdit, parentNames]
   )
 
   const paginationState = useMemo<PaginationState>(
@@ -258,11 +320,20 @@ export function CategoriesTable({
             </TableRow>
           ) : (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow
+                key={row.id}
+                className="cursor-pointer hover:bg-brand-soft/60"
+                onClick={() => onEdit(row.original)}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
                     className="px-3 py-2.5 first:pl-4 last:pr-4"
+                    onClick={
+                      cell.column.id === "actions"
+                        ? (event) => event.stopPropagation()
+                        : undefined
+                    }
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
