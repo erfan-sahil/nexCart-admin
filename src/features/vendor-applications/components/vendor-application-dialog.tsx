@@ -29,8 +29,11 @@ import { BUSINESS_TYPE_LABEL, STATUS_LABEL } from "../labels"
 import type { VendorApplication } from "../types"
 import { VendorApplicationDetails } from "./vendor-application-details"
 
+type VendorApplicationDialogMode = "details" | "review"
+
 type VendorApplicationDialogProps = {
   applicationId: string | null
+  mode: VendorApplicationDialogMode
   open: boolean
   onClose: () => void
 }
@@ -57,10 +60,12 @@ function actionError(error: unknown) {
 function ReviewPanel({
   application,
   categoryNames,
+  mode,
   onClose,
 }: {
   application: VendorApplication
   categoryNames: Map<string, string> | undefined
+  mode: VendorApplicationDialogMode
   onClose: () => void
 }) {
   const review = useReviewVendorApplicationMutation()
@@ -70,7 +75,9 @@ function ReviewPanel({
   const [error, setError] = useState<string | null>(null)
   const [confirm, setConfirm] = useState<"approve" | "reject" | null>(null)
   const isOwn = Boolean(currentUserId) && currentUserId === application.userId
+  const reviewing = mode === "review" && application.status !== "draft"
   const canAct =
+    reviewing &&
     !isOwn &&
     (application.status === "submitted" ||
       application.status === "under_review")
@@ -179,7 +186,7 @@ function ReviewPanel({
             prioritizeReview && "gap-4 py-5"
           )}
         >
-          {isOwn ? (
+          {reviewing && isOwn ? (
             <p className="text-sm text-muted-foreground">
               You cannot review your own application.
             </p>
@@ -351,6 +358,7 @@ function ReviewPanel({
 
 export function VendorApplicationDialog({
   applicationId,
+  mode,
   open,
   onClose,
 }: VendorApplicationDialogProps) {
@@ -366,6 +374,7 @@ export function VendorApplicationDialog({
       <ReviewPanel
         application={application.data}
         categoryNames={categories.data}
+        mode={mode}
         onClose={onClose}
       />
     )

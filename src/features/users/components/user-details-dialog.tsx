@@ -6,6 +6,7 @@ import {
   Mail,
   Pencil,
   Phone,
+  Store,
   UserRound,
 } from "lucide-react"
 
@@ -33,6 +34,23 @@ type UserDetailsDialogProps = {
 }
 
 type DetailTone = "brand" | "emerald" | "amber" | "violet"
+
+const ACCOUNT_COPY = {
+  customer: {
+    badge: "Buyer",
+    description: "Buyer account",
+    edit: "Edit buyer",
+    icon: UserRound,
+    colors: badgeColors.buyer,
+  },
+  vendor: {
+    badge: "Vendor",
+    description: "Vendor account",
+    edit: "Edit vendor",
+    icon: Store,
+    colors: badgeColors.vendor,
+  },
+} as const
 
 const TONE_CLASS: Record<DetailTone, string> = {
   brand: "bg-brand/15 text-brand-text",
@@ -119,6 +137,9 @@ export function UserDetailsDialog({
   }
 
   const name = fullName(user.firstName, user.lastName)
+  const account =
+    user.role === "vendor" ? ACCOUNT_COPY.vendor : ACCOUNT_COPY.customer
+  const AccountIcon = account.icon
 
   return (
     <Dialog
@@ -140,7 +161,7 @@ export function UserDetailsDialog({
                 {name}
               </DialogTitle>
               <DialogDescription className="mt-1 truncate text-foreground/70">
-                Buyer account
+                {account.description}
               </DialogDescription>
               <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                 <UniversalBadge
@@ -148,9 +169,9 @@ export function UserDetailsDialog({
                   colors={badgeColors[user.status]}
                 />
                 <UniversalBadge
-                  name="Buyer"
-                  icon={UserRound}
-                  colors={badgeColors.buyer}
+                  name={account.badge}
+                  icon={AccountIcon}
+                  colors={account.colors}
                   showDot={false}
                 />
               </div>
@@ -245,7 +266,7 @@ export function UserDetailsDialog({
             onClick={() => onEdit(user)}
           >
             <Pencil />
-            Edit buyer
+            {account.edit}
           </Button>
         </DialogFooter>
       </DialogContent>

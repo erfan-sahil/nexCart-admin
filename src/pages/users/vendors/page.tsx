@@ -5,6 +5,7 @@ export function VendorsPage() {
     <UsersPage
       role="vendor"
       emptyLabel="No vendor accounts match these filters."
+      rowDetails
     />
   )
 }

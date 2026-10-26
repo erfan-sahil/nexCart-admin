@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleCheck,
+  Eye,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -202,6 +203,16 @@ export function UsersTable({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">
+                  {onRowClick ? (
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        window.setTimeout(() => onRowClick(user), 0)
+                      }}
+                    >
+                      <Eye />
+                      Details
+                    </DropdownMenuItem>
+                  ) : null}
                   <DropdownMenuItem
                     onSelect={() => {
                       window.setTimeout(() => onEdit(user), 0)
@@ -235,7 +246,7 @@ export function UsersTable({
         },
       },
     ],
-    [onDelete, onEdit, onToggleStatus]
+    [onDelete, onEdit, onRowClick, onToggleStatus]
   )
 
   const paginationState = useMemo<PaginationState>(

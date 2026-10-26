@@ -15,6 +15,10 @@ export const badgeColors = {
     background: "color-mix(in srgb, #8b5cf6 18%, transparent)",
     foreground: "color-mix(in srgb, #8b5cf6 42%, var(--foreground))",
   },
+  vendor: {
+    background: "color-mix(in srgb, #0284c7 16%, transparent)",
+    foreground: "color-mix(in srgb, #0284c7 55%, var(--foreground))",
+  },
   draft: {
     background: "var(--secondary)",
     foreground: "var(--secondary-foreground)",

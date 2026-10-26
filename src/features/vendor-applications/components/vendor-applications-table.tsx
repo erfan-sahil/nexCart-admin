@@ -4,7 +4,13 @@ import {
   useLegacyTable,
   type LegacyColumnDef,
 } from "@tanstack/react-table/legacy"
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  Eye,
+  MoreHorizontal,
+} from "lucide-react"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
@@ -56,6 +62,7 @@ type VendorApplicationsTableProps = {
   onPageSizeChange: (pageSize: number) => void
   onRetry: () => void
   onOpen: (application: VendorApplicationSummary) => void
+  onReview: (application: VendorApplicationSummary) => void
 }
 
 function initials(name: string) {
@@ -108,6 +115,7 @@ export function VendorApplicationsTable({
   onPageSizeChange,
   onRetry,
   onOpen,
+  onReview,
 }: VendorApplicationsTableProps) {
   const columns = useMemo<LegacyColumnDef<VendorApplicationSummary>[]>(
     () => [
@@ -210,8 +218,19 @@ export function VendorApplicationsTable({
                       window.setTimeout(() => onOpen(application), 0)
                     }}
                   >
-                    Review
+                    <Eye />
+                    Details
                   </DropdownMenuItem>
+                  {application.status === "draft" ? null : (
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        window.setTimeout(() => onReview(application), 0)
+                      }}
+                    >
+                      <ClipboardCheck />
+                      Review
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -219,7 +238,7 @@ export function VendorApplicationsTable({
         },
       },
     ],
-    [onOpen]
+    [onOpen, onReview]
   )
 
   const paginationState = useMemo<PaginationState>(

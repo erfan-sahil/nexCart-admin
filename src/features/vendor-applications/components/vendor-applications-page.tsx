@@ -41,7 +41,10 @@ export function VendorApplicationsPage() {
   const [pageSize, setPageSize] = useState(20)
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<VendorApplicationStatus | "">("")
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selected, setSelected] = useState<{
+    id: string
+    mode: "details" | "review"
+  } | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
 
   const params = useMemo(
@@ -66,7 +69,11 @@ export function VendorApplicationsPage() {
         : null
 
   const handleOpen = useCallback((application: VendorApplicationSummary) => {
-    setSelectedId(application.id)
+    setSelected({ id: application.id, mode: "details" })
+  }, [])
+
+  const handleReview = useCallback((application: VendorApplicationSummary) => {
+    setSelected({ id: application.id, mode: "review" })
   }, [])
 
   return (
@@ -150,13 +157,15 @@ export function VendorApplicationsPage() {
           onPageSizeChange={setPageSize}
           onRetry={() => void applications.refetch()}
           onOpen={handleOpen}
+          onReview={handleReview}
         />
       </section>
 
       <VendorApplicationDialog
-        applicationId={selectedId}
-        open={Boolean(selectedId)}
-        onClose={() => setSelectedId(null)}
+        applicationId={selected?.id ?? null}
+        mode={selected?.mode ?? "details"}
+        open={Boolean(selected)}
+        onClose={() => setSelected(null)}
       />
     </div>
   )
