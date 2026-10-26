@@ -351,67 +351,80 @@ function AttributeForm({
                 <FieldError>{errors.description}</FieldError>
               </Field>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field data-invalid={Boolean(errors.type) || undefined}>
-                  <FieldLabel htmlFor="attribute-type">Type</FieldLabel>
-                  <Select
-                    value={form.type}
-                    onValueChange={(value) =>
-                      changeType(value as AttributeType)
-                    }
-                    disabled={saving}
+              <Field data-invalid={Boolean(errors.type) || undefined}>
+                <FieldLabel htmlFor="attribute-type">Type</FieldLabel>
+                <Select
+                  value={form.type}
+                  onValueChange={(value) => changeType(value as AttributeType)}
+                  disabled={saving}
+                >
+                  <SelectTrigger
+                    id="attribute-type"
+                    className="h-9! w-full cursor-pointer"
+                    aria-invalid={Boolean(errors.type)}
                   >
-                    <SelectTrigger
-                      id="attribute-type"
-                      className="h-9! w-full cursor-pointer"
-                      aria-invalid={Boolean(errors.type)}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ATTRIBUTE_TYPES.map((type) => (
-                        <SelectItem
-                          key={type}
-                          value={type}
-                          disabled={
-                            form.role === "variant" && !isVariantType(type)
-                          }
-                        >
-                          {ATTRIBUTE_TYPE_LABEL[type]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FieldError>{errors.type}</FieldError>
-                </Field>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    align="start"
+                    side="bottom"
+                    sideOffset={6}
+                    collisionPadding={16}
+                    className="pointer-events-auto z-[70] w-(--radix-select-trigger-width)"
+                  >
+                    {ATTRIBUTE_TYPES.map((type) => (
+                      <SelectItem
+                        key={type}
+                        value={type}
+                        disabled={
+                          form.role === "variant" && !isVariantType(type)
+                        }
+                        className="cursor-pointer"
+                      >
+                        {ATTRIBUTE_TYPE_LABEL[type]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FieldError>{errors.type}</FieldError>
+              </Field>
 
-                <Field data-invalid={Boolean(errors.role) || undefined}>
-                  <FieldLabel htmlFor="attribute-role">Role</FieldLabel>
-                  <Select
-                    value={form.role}
-                    onValueChange={(value) =>
-                      changeRole(value as AttributeRole)
-                    }
-                    disabled={saving}
+              <Field data-invalid={Boolean(errors.role) || undefined}>
+                <FieldLabel htmlFor="attribute-role">Role</FieldLabel>
+                <Select
+                  value={form.role}
+                  onValueChange={(value) => changeRole(value as AttributeRole)}
+                  disabled={saving}
+                >
+                  <SelectTrigger
+                    id="attribute-role"
+                    className="h-9! w-full cursor-pointer"
+                    aria-invalid={Boolean(errors.role)}
                   >
-                    <SelectTrigger
-                      id="attribute-role"
-                      className="h-9! w-full cursor-pointer"
-                      aria-invalid={Boolean(errors.role)}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ATTRIBUTE_ROLES.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {ATTRIBUTE_ROLE_LABEL[role]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FieldError>{errors.role}</FieldError>
-                </Field>
-              </div>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    align="start"
+                    side="bottom"
+                    sideOffset={6}
+                    collisionPadding={16}
+                    className="pointer-events-auto z-[70] w-(--radix-select-trigger-width)"
+                  >
+                    {ATTRIBUTE_ROLES.map((role) => (
+                      <SelectItem
+                        key={role}
+                        value={role}
+                        className="cursor-pointer"
+                      >
+                        {ATTRIBUTE_ROLE_LABEL[role]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FieldError>{errors.role}</FieldError>
+              </Field>
 
               {form.role === "variant" ? (
                 <p className="text-sm text-muted-foreground">
