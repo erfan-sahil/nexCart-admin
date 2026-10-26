@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/layout/page-placeholder"
+import { AttributesPage as CatalogAttributesPage } from "@/features/attributes/components"
 
 export function AttributesPage() {
-  return <PagePlaceholder />
+  return <CatalogAttributesPage />
 }

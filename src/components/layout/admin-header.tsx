@@ -1,9 +1,10 @@
 import { useEffect } from "react"
+import { Menu, Moon, PanelLeft, Sun } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { useTheme } from "@/components/theme-provider"
-import { usePageMeta } from "@/hooks/use-page-meta"
-import { Menu, Moon, PanelLeft, Sun } from "lucide-react"
+import { useTheme } from "@/app/providers/theme-provider"
+import { useAuthStore } from "@/features/auth/store"
+import { usePageMeta } from "@/hooks"
 
 type AdminHeaderProps = {
   collapsed: boolean
@@ -20,6 +21,7 @@ export function AdminHeader({
 }: AdminHeaderProps) {
   const { theme, setTheme } = useTheme()
   const { title, description } = usePageMeta()
+  const user = useAuthStore((state) => state.user)
   const isDark = theme === "dark"
   const today = new Intl.DateTimeFormat("en", {
     weekday: "long",
@@ -63,6 +65,11 @@ export function AdminHeader({
       </div>
 
       <p className="hidden text-sm text-muted-foreground md:block">{today}</p>
+      {user ? (
+        <p className="hidden max-w-40 truncate text-sm text-muted-foreground lg:block">
+          {user.firstName} {user.lastName}
+        </p>
+      ) : null}
       <Button
         type="button"
         variant="outline"

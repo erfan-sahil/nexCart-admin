@@ -1,9 +1,18 @@
 import { useState } from "react"
-import { NavLink, useLocation } from "react-router"
+import { ChevronRight, ChevronUp, LogOut, Settings, X } from "lucide-react"
+import { Link, NavLink, useLocation } from "react-router"
 
+import { isNavGroup, NAV, type NavPage } from "@/app/navigation"
+import { BrandLogo } from "@/components/shared"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useLogout } from "@/features/auth/hooks"
 import { cn } from "@/lib/utils"
-import { isNavGroup, NAV, type NavPage } from "@/lib/navigation"
-import { ChevronRight, X } from "lucide-react"
 
 type AdminSidebarProps = {
   collapsed: boolean
@@ -61,6 +70,7 @@ export function AdminSidebar({
   onClose,
 }: AdminSidebarProps) {
   const { pathname } = useLocation()
+  const logout = useLogout()
   const [manual, setManual] = useState<{
     path: string
     open: Record<string, boolean>
@@ -82,11 +92,12 @@ export function AdminSidebar({
           collapsed && "lg:justify-center lg:px-2"
         )}
       >
-        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-sidebar-primary text-sm font-semibold text-sidebar-primary-foreground">
-          N
-        </span>
+        <BrandLogo className={cn("h-8", collapsed && "lg:hidden")} />
+        <BrandLogo
+          variant="mark"
+          className={cn("hidden", collapsed && "lg:block")}
+        />
         <div className={cn("min-w-0 flex-1", collapsed && "lg:hidden")}>
-          <p className="truncate text-sm font-semibold">NexCart</p>
           <p className="truncate text-xs text-sidebar-foreground/60">Admin</p>
         </div>
         <button
@@ -103,7 +114,9 @@ export function AdminSidebar({
         className="flex-1 space-y-1 overflow-y-auto px-3 py-4"
         aria-label="Admin"
       >
-        {NAV.map((entry) => {
+        {NAV.filter(
+          (entry) => isNavGroup(entry) || entry.path !== "/settings"
+        ).map((entry) => {
           if (!isNavGroup(entry)) {
             return (
               <PageLink
@@ -182,22 +195,58 @@ export function AdminSidebar({
       </nav>
 
       <div className="border-t border-sidebar-border p-3">
-        <div
-          className={cn(
-            "flex items-center gap-3 rounded-lg px-2 py-2",
-            collapsed && "lg:justify-center lg:px-0"
-          )}
-        >
-          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-sidebar-accent text-sm font-semibold text-sidebar-accent-foreground">
-            A
-          </span>
-          <div className={cn("min-w-0", collapsed && "lg:hidden")}>
-            <p className="truncate text-sm font-medium">Platform admin</p>
-            <p className="truncate text-xs text-sidebar-foreground/60">
-              Full access
-            </p>
-          </div>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label="Open account menu"
+              className={cn(
+                "flex w-full cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 focus-visible:outline-none data-[state=open]:bg-sidebar-accent",
+                collapsed && "lg:justify-center lg:px-0"
+              )}
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-sidebar-accent text-sm font-semibold text-sidebar-accent-foreground">
+                A
+              </span>
+              <div className={cn("min-w-0 flex-1", collapsed && "lg:hidden")}>
+                <p className="truncate text-sm font-medium">Platform admin</p>
+                <p className="truncate text-xs text-sidebar-foreground/60">
+                  Full access
+                </p>
+              </div>
+              <ChevronUp
+                className={cn(
+                  "size-4 shrink-0 text-sidebar-foreground/50",
+                  collapsed && "lg:hidden"
+                )}
+                aria-hidden="true"
+              />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="top"
+            align="start"
+            sideOffset={8}
+            className="w-52"
+          >
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link to="/settings" onClick={onNavigate}>
+                <Settings />
+                Settings
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              className="cursor-pointer"
+              disabled={logout.isPending}
+              onSelect={() => logout.mutate()}
+            >
+              <LogOut />
+              Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </aside>
   )

@@ -1,5 +1,1 @@
-import { PagePlaceholder } from "@/components/layout/page-placeholder"
-
-export function VendorApplicationsPage() {
-  return <PagePlaceholder />
-}
+export { VendorApplicationsPage } from "@/features/vendor-applications/components"
