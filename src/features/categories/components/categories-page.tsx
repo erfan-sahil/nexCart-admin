@@ -26,7 +26,7 @@ import { useDebouncedValue } from "@/hooks"
 import { ApiError } from "@/lib/api/errors"
 
 import { useCategoryTreeQuery } from "../hooks"
-import { CATEGORY_LEVEL_LABEL } from "../labels"
+import { CATEGORY_LEVEL_HINT, categoryLevelTitle } from "../labels"
 import {
   categoryBranchIds,
   categoryChildCounts,
@@ -36,6 +36,7 @@ import {
 } from "../tree"
 import { CATEGORY_LEVELS, type Category, type CategoryLevel } from "../types"
 import { CategoriesTree } from "./categories-tree"
+import { CategoryLevelBadge } from "./category-level-badge"
 import {
   CategoryCreateDialog,
   CategoryEditDialog,
@@ -130,7 +131,7 @@ export function CategoriesPage() {
               />
             </InputGroup>
           </Field>
-          <Field className="sm:w-48">
+          <Field className="sm:w-64">
             <FieldLabel htmlFor="category-level-filter">Level</FieldLabel>
             <Select
               value={level ? String(level) : "all"}
@@ -150,7 +151,7 @@ export function CategoriesPage() {
                 <SelectItem value="all">All levels</SelectItem>
                 {CATEGORY_LEVELS.map((option) => (
                   <SelectItem key={option} value={String(option)}>
-                    {CATEGORY_LEVEL_LABEL[option]}
+                    {categoryLevelTitle(option)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -204,8 +205,18 @@ export function CategoriesPage() {
               <p className="mt-1 text-xs text-muted-foreground">
                 {filtering
                   ? "Parents stay visible so each match keeps its place in the tree."
-                  : "Three levels: a root, then a subcategory, then a sub-subcategory."}
+                  : "Depth is the number on each row. Level 1 is a root, level 2 sits under it, and level 3 is the deepest."}
               </p>
+              <ul className="mt-2.5 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-2">
+                {CATEGORY_LEVELS.map((option) => (
+                  <li key={option} className="flex items-center gap-2">
+                    <CategoryLevelBadge level={option} />
+                    <span className="text-xs text-muted-foreground">
+                      {CATEGORY_LEVEL_HINT[option]}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
             <div className="flex shrink-0 items-center gap-3">
               {tree.isFetching && !tree.isLoading ? (

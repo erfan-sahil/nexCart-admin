@@ -20,8 +20,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 
-import { CATEGORY_LEVEL_LABEL, categoryChildLabel } from "../labels"
+import { categoryChildLabel } from "../labels"
+import { categoryLevelTone } from "../level-style"
 import type { Category, CategoryTreeNode } from "../types"
+import { CategoryLevelBadge } from "./category-level-badge"
+
+const TREE_COLUMNS = "sm:grid-cols-[minmax(0,1fr)_11.5rem_4.5rem_6.5rem_2.5rem]"
 
 type CategoriesTreeProps = {
   nodes: CategoryTreeNode[]
@@ -85,6 +89,7 @@ function CategoryThumbnail({ image }: { image: string }) {
 function CategoryBranch({
   node,
   depth,
+  trail,
   childCounts,
   expandedIds,
   search,
@@ -95,6 +100,7 @@ function CategoryBranch({
 }: {
   node: CategoryTreeNode
   depth: number
+  trail: string[]
   childCounts: Map<string, number>
   expandedIds: Set<string>
   search: string
@@ -109,6 +115,7 @@ function CategoryBranch({
   const totalChildren = childCounts.get(category.id) ?? children.length
   const childLabel = categoryChildLabel(category.level, totalChildren)
   const canAddChild = category.level < 3
+  const tone = categoryLevelTone(category.level)
   const suppressRowClick = useRef(false)
 
   const holdRowClick = () => {
@@ -122,9 +129,9 @@ function CategoryBranch({
     <li>
       <div
         className={cn(
-          "grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] gap-2 border-b border-border px-3 py-2.5 transition-colors hover:bg-brand-soft/60 sm:grid-cols-[minmax(0,1fr)_7.5rem_4.5rem_6.5rem_2.5rem] sm:items-center sm:px-4",
-          depth === 1 && "bg-muted/20",
-          depth === 2 && "bg-muted/35"
+          "grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] gap-2 border-b border-border px-3 py-2.5 transition-colors hover:bg-brand-soft/60 sm:items-center sm:px-4",
+          TREE_COLUMNS,
+          tone.row
         )}
         onClick={() => {
           if (suppressRowClick.current) {
@@ -137,10 +144,17 @@ function CategoryBranch({
         <div
           className={cn(
             "flex min-w-0 items-center gap-2",
-            depth === 1 && "ml-4 border-l border-border pl-2 sm:ml-6 sm:pl-3",
-            depth === 2 && "ml-8 border-l border-brand/40 pl-2 sm:ml-12 sm:pl-3"
+            depth === 1 && "ml-6 sm:ml-10",
+            depth === 2 && "ml-12 sm:ml-[4.5rem]"
           )}
         >
+          <span
+            className={cn(
+              "min-h-9 w-1 shrink-0 self-stretch rounded-full",
+              tone.rail
+            )}
+            aria-hidden
+          />
           {hasChildren ? (
             <Button
               type="button"
@@ -170,34 +184,43 @@ function CategoryBranch({
           )}
           <CategoryThumbnail image={category.image} />
           <div className="min-w-0">
-            <p className="truncate font-medium text-foreground">
-              {highlight(category.name, search)}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {highlight(category.slug, search)}
-              <span className="sm:hidden">
-                {" "}
-                · {CATEGORY_LEVEL_LABEL[category.level]}
-              </span>
-              {childLabel ? <span> · {childLabel}</span> : null}
-              {matchCount(totalChildren, children.length)}
-            </p>
+            <div className="flex h-9 min-w-0 flex-col justify-center">
+              <p
+                className={cn(
+                  "truncate text-sm leading-5 text-foreground",
+                  category.level === 1 ? "font-semibold" : "font-medium"
+                )}
+              >
+                {highlight(category.name, search)}
+              </p>
+              <p className="truncate text-xs leading-4 text-muted-foreground">
+                {trail.map((name, index) => {
+                  const ancestorLevel = (index + 1) as 1 | 2
+                  return (
+                    <span key={`${name}-${index}`}>
+                      {index > 0 ? (
+                        <span className="px-1 text-border">/</span>
+                      ) : null}
+                      <span className={categoryLevelTone(ancestorLevel).crumb}>
+                        {highlight(name, search)}
+                      </span>
+                      <span className="px-1 text-border">/</span>
+                    </span>
+                  )
+                })}
+                {highlight(category.slug, search)}
+                {childLabel ? <span> · {childLabel}</span> : null}
+                {matchCount(totalChildren, children.length)}
+              </p>
+            </div>
+            <div className="mt-1.5 sm:hidden">
+              <CategoryLevelBadge level={category.level} />
+            </div>
           </div>
         </div>
 
         <div className="hidden sm:block">
-          <UniversalBadge
-            name={CATEGORY_LEVEL_LABEL[category.level]}
-            colors={
-              category.level === 1
-                ? badgeColors.buyer
-                : category.level === 2
-                  ? badgeColors.vendor
-                  : badgeColors.neutral
-            }
-            showDot={false}
-            className="normal-case"
-          />
+          <CategoryLevelBadge level={category.level} />
         </div>
         <span className="hidden text-muted-foreground tabular-nums sm:block">
           {category.sortOrder}
@@ -244,6 +267,7 @@ function CategoryBranch({
               key={child.id}
               node={child}
               depth={depth + 1}
+              trail={[...trail, category.name]}
               childCounts={childCounts}
               expandedIds={expandedIds}
               search={search}
@@ -378,7 +402,12 @@ export function CategoriesTree({
 }: CategoriesTreeProps) {
   return (
     <div>
-      <div className="hidden grid-cols-[minmax(0,1fr)_7.5rem_4.5rem_6.5rem_2.5rem] items-center gap-2 border-b border-border bg-muted/50 px-4 py-2 text-xs font-medium text-muted-foreground sm:grid">
+      <div
+        className={cn(
+          "hidden items-center gap-2 border-b border-border bg-muted/50 px-4 py-2 text-xs font-medium text-muted-foreground sm:grid",
+          TREE_COLUMNS
+        )}
+      >
         <span>Category</span>
         <span>Level</span>
         <span>Sort</span>
@@ -430,6 +459,7 @@ export function CategoriesTree({
               key={node.id}
               node={node}
               depth={0}
+              trail={[]}
               childCounts={childCounts}
               expandedIds={expandedIds}
               search={search}

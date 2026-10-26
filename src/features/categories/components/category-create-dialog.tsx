@@ -28,7 +28,11 @@ import {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
 } from "../hooks"
-import { CATEGORY_LEVEL_LABEL } from "../labels"
+import {
+  CATEGORY_LEVEL_HINT,
+  CATEGORY_LEVEL_LABEL,
+  categoryLevelTitle,
+} from "../labels"
 import {
   parseCategoryForm,
   toCreatePayload,
@@ -189,7 +193,7 @@ function CategoryForm({
       : null)
   const level = nextLevel(parentLevel)
   const parentLabel =
-    selectedParent?.label ??
+    selectedParent?.name ??
     (form.parentId === initialParent?.id ? initialParent?.name : undefined)
 
   const setField =
@@ -378,6 +382,7 @@ function CategoryForm({
                   form.parentId === initialParent.id &&
                   !parents.some((parent) => parent.id === initialParent.id) ? (
                     <option value={initialParent.id}>
+                      {categoryLevelTitle(initialParent.level)} ·{" "}
                       {initialParent.name}
                     </option>
                   ) : null}
@@ -391,8 +396,8 @@ function CategoryForm({
                   {hasChildren
                     ? "Move or delete child categories before changing the parent."
                     : category
-                      ? `This category is a ${CATEGORY_LEVEL_LABEL[level].toLowerCase()}.`
-                      : `This will be a ${CATEGORY_LEVEL_LABEL[level].toLowerCase()}.`}
+                      ? `This category is ${categoryLevelTitle(level)}. ${CATEGORY_LEVEL_HINT[level]}.`
+                      : `This will be ${categoryLevelTitle(level)}. ${CATEGORY_LEVEL_HINT[level]}.`}
                   {!category && tree.isError
                     ? " Parent categories could not be loaded, so only a root category can be created."
                     : null}

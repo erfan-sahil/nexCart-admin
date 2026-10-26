@@ -1,3 +1,4 @@
+import { categoryLevelTitle } from "./labels"
 import type { Category, CategoryLevel, CategoryTreeNode } from "./types"
 
 export function flattenCategories(nodes: CategoryTreeNode[]) {
@@ -212,7 +213,7 @@ export function parentChoices(nodes: CategoryTreeNode[], excludeId?: string) {
           id: node.id,
           name: node.name,
           level: node.level,
-          label: path.join(" / "),
+          label: `${categoryLevelTitle(node.level)} · ${path.join(" / ")}`,
         })
       }
 

@@ -14,8 +14,8 @@ import {
 import { ApiError } from "@/lib/api/errors"
 
 import { useDeleteCategoryMutation } from "../hooks"
-import { CATEGORY_LEVEL_LABEL } from "../labels"
 import type { Category } from "../types"
+import { CategoryLevelBadge } from "./category-level-badge"
 
 type CategoryDeleteDialogProps = {
   category: Category | null
@@ -75,18 +75,7 @@ function CategoryDeleteForm({
                 Delete category
               </DialogDescription>
               <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                <UniversalBadge
-                  name={CATEGORY_LEVEL_LABEL[category.level]}
-                  colors={
-                    category.level === 1
-                      ? badgeColors.buyer
-                      : category.level === 2
-                        ? badgeColors.vendor
-                        : badgeColors.neutral
-                  }
-                  showDot={false}
-                  className="normal-case"
-                />
+                <CategoryLevelBadge level={category.level} />
                 <UniversalBadge
                   name={category.isActive ? "active" : "inactive"}
                   colors={
