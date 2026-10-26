@@ -1,6 +1,5 @@
 import { useRef } from "react"
 import {
-  ChevronDown,
   ChevronRight,
   ImageOff,
   MoreHorizontal,
@@ -22,7 +21,7 @@ import { cn } from "@/lib/utils"
 
 import { categoryChildLabel } from "../labels"
 import { categoryLevelTone } from "../level-style"
-import type { Category, CategoryTreeNode } from "../types"
+import type { Category, CategoryLevel, CategoryTreeNode } from "../types"
 import { CategoryLevelBadge } from "./category-level-badge"
 
 const TREE_COLUMNS = "sm:grid-cols-[minmax(0,1fr)_11.5rem_4.5rem_6.5rem_2.5rem]"
@@ -62,6 +61,59 @@ function highlight(text: string, query: string) {
       </mark>
       {text.slice(index + needle.length)}
     </>
+  )
+}
+
+function CategoryBranchToggle({
+  expanded,
+  hasChildren,
+  level,
+  name,
+  onToggle,
+}: {
+  expanded: boolean
+  hasChildren: boolean
+  level: CategoryLevel
+  name: string
+  onToggle: () => void
+}) {
+  const tone = categoryLevelTone(level)
+
+  if (!hasChildren) {
+    return (
+      <span
+        className={cn(
+          "flex size-7 shrink-0 items-center justify-center rounded-full shadow-sm ring-1 ring-black/5 ring-inset dark:ring-white/10",
+          tone.badge
+        )}
+        aria-hidden
+      >
+        <span className={cn("size-1.5 rounded-full", tone.rail)} />
+      </span>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      className={cn(
+        "group/toggle flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full shadow-sm ring-1 ring-black/5 transition-transform duration-200 outline-none ring-inset hover:scale-105 focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95 dark:ring-white/10",
+        tone.badge
+      )}
+      aria-expanded={expanded}
+      aria-label={expanded ? `Collapse ${name}` : `Expand ${name}`}
+      onClick={(event) => {
+        event.stopPropagation()
+        onToggle()
+      }}
+    >
+      <ChevronRight
+        className={cn(
+          "size-3.5 transition-transform duration-200 ease-out group-hover/toggle:translate-x-px",
+          expanded && "rotate-90 group-hover/toggle:translate-x-0"
+        )}
+      />
+    </button>
   )
 }
 
@@ -155,33 +207,13 @@ function CategoryBranch({
             )}
             aria-hidden
           />
-          {hasChildren ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="cursor-pointer"
-              aria-expanded={expanded}
-              aria-label={
-                expanded
-                  ? `Collapse ${category.name}`
-                  : `Expand ${category.name}`
-              }
-              onClick={(event) => {
-                event.stopPropagation()
-                onToggle(category.id)
-              }}
-            >
-              {expanded ? <ChevronDown /> : <ChevronRight />}
-            </Button>
-          ) : (
-            <span
-              className="flex size-7 shrink-0 items-center justify-center"
-              aria-hidden
-            >
-              <span className="size-1.5 rounded-full bg-border" />
-            </span>
-          )}
+          <CategoryBranchToggle
+            expanded={expanded}
+            hasChildren={hasChildren}
+            level={category.level}
+            name={category.name}
+            onToggle={() => onToggle(category.id)}
+          />
           <CategoryThumbnail image={category.image} />
           <div className="min-w-0">
             <div className="flex h-9 min-w-0 flex-col justify-center">
