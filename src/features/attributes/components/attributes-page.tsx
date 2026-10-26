@@ -200,10 +200,6 @@ export function AttributesPage() {
         attribute={viewing}
         open={Boolean(viewing)}
         onClose={() => setViewing(null)}
-        onEdit={(attribute) => {
-          setViewing(null)
-          setEditing(attribute)
-        }}
       />
       <AttributeEditDialog
         attribute={editing}

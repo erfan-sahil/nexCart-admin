@@ -8,7 +8,6 @@ import {
   Layers,
   Link2,
   Network,
-  Pencil,
   Text,
 } from "lucide-react"
 
@@ -40,7 +39,6 @@ type CategoryDetailsDialogProps = {
   childCount: number
   open: boolean
   onClose: () => void
-  onEdit: (category: Category) => void
 }
 
 type DetailTone = "brand" | "emerald" | "amber" | "violet"
@@ -114,7 +112,6 @@ export function CategoryDetailsDialog({
   childCount,
   open,
   onClose,
-  onEdit,
 }: CategoryDetailsDialogProps) {
   if (!open || !category) {
     return null
@@ -247,14 +244,6 @@ export function CategoryDetailsDialog({
             onClick={onClose}
           >
             Close
-          </Button>
-          <Button
-            type="button"
-            className="cursor-pointer"
-            onClick={() => onEdit(category)}
-          >
-            <Pencil />
-            Edit category
           </Button>
         </DialogFooter>
       </DialogContent>

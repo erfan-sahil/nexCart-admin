@@ -6,7 +6,6 @@ import {
   History,
   Layers,
   Link2,
-  Pencil,
   SlidersHorizontal,
   Type,
 } from "lucide-react"
@@ -32,7 +31,6 @@ type AttributeDetailsDialogProps = {
   attribute: Attribute | null
   open: boolean
   onClose: () => void
-  onEdit: (attribute: Attribute) => void
 }
 
 type DetailTone = "brand" | "emerald" | "amber" | "violet"
@@ -101,7 +99,6 @@ export function AttributeDetailsDialog({
   attribute,
   open,
   onClose,
-  onEdit,
 }: AttributeDetailsDialogProps) {
   if (!open || !attribute) {
     return null
@@ -241,14 +238,6 @@ export function AttributeDetailsDialog({
             onClick={onClose}
           >
             Close
-          </Button>
-          <Button
-            type="button"
-            className="cursor-pointer"
-            onClick={() => onEdit(attribute)}
-          >
-            <Pencil />
-            Edit attribute
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -319,10 +319,6 @@ export function CategoriesPage() {
         childCount={viewing ? (childCounts.get(viewing.id) ?? 0) : 0}
         open={Boolean(viewing)}
         onClose={() => setViewing(null)}
-        onEdit={(category) => {
-          setViewing(null)
-          setEditing(category)
-        }}
       />
       <CategoryCreateDialog
         open={creating}
