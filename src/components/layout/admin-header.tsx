@@ -1,9 +1,8 @@
 import { useEffect } from "react"
-import { LogOut, Menu, Moon, PanelLeft, Sun } from "lucide-react"
+import { Menu, Moon, PanelLeft, Sun } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/app/providers/theme-provider"
-import { useLogout } from "@/features/auth/hooks"
 import { useAuthStore } from "@/features/auth/store"
 import { usePageMeta } from "@/hooks"
 
@@ -23,7 +22,6 @@ export function AdminHeader({
   const { theme, setTheme } = useTheme()
   const { title, description } = usePageMeta()
   const user = useAuthStore((state) => state.user)
-  const logout = useLogout()
   const isDark = theme === "dark"
   const today = new Intl.DateTimeFormat("en", {
     weekday: "long",
@@ -80,16 +78,6 @@ export function AdminHeader({
         onClick={() => setTheme(isDark ? "light" : "dark")}
       >
         {isDark ? <Sun /> : <Moon />}
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        aria-label="Sign out"
-        disabled={logout.isPending}
-        onClick={() => logout.mutate()}
-      >
-        <LogOut />
       </Button>
     </header>
   )
