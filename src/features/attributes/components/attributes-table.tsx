@@ -4,10 +4,24 @@ import {
   useLegacyTable,
   type LegacyColumnDef,
 } from "@tanstack/react-table/legacy"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Pagination,
   PaginationContent,
@@ -29,6 +43,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { cn } from "@/lib/utils"
 
 import { ATTRIBUTE_ROLE_LABEL, ATTRIBUTE_TYPE_LABEL } from "../labels"
 import type { Attribute } from "../types"
@@ -47,6 +62,9 @@ type AttributesTableProps = {
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
   onRetry: () => void
+  onEdit: (attribute: Attribute) => void
+  onDelete: (attribute: Attribute) => void
+  onView: (attribute: Attribute) => void
 }
 
 function pageItems(current: number, total: number) {
@@ -86,6 +104,9 @@ export function AttributesTable({
   onPageChange,
   onPageSizeChange,
   onRetry,
+  onEdit,
+  onDelete,
+  onView,
 }: AttributesTableProps) {
   const columns = useMemo<LegacyColumnDef<Attribute>[]>(
     () => [
@@ -160,8 +181,61 @@ export function AttributesTable({
           />
         ),
       },
+      {
+        id: "actions",
+        header: () => <span className="sr-only">Actions</span>,
+        cell: ({ row }) => {
+          const attribute = row.original
+
+          return (
+            <div className="flex justify-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="cursor-pointer"
+                    aria-label={`Actions for ${attribute.name}`}
+                  >
+                    <MoreHorizontal />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      window.setTimeout(() => onView(attribute), 0)
+                    }}
+                  >
+                    <Eye />
+                    Details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      window.setTimeout(() => onEdit(attribute), 0)
+                    }}
+                  >
+                    <Pencil />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onSelect={() => {
+                      window.setTimeout(() => onDelete(attribute), 0)
+                    }}
+                  >
+                    <Trash2 />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )
+        },
+      },
     ],
-    []
+    [onDelete, onEdit, onView]
   )
 
   const paginationState = useMemo<PaginationState>(
@@ -261,11 +335,20 @@ export function AttributesTable({
             </TableRow>
           ) : (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} className="hover:bg-transparent">
+              <TableRow
+                key={row.id}
+                className={cn("cursor-pointer hover:bg-brand-soft/60")}
+                onClick={() => onView(row.original)}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
                     className="px-3 py-2.5 first:pl-4 last:pr-4"
+                    onClick={
+                      cell.column.id === "actions"
+                        ? (event) => event.stopPropagation()
+                        : undefined
+                    }
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>

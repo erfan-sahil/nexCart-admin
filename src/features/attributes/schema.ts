@@ -4,12 +4,14 @@ import {
   ATTRIBUTE_ROLES,
   ATTRIBUTE_TYPES,
   VARIANT_ATTRIBUTE_TYPES,
+  type Attribute,
   type CreateAttributePayload,
+  type UpdateAttributePayload,
 } from "./types"
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
-export const createAttributeFormSchema = z
+const attributeFormSchema = z
   .object({
     name: z
       .string()
@@ -58,28 +60,92 @@ export const createAttributeFormSchema = z
       })
     }
   })
-  .transform((value): CreateAttributePayload => {
-    const payload: CreateAttributePayload = {
-      name: value.name,
-      type: value.type,
-      role: value.role,
-      isFilterable: value.isFilterable,
-      isActive: value.isActive,
-    }
 
-    if (value.slug) {
-      payload.slug = value.slug
-    }
+export type AttributeFormValues = z.input<typeof attributeFormSchema>
+export type ParsedAttributeForm = z.output<typeof attributeFormSchema>
 
-    if (value.description) {
-      payload.description = value.description
-    }
+export function parseAttributeForm(
+  values: AttributeFormValues,
+  options?: { requireSlug?: boolean }
+) {
+  const schema = options?.requireSlug
+    ? attributeFormSchema.superRefine((value, ctx) => {
+        if (!value.slug) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["slug"],
+            message: "Slug is required.",
+          })
+        }
+      })
+    : attributeFormSchema
 
-    if (value.type === "number" && value.unit) {
-      payload.unit = value.unit
-    }
+  return schema.safeParse(values)
+}
 
-    return payload
-  })
+export function toCreatePayload(
+  value: ParsedAttributeForm
+): CreateAttributePayload {
+  const payload: CreateAttributePayload = {
+    name: value.name,
+    type: value.type,
+    role: value.role,
+    isFilterable: value.isFilterable,
+    isActive: value.isActive,
+  }
 
-export type AttributeFormValues = z.input<typeof createAttributeFormSchema>
+  if (value.slug) {
+    payload.slug = value.slug
+  }
+
+  if (value.description) {
+    payload.description = value.description
+  }
+
+  if (value.type === "number" && value.unit) {
+    payload.unit = value.unit
+  }
+
+  return payload
+}
+
+export function toUpdatePayload(
+  current: Attribute,
+  next: ParsedAttributeForm
+): UpdateAttributePayload {
+  const payload: UpdateAttributePayload = {}
+
+  if (next.name !== current.name) {
+    payload.name = next.name
+  }
+
+  if (next.slug !== current.slug) {
+    payload.slug = next.slug
+  }
+
+  if (next.description !== current.description) {
+    payload.description = next.description
+  }
+
+  if (next.type !== current.type) {
+    payload.type = next.type
+  }
+
+  if (next.role !== current.role) {
+    payload.role = next.role
+  }
+
+  if (next.type === "number" && next.unit !== current.unit) {
+    payload.unit = next.unit
+  }
+
+  if (next.isFilterable !== current.isFilterable) {
+    payload.isFilterable = next.isFilterable
+  }
+
+  if (next.isActive !== current.isActive) {
+    payload.isActive = next.isActive
+  }
+
+  return payload
+}

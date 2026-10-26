@@ -6,6 +6,7 @@ export type {
   CreateAttributePayload,
   ListAttributesParams,
   ListAttributesResult,
+  UpdateAttributePayload,
 } from "./attributes.types"
 
 export {

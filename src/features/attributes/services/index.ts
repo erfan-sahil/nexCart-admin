@@ -1,2 +1,7 @@
 export { attributesQueryKey } from "./attributes.query"
-export { createAttribute, listAttributes } from "./attributes.api"
+export {
+  createAttribute,
+  deleteAttribute,
+  listAttributes,
+  updateAttribute,
+} from "./attributes.api"

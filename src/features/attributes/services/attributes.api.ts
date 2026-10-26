@@ -7,6 +7,7 @@ import type {
   CreateAttributePayload,
   ListAttributesParams,
   ListAttributesResult,
+  UpdateAttributePayload,
 } from "../types"
 
 function cleanParams(params: ListAttributesParams) {
@@ -52,6 +53,34 @@ export async function createAttribute(payload: CreateAttributePayload) {
     const { data } = await api.post<ApiSuccess<Attribute>>(
       "/attributes",
       payload
+    )
+
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function updateAttribute(
+  id: string,
+  payload: UpdateAttributePayload
+) {
+  try {
+    const { data } = await api.patch<ApiSuccess<Attribute>>(
+      `/attributes/${id}`,
+      payload
+    )
+
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function deleteAttribute(id: string) {
+  try {
+    const { data } = await api.delete<ApiSuccess<{ id: string }>>(
+      `/attributes/${id}`
     )
 
     return data.data

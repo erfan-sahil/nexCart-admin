@@ -30,13 +30,22 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError } from "@/lib/api/errors"
 
-import { useCreateAttributeMutation } from "../hooks"
+import {
+  useCreateAttributeMutation,
+  useUpdateAttributeMutation,
+} from "../hooks"
 import { ATTRIBUTE_ROLE_LABEL, ATTRIBUTE_TYPE_LABEL } from "../labels"
-import { createAttributeFormSchema, type AttributeFormValues } from "../schema"
+import {
+  parseAttributeForm,
+  toCreatePayload,
+  toUpdatePayload,
+  type AttributeFormValues,
+} from "../schema"
 import {
   ATTRIBUTE_ROLES,
   ATTRIBUTE_TYPES,
   VARIANT_ATTRIBUTE_TYPES,
+  type Attribute,
   type AttributeRole,
   type AttributeType,
 } from "../types"
@@ -50,6 +59,19 @@ type AttributeCreateDialogProps = {
 type AttributeField = "name" | "slug" | "description" | "type" | "role" | "unit"
 
 type FieldErrors = Partial<Record<AttributeField, string>>
+
+function toForm(attribute: Attribute): AttributeFormValues {
+  return {
+    name: attribute.name,
+    slug: attribute.slug,
+    description: attribute.description,
+    type: attribute.type,
+    role: attribute.role,
+    unit: attribute.unit,
+    isFilterable: attribute.isFilterable,
+    isActive: attribute.isActive,
+  }
+}
 
 const EMPTY_FORM: AttributeFormValues = {
   name: "",
@@ -117,15 +139,21 @@ function errorsFromApi(error: ApiError) {
   return { fields, message }
 }
 
-function AttributeCreateForm({
+function AttributeForm({
+  attribute,
   onClose,
   onCreated,
 }: {
+  attribute: Attribute | null
   onClose: () => void
-  onCreated: () => void
+  onCreated?: () => void
 }) {
   const createAttribute = useCreateAttributeMutation()
-  const [form, setForm] = useState<AttributeFormValues>(EMPTY_FORM)
+  const updateAttribute = useUpdateAttributeMutation()
+  const saving = createAttribute.isPending || updateAttribute.isPending
+  const [form, setForm] = useState<AttributeFormValues>(() =>
+    attribute ? toForm(attribute) : EMPTY_FORM
+  )
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -186,7 +214,7 @@ function AttributeCreateForm({
     event.preventDefault()
     setFormError(null)
 
-    const parsed = createAttributeFormSchema.safeParse(form)
+    const parsed = parseAttributeForm(form, { requireSlug: Boolean(attribute) })
 
     if (!parsed.success) {
       setErrors(toFieldErrors(parsed.error))
@@ -196,8 +224,21 @@ function AttributeCreateForm({
     setErrors({})
 
     try {
-      await createAttribute.mutateAsync(parsed.data)
-      onCreated()
+      if (attribute) {
+        const payload = toUpdatePayload(attribute, parsed.data)
+
+        if (Object.keys(payload).length === 0) {
+          onClose()
+          return
+        }
+
+        await updateAttribute.mutateAsync({ id: attribute.id, payload })
+        onClose()
+        return
+      }
+
+      await createAttribute.mutateAsync(toCreatePayload(parsed.data))
+      onCreated?.()
       onClose()
     } catch (error) {
       if (error instanceof ApiError) {
@@ -207,7 +248,11 @@ function AttributeCreateForm({
         return
       }
 
-      setFormError("Could not create this attribute. Please try again.")
+      setFormError(
+        attribute
+          ? "Could not update this attribute. Please try again."
+          : "Could not create this attribute. Please try again."
+      )
     }
   }
 
@@ -215,7 +260,7 @@ function AttributeCreateForm({
     <Dialog
       open
       onOpenChange={(next) => {
-        if (!next && !createAttribute.isPending) {
+        if (!next && !saving) {
           onClose()
         }
       }}
@@ -227,11 +272,13 @@ function AttributeCreateForm({
               <SlidersHorizontal className="size-6" />
             </span>
             <div className="min-w-0">
-              <DialogTitle className="text-lg font-semibold">
-                New attribute
+              <DialogTitle className="truncate text-lg font-semibold">
+                {attribute ? attribute.name : "New attribute"}
               </DialogTitle>
               <DialogDescription className="mt-1 text-foreground/70">
-                Shared fields used by product specs and variants.
+                {attribute
+                  ? "Update this catalog attribute."
+                  : "Shared fields used by product specs and variants."}
               </DialogDescription>
             </div>
           </div>
@@ -262,7 +309,7 @@ function AttributeCreateForm({
                   value={form.name}
                   onChange={(event) => setField("name")(event.target.value)}
                   aria-invalid={Boolean(errors.name)}
-                  disabled={createAttribute.isPending}
+                  disabled={saving}
                   autoFocus
                 />
                 <FieldError>{errors.name}</FieldError>
@@ -276,12 +323,14 @@ function AttributeCreateForm({
                   value={form.slug}
                   onChange={(event) => setField("slug")(event.target.value)}
                   aria-invalid={Boolean(errors.slug)}
-                  disabled={createAttribute.isPending}
+                  disabled={saving}
                   placeholder="color"
                   spellCheck={false}
                 />
                 <FieldDescription>
-                  Leave blank to generate one from the name.
+                  {attribute
+                    ? "Lowercase and URL-friendly."
+                    : "Leave blank to generate one from the name."}
                 </FieldDescription>
                 <FieldError>{errors.slug}</FieldError>
               </Field>
@@ -297,7 +346,7 @@ function AttributeCreateForm({
                     setField("description")(event.target.value)
                   }
                   aria-invalid={Boolean(errors.description)}
-                  disabled={createAttribute.isPending}
+                  disabled={saving}
                 />
                 <FieldError>{errors.description}</FieldError>
               </Field>
@@ -310,7 +359,7 @@ function AttributeCreateForm({
                     onValueChange={(value) =>
                       changeType(value as AttributeType)
                     }
-                    disabled={createAttribute.isPending}
+                    disabled={saving}
                   >
                     <SelectTrigger
                       id="attribute-type"
@@ -343,7 +392,7 @@ function AttributeCreateForm({
                     onValueChange={(value) =>
                       changeRole(value as AttributeRole)
                     }
-                    disabled={createAttribute.isPending}
+                    disabled={saving}
                   >
                     <SelectTrigger
                       id="attribute-role"
@@ -379,7 +428,7 @@ function AttributeCreateForm({
                     value={form.unit}
                     onChange={(event) => setField("unit")(event.target.value)}
                     aria-invalid={Boolean(errors.unit)}
-                    disabled={createAttribute.isPending}
+                    disabled={saving}
                     placeholder="kg"
                     maxLength={16}
                   />
@@ -399,7 +448,7 @@ function AttributeCreateForm({
                     onChange={(event) =>
                       setField("isFilterable")(event.target.checked)
                     }
-                    disabled={createAttribute.isPending}
+                    disabled={saving}
                   />
                   <span>
                     <span className="block text-sm font-medium">
@@ -418,7 +467,7 @@ function AttributeCreateForm({
                     onChange={(event) =>
                       setField("isActive")(event.target.checked)
                     }
-                    disabled={createAttribute.isPending}
+                    disabled={saving}
                   />
                   <span>
                     <span className="block text-sm font-medium">Active</span>
@@ -437,16 +486,18 @@ function AttributeCreateForm({
               variant="outline"
               className="cursor-pointer"
               onClick={onClose}
-              disabled={createAttribute.isPending}
+              disabled={saving}
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="cursor-pointer"
-              disabled={createAttribute.isPending}
-            >
-              {createAttribute.isPending ? "Creating…" : "Create attribute"}
+            <Button type="submit" className="cursor-pointer" disabled={saving}>
+              {saving
+                ? attribute
+                  ? "Saving…"
+                  : "Creating…"
+                : attribute
+                  ? "Save changes"
+                  : "Create attribute"}
             </Button>
           </DialogFooter>
         </form>
@@ -464,5 +515,27 @@ export function AttributeCreateDialog({
     return null
   }
 
-  return <AttributeCreateForm onClose={onClose} onCreated={onCreated} />
+  return (
+    <AttributeForm attribute={null} onClose={onClose} onCreated={onCreated} />
+  )
+}
+
+type AttributeEditDialogProps = {
+  attribute: Attribute | null
+  open: boolean
+  onClose: () => void
+}
+
+export function AttributeEditDialog({
+  attribute,
+  open,
+  onClose,
+}: AttributeEditDialogProps) {
+  if (!open || !attribute) {
+    return null
+  }
+
+  return (
+    <AttributeForm key={attribute.id} attribute={attribute} onClose={onClose} />
+  )
 }

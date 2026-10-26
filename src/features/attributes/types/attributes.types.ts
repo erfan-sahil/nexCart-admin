@@ -58,3 +58,14 @@ export type CreateAttributePayload = {
   isFilterable?: boolean
   isActive?: boolean
 }
+
+export type UpdateAttributePayload = {
+  name?: string
+  slug?: string
+  description?: string
+  type?: AttributeType
+  role?: AttributeRole
+  unit?: string
+  isFilterable?: boolean
+  isActive?: boolean
+}

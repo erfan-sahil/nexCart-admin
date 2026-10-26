@@ -24,10 +24,16 @@ import { ATTRIBUTE_ROLE_LABEL, ATTRIBUTE_TYPE_LABEL } from "../labels"
 import {
   ATTRIBUTE_ROLES,
   ATTRIBUTE_TYPES,
+  type Attribute,
   type AttributeRole,
   type AttributeType,
 } from "../types"
-import { AttributeCreateDialog } from "./attribute-create-dialog"
+import {
+  AttributeCreateDialog,
+  AttributeEditDialog,
+} from "./attribute-create-dialog"
+import { AttributeDeleteDialog } from "./attribute-delete-dialog"
+import { AttributeDetailsDialog } from "./attribute-details-dialog"
 import { AttributesTable } from "./attributes-table"
 
 export function AttributesPage() {
@@ -37,6 +43,9 @@ export function AttributesPage() {
   const [type, setType] = useState<AttributeType | "">("")
   const [role, setRole] = useState<AttributeRole | "">("")
   const [creating, setCreating] = useState(false)
+  const [editing, setEditing] = useState<Attribute | null>(null)
+  const [deleting, setDeleting] = useState<Attribute | null>(null)
+  const [viewing, setViewing] = useState<Attribute | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
 
   const params = useMemo(
@@ -176,6 +185,9 @@ export function AttributesPage() {
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
           onRetry={() => void attributes.refetch()}
+          onEdit={setEditing}
+          onDelete={setDeleting}
+          onView={setViewing}
         />
       </section>
 
@@ -183,6 +195,30 @@ export function AttributesPage() {
         open={creating}
         onClose={() => setCreating(false)}
         onCreated={() => setPage(1)}
+      />
+      <AttributeDetailsDialog
+        attribute={viewing}
+        open={Boolean(viewing)}
+        onClose={() => setViewing(null)}
+        onEdit={(attribute) => {
+          setViewing(null)
+          setEditing(attribute)
+        }}
+      />
+      <AttributeEditDialog
+        attribute={editing}
+        open={Boolean(editing)}
+        onClose={() => setEditing(null)}
+      />
+      <AttributeDeleteDialog
+        attribute={deleting}
+        open={Boolean(deleting)}
+        onClose={() => setDeleting(null)}
+        onDeleted={() => {
+          if (items.length === 1 && page > 1) {
+            setPage(page - 1)
+          }
+        }}
       />
     </div>
   )
