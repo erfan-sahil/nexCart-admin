@@ -23,7 +23,6 @@ import {
   Sparkles,
   Star,
   Store,
-  Tags,
   Ticket,
   Undo2,
   UserRound,
@@ -108,13 +107,6 @@ export const NAV = defineNav([
         path: "/catalog/attributes",
         description: "Shared attributes used by product variants.",
         icon: SlidersHorizontal,
-      },
-      {
-        kind: "page",
-        label: "Brands",
-        path: "/catalog/brands",
-        description: "Brand records attached to catalog items.",
-        icon: Tags,
       },
       {
         kind: "page",

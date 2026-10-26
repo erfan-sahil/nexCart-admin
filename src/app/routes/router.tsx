@@ -13,7 +13,6 @@ import {
   type PageHandle,
 } from "@/app/navigation"
 import { AttributesPage } from "@/pages/catalog/attributes/page"
-import { BrandsPage } from "@/pages/catalog/brands/page"
 import { CategoriesPage } from "@/pages/catalog/categories/page"
 import { ProductApprovalsPage } from "@/pages/catalog/product-approvals/page"
 import { DisputesPage } from "@/pages/commerce/disputes/page"
@@ -50,7 +49,6 @@ const pages: Record<AdminPath, ComponentType> = {
   "/users/vendor-applications": VendorApplicationsPage,
   "/catalog/categories": CategoriesPage,
   "/catalog/attributes": AttributesPage,
-  "/catalog/brands": BrandsPage,
   "/catalog/product-approvals": ProductApprovalsPage,
   "/commerce/orders": OrdersPage,
   "/commerce/payments": PaymentsPage,
