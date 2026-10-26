@@ -34,7 +34,12 @@ import {
   filterCategoryTree,
   flattenCategories,
 } from "../tree"
-import { CATEGORY_LEVELS, type Category, type CategoryLevel } from "../types"
+import {
+  CATEGORY_LEVELS,
+  type Category,
+  type CategoryLevel,
+  type CategoryTreeNode,
+} from "../types"
 import { CategoriesTree } from "./categories-tree"
 import { CategoryLevelBadge } from "./category-level-badge"
 import {
@@ -42,6 +47,18 @@ import {
   CategoryEditDialog,
 } from "./category-create-dialog"
 import { CategoryDeleteDialog } from "./category-delete-dialog"
+import { CategoryDetailsDialog } from "./category-details-dialog"
+
+function ancestorPath(nodes: CategoryTreeNode[], category: Category) {
+  const names = new Map(
+    flattenCategories(nodes).map((item) => [item.id, item.name])
+  )
+  const trail = category.ancestors
+    .map((id) => names.get(id))
+    .filter((name): name is string => Boolean(name))
+
+  return trail.length > 0 ? trail.join(" / ") : "None"
+}
 
 export function CategoriesPage() {
   const [search, setSearch] = useState("")
@@ -50,6 +67,7 @@ export function CategoriesPage() {
   const [expanded, setExpanded] = useState<Set<string> | null>(null)
   const [createParent, setCreateParent] = useState<Category | null>(null)
   const [creating, setCreating] = useState(false)
+  const [viewing, setViewing] = useState<Category | null>(null)
   const [editing, setEditing] = useState<Category | null>(null)
   const [deleting, setDeleting] = useState<Category | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
@@ -274,6 +292,7 @@ export function CategoriesPage() {
           errorMessage={errorMessage}
           onToggle={toggleBranch}
           onRetry={() => void tree.refetch()}
+          onView={setViewing}
           onEdit={setEditing}
           onDelete={setDeleting}
           onAddChild={(category) => {
@@ -294,6 +313,17 @@ export function CategoriesPage() {
         />
       </section>
 
+      <CategoryDetailsDialog
+        category={viewing}
+        path={viewing ? ancestorPath(nodes, viewing) : "None"}
+        childCount={viewing ? (childCounts.get(viewing.id) ?? 0) : 0}
+        open={Boolean(viewing)}
+        onClose={() => setViewing(null)}
+        onEdit={(category) => {
+          setViewing(null)
+          setEditing(category)
+        }}
+      />
       <CategoryCreateDialog
         open={creating}
         initialParent={createParent}

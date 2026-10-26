@@ -1,6 +1,7 @@
 import { useRef } from "react"
 import {
   ChevronRight,
+  Eye,
   ImageOff,
   MoreHorizontal,
   Pencil,
@@ -36,6 +37,7 @@ type CategoriesTreeProps = {
   errorMessage: string | null
   onToggle: (id: string) => void
   onRetry: () => void
+  onView: (category: Category) => void
   onEdit: (category: Category) => void
   onDelete: (category: Category) => void
   onAddChild: (category: Category) => void
@@ -146,6 +148,7 @@ function CategoryBranch({
   expandedIds,
   search,
   onToggle,
+  onView,
   onEdit,
   onDelete,
   onAddChild,
@@ -157,6 +160,7 @@ function CategoryBranch({
   expandedIds: Set<string>
   search: string
   onToggle: (id: string) => void
+  onView: (category: Category) => void
   onEdit: (category: Category) => void
   onDelete: (category: Category) => void
   onAddChild: (category: Category) => void
@@ -190,7 +194,7 @@ function CategoryBranch({
             return
           }
 
-          onEdit(category)
+          onView(category)
         }}
       >
         <div
@@ -272,6 +276,7 @@ function CategoryBranch({
               category={category}
               canAddChild={canAddChild}
               onInteract={holdRowClick}
+              onView={onView}
               onEdit={onEdit}
               onDelete={onDelete}
               onAddChild={onAddChild}
@@ -286,6 +291,7 @@ function CategoryBranch({
             category={category}
             canAddChild={canAddChild}
             onInteract={holdRowClick}
+            onView={onView}
             onEdit={onEdit}
             onDelete={onDelete}
             onAddChild={onAddChild}
@@ -304,6 +310,7 @@ function CategoryBranch({
               expandedIds={expandedIds}
               search={search}
               onToggle={onToggle}
+              onView={onView}
               onEdit={onEdit}
               onDelete={onDelete}
               onAddChild={onAddChild}
@@ -332,6 +339,7 @@ function CategoryActions({
   category,
   canAddChild,
   onInteract,
+  onView,
   onEdit,
   onDelete,
   onAddChild,
@@ -339,6 +347,7 @@ function CategoryActions({
   category: Category
   canAddChild: boolean
   onInteract: () => void
+  onView: (category: Category) => void
   onEdit: (category: Category) => void
   onDelete: (category: Category) => void
   onAddChild: (category: Category) => void
@@ -375,6 +384,14 @@ function CategoryActions({
             <DropdownMenuSeparator />
           </>
         ) : null}
+        <DropdownMenuItem
+          onSelect={() => {
+            window.setTimeout(() => onView(category), 0)
+          }}
+        >
+          <Eye />
+          Details
+        </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => {
             window.setTimeout(() => onEdit(category), 0)
@@ -427,6 +444,7 @@ export function CategoriesTree({
   errorMessage,
   onToggle,
   onRetry,
+  onView,
   onEdit,
   onDelete,
   onAddChild,
@@ -496,6 +514,7 @@ export function CategoriesTree({
               expandedIds={expandedIds}
               search={search}
               onToggle={onToggle}
+              onView={onView}
               onEdit={onEdit}
               onDelete={onDelete}
               onAddChild={onAddChild}
