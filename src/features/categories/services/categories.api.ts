@@ -60,6 +60,37 @@ export async function listCategoryTree() {
   }
 }
 
+export async function uploadCategoryImage(file: File) {
+  const body = new FormData()
+  body.append("image", file, file.name)
+
+  try {
+    const { data } = await api.post<ApiSuccess<{ url: string }>>(
+      "/categories/image",
+      body,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        transformRequest: (payload, headers) => {
+          if (
+            headers &&
+            typeof headers === "object" &&
+            "delete" in headers &&
+            typeof headers.delete === "function"
+          ) {
+            headers.delete("Content-Type")
+          }
+
+          return payload
+        },
+      }
+    )
+
+    return data.data.url
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
 export async function createCategory(payload: CreateCategoryPayload) {
   try {
     const { data } = await api.post<ApiSuccess<Category>>(

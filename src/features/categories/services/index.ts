@@ -5,4 +5,5 @@ export {
   listCategories,
   listCategoryTree,
   updateCategory,
+  uploadCategoryImage,
 } from "./categories.api"

@@ -43,6 +43,7 @@ import {
   type CategoryFormValues,
 } from "../schema"
 import { categoryHasChildren, parentChoices } from "../tree"
+import { CategoryImageField } from "./category-image-field"
 import type { Category, CategoryLevel } from "../types"
 
 type CategoryCreateDialogProps = {
@@ -161,6 +162,8 @@ function CategoryForm({
   )
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const busy = saving || uploadingImage
   const parents = useMemo(
     () => parentChoices(tree.data ?? [], category?.id),
     [category?.id, tree.data]
@@ -238,7 +241,7 @@ function CategoryForm({
     <Dialog
       open
       onOpenChange={(next) => {
-        if (!next && !saving) {
+        if (!next && !busy) {
           onClose()
         }
       }}
@@ -384,20 +387,13 @@ function CategoryForm({
                 <FieldError>{errors.description}</FieldError>
               </Field>
 
-              <Field data-invalid={Boolean(errors.image) || undefined}>
-                <FieldLabel htmlFor="category-image">Image URL</FieldLabel>
-                <Input
-                  id="category-image"
-                  className="h-9"
-                  value={form.image}
-                  onChange={(event) => setField("image")(event.target.value)}
-                  aria-invalid={Boolean(errors.image)}
-                  disabled={saving}
-                  placeholder="https://"
-                  spellCheck={false}
-                />
-                <FieldError>{errors.image}</FieldError>
-              </Field>
+              <CategoryImageField
+                value={form.image}
+                error={errors.image}
+                disabled={saving}
+                onChange={setField("image")}
+                onPendingChange={setUploadingImage}
+              />
 
               <Field data-invalid={Boolean(errors.sortOrder) || undefined}>
                 <FieldLabel htmlFor="category-sort-order">
@@ -449,18 +445,20 @@ function CategoryForm({
               variant="outline"
               className="cursor-pointer"
               onClick={onClose}
-              disabled={saving}
+              disabled={busy}
             >
               Cancel
             </Button>
-            <Button type="submit" className="cursor-pointer" disabled={saving}>
-              {saving
-                ? category
-                  ? "Saving…"
-                  : "Creating…"
-                : category
-                  ? "Save changes"
-                  : "Create category"}
+            <Button type="submit" className="cursor-pointer" disabled={busy}>
+              {uploadingImage
+                ? "Uploading…"
+                : saving
+                  ? category
+                    ? "Saving…"
+                    : "Creating…"
+                  : category
+                    ? "Save changes"
+                    : "Create category"}
             </Button>
           </DialogFooter>
         </form>

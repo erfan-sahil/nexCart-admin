@@ -112,13 +112,24 @@ export function CategoriesTable({
         accessorKey: "name",
         header: "Name",
         cell: ({ row }) => (
-          <div className="min-w-0">
-            <p className="truncate font-medium text-foreground">
-              {row.original.name}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {row.original.slug}
-            </p>
+          <div className="flex min-w-0 items-center gap-3">
+            {row.original.image ? (
+              <img
+                src={row.original.image}
+                alt=""
+                className="size-9 shrink-0 rounded-md object-cover"
+              />
+            ) : (
+              <span className="size-9 shrink-0 rounded-md bg-muted" />
+            )}
+            <div className="min-w-0">
+              <p className="truncate font-medium text-foreground">
+                {row.original.name}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {row.original.slug}
+              </p>
+            </div>
           </div>
         ),
       },
