@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react"
-import { Loader2, Plus, Search } from "lucide-react"
+import {
+  ChevronsDownUp,
+  ChevronsUpDown,
+  Loader2,
+  Plus,
+  Search,
+} from "lucide-react"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
@@ -19,11 +25,17 @@ import {
 import { useDebouncedValue } from "@/hooks"
 import { ApiError } from "@/lib/api/errors"
 
-import { useCategoriesQuery, useCategoryTreeQuery } from "../hooks"
+import { useCategoryTreeQuery } from "../hooks"
 import { CATEGORY_LEVEL_LABEL } from "../labels"
-import { flattenCategories } from "../tree"
+import {
+  categoryBranchIds,
+  categoryChildCounts,
+  countMatchingCategories,
+  filterCategoryTree,
+  flattenCategories,
+} from "../tree"
 import { CATEGORY_LEVELS, type Category, type CategoryLevel } from "../types"
-import { CategoriesTable } from "./categories-table"
+import { CategoriesTree } from "./categories-tree"
 import {
   CategoryCreateDialog,
   CategoryEditDialog,
@@ -31,47 +43,73 @@ import {
 import { CategoryDeleteDialog } from "./category-delete-dialog"
 
 export function CategoriesPage() {
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(20)
   const [search, setSearch] = useState("")
   const [level, setLevel] = useState<CategoryLevel | "">("")
   const [status, setStatus] = useState<"active" | "inactive" | "">("")
+  const [expanded, setExpanded] = useState<Set<string> | null>(null)
+  const [createParent, setCreateParent] = useState<Category | null>(null)
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<Category | null>(null)
   const [deleting, setDeleting] = useState<Category | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
 
-  const params = useMemo(
-    () => ({
-      page,
-      limit: pageSize,
-      sort: "sortOrder" as const,
-      ...(level ? { level } : {}),
-      ...(status ? { isActive: status === "active" } : {}),
-      ...(debouncedSearch ? { search: debouncedSearch } : {}),
-    }),
-    [page, pageSize, level, status, debouncedSearch]
-  )
-
-  const categories = useCategoriesQuery(params)
   const tree = useCategoryTreeQuery()
-  const items = categories.data?.items ?? []
-  const pagination = categories.data?.pagination
-  const parentNames = useMemo(() => {
-    const names = new Map<string, string>()
-
-    for (const category of flattenCategories(tree.data ?? [])) {
-      names.set(category.id, category.name)
+  const nodes = useMemo(() => tree.data ?? [], [tree.data])
+  const filtering = Boolean(debouncedSearch || level || status)
+  const filter = useMemo(
+    () => ({
+      search: debouncedSearch,
+      level,
+      status,
+    }),
+    [debouncedSearch, level, status]
+  )
+  const visibleNodes = useMemo(
+    () => filterCategoryTree(nodes, filter),
+    [nodes, filter]
+  )
+  const total = flattenCategories(nodes).length
+  const matches = countMatchingCategories(nodes, filter)
+  const childCounts = useMemo(() => categoryChildCounts(nodes), [nodes])
+  const openIds = useMemo(() => {
+    if (filtering) {
+      return new Set(categoryBranchIds(visibleNodes))
     }
 
-    return names
-  }, [tree.data])
+    return expanded ?? new Set(categoryBranchIds(nodes))
+  }, [expanded, filtering, nodes, visibleNodes])
   const errorMessage =
-    categories.error instanceof ApiError
-      ? categories.error.message
-      : categories.isError
+    tree.error instanceof ApiError
+      ? tree.error.message
+      : tree.isError
         ? "Could not load categories."
         : null
+
+  const toggleBranch = (id: string) => {
+    setExpanded((current) => {
+      const next = new Set(current ?? categoryBranchIds(nodes))
+
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+
+      return next
+    })
+  }
+
+  const revealParent = (parentId: string) => {
+    if (!parentId) {
+      return
+    }
+
+    setExpanded((current) => {
+      const next = new Set(current ?? categoryBranchIds(nodes))
+      next.add(parentId)
+      return next
+    })
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
@@ -87,10 +125,7 @@ export function CategoriesPage() {
                 id="category-search"
                 className="h-10"
                 value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value)
-                  setPage(1)
-                }}
+                onChange={(event) => setSearch(event.target.value)}
                 placeholder="Category name"
               />
             </InputGroup>
@@ -103,7 +138,6 @@ export function CategoriesPage() {
                 setLevel(
                   value === "all" ? "" : (Number(value) as CategoryLevel)
                 )
-                setPage(1)
               }}
             >
               <SelectTrigger
@@ -130,7 +164,6 @@ export function CategoriesPage() {
                 setStatus(
                   value === "all" ? "" : (value as "active" | "inactive")
                 )
-                setPage(1)
               }}
             >
               <SelectTrigger
@@ -150,55 +183,111 @@ export function CategoriesPage() {
       </section>
 
       <section className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
-        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-5">
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-sm font-semibold">Categories</h2>
-            <UniversalBadge
-              name={pagination ? String(pagination.total) : "—"}
-              colors={badgeColors.neutral}
-              showDot={false}
-              className="normal-case tabular-nums"
-            />
+        <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:px-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-sm font-semibold">Categories</h2>
+                <UniversalBadge
+                  name={
+                    tree.isLoading
+                      ? "—"
+                      : filtering
+                        ? `${matches} of ${total}`
+                        : String(total)
+                  }
+                  colors={badgeColors.neutral}
+                  showDot={false}
+                  className="normal-case tabular-nums"
+                />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {filtering
+                  ? "Parents stay visible so each match keeps its place in the tree."
+                  : "Three levels: a root, then a subcategory, then a sub-subcategory."}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-3">
+              {tree.isFetching && !tree.isLoading ? (
+                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Loader2 className="size-3.5 animate-spin" />
+                  Refreshing
+                </span>
+              ) : null}
+              <Button
+                type="button"
+                className="cursor-pointer"
+                onClick={() => {
+                  setEditing(null)
+                  setCreateParent(null)
+                  setCreating(true)
+                }}
+              >
+                <Plus />
+                New category
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            {categories.isFetching && !categories.isLoading ? (
-              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Loader2 className="size-3.5 animate-spin" />
-                Refreshing
-              </span>
-            ) : null}
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
+              variant="outline"
+              size="sm"
               className="cursor-pointer"
-              onClick={() => setCreating(true)}
+              disabled={tree.isLoading || filtering || nodes.length === 0}
+              onClick={() => setExpanded(new Set(categoryBranchIds(nodes)))}
             >
-              <Plus />
-              New category
+              <ChevronsUpDown />
+              Expand all
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="cursor-pointer"
+              disabled={tree.isLoading || filtering || nodes.length === 0}
+              onClick={() => setExpanded(new Set())}
+            >
+              <ChevronsDownUp />
+              Collapse all
             </Button>
           </div>
         </div>
-        <CategoriesTable
-          items={items}
-          parentNames={parentNames}
-          isLoading={categories.isLoading}
-          isFetching={categories.isFetching}
+        <CategoriesTree
+          nodes={visibleNodes}
+          childCounts={childCounts}
+          expandedIds={openIds}
+          filtering={filtering}
+          search={debouncedSearch}
+          isLoading={tree.isLoading}
           errorMessage={errorMessage}
-          page={pagination?.page ?? page}
-          pageSize={pagination?.limit ?? pageSize}
-          total={pagination?.total ?? 0}
-          totalPages={pagination?.totalPages ?? 0}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-          onRetry={() => void categories.refetch()}
+          onToggle={toggleBranch}
+          onRetry={() => void tree.refetch()}
           onEdit={setEditing}
           onDelete={setDeleting}
+          onAddChild={(category) => {
+            setExpanded((current) => {
+              const next = new Set(current ?? categoryBranchIds(nodes))
+              next.add(category.id)
+              return next
+            })
+            setEditing(null)
+            setCreateParent(category)
+            setCreating(true)
+          }}
+          onCreate={() => {
+            setEditing(null)
+            setCreateParent(null)
+            setCreating(true)
+          }}
         />
       </section>
 
       <CategoryCreateDialog
         open={creating}
+        initialParent={createParent}
         onClose={() => setCreating(false)}
-        onCreated={() => setPage(1)}
+        onCreated={revealParent}
       />
       <CategoryEditDialog
         category={editing}
@@ -209,11 +298,7 @@ export function CategoriesPage() {
         category={deleting}
         open={Boolean(deleting)}
         onClose={() => setDeleting(null)}
-        onDeleted={() => {
-          if (items.length === 1 && page > 1) {
-            setPage(page - 1)
-          }
-        }}
+        onDeleted={() => undefined}
       />
     </div>
   )

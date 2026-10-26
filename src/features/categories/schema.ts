@@ -36,7 +36,7 @@ const categoryFormSchema = z.object({
     .trim()
     .max(2048, "Image URL must be 2048 characters or fewer.")
     .refine(
-      (value) => value === "" || z.url().safeParse(value).success,
+      (value) => value === "" || z.string().url().safeParse(value).success,
       "Image must be a valid URL."
     ),
   parentId: z

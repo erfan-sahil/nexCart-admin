@@ -20,13 +20,6 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError } from "@/lib/api/errors"
 
@@ -48,8 +41,9 @@ import type { Category, CategoryLevel } from "../types"
 
 type CategoryCreateDialogProps = {
   open: boolean
+  initialParent?: Category | null
   onClose: () => void
-  onCreated: () => void
+  onCreated: (parentId: string) => void
 }
 
 type CategoryField =
@@ -108,6 +102,18 @@ function toFieldErrors(error: ZodError): FieldErrors {
   return errors
 }
 
+function zodFormMessage(error: ZodError) {
+  const messages = [
+    ...new Set(
+      error.issues
+        .map((issue) => issue.message)
+        .filter((message) => message.length > 0)
+    ),
+  ]
+
+  return messages.join("\n") || "Check the highlighted fields and try again."
+}
+
 function errorsFromApi(error: ApiError) {
   const fields: FieldErrors = {}
   let hasUnmapped = false
@@ -146,19 +152,23 @@ function nextLevel(parentLevel: CategoryLevel | null): CategoryLevel {
 
 function CategoryForm({
   category,
+  initialParent = null,
   onClose,
   onCreated,
 }: {
   category: Category | null
+  initialParent?: Category | null
   onClose: () => void
-  onCreated?: () => void
+  onCreated?: (parentId: string) => void
 }) {
   const createCategory = useCreateCategoryMutation()
   const updateCategory = useUpdateCategoryMutation()
   const tree = useCategoryTreeQuery()
   const saving = createCategory.isPending || updateCategory.isPending
   const [form, setForm] = useState<CategoryFormValues>(() =>
-    category ? toForm(category) : EMPTY_FORM
+    category
+      ? toForm(category)
+      : { ...EMPTY_FORM, parentId: initialParent?.id ?? "" }
   )
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -172,7 +182,15 @@ function CategoryForm({
     ? categoryHasChildren(tree.data ?? [], category.id)
     : false
   const selectedParent = parents.find((parent) => parent.id === form.parentId)
-  const level = nextLevel(selectedParent?.level ?? null)
+  const parentLevel =
+    selectedParent?.level ??
+    (form.parentId && form.parentId === initialParent?.id
+      ? initialParent.level
+      : null)
+  const level = nextLevel(parentLevel)
+  const parentLabel =
+    selectedParent?.label ??
+    (form.parentId === initialParent?.id ? initialParent?.name : undefined)
 
   const setField =
     <K extends keyof CategoryFormValues>(key: K) =>
@@ -191,14 +209,27 @@ function CategoryForm({
       }
     }
 
-  const submit = async (event: FormEvent) => {
-    event.preventDefault()
+  const submit = async (event?: FormEvent) => {
+    event?.preventDefault()
     setFormError(null)
 
-    const parsed = parseCategoryForm(form, { requireSlug: Boolean(category) })
+    let parsed: ReturnType<typeof parseCategoryForm>
+
+    try {
+      parsed = parseCategoryForm(form, { requireSlug: Boolean(category) })
+    } catch (error) {
+      setErrors({})
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "Check the highlighted fields and try again."
+      )
+      return
+    }
 
     if (!parsed.success) {
       setErrors(toFieldErrors(parsed.error))
+      setFormError(zodFormMessage(parsed.error))
       return
     }
 
@@ -219,7 +250,7 @@ function CategoryForm({
       }
 
       await createCategory.mutateAsync(toCreatePayload(parsed.data))
-      onCreated?.()
+      onCreated?.(parsed.data.parentId)
       onClose()
     } catch (error) {
       if (error instanceof ApiError) {
@@ -254,34 +285,42 @@ function CategoryForm({
             </span>
             <div className="min-w-0">
               <DialogTitle className="truncate text-lg font-semibold">
-                {category ? category.name : "New category"}
+                {category
+                  ? category.name
+                  : level === 1
+                    ? "New category"
+                    : `New ${CATEGORY_LEVEL_LABEL[level].toLowerCase()}`}
               </DialogTitle>
               <DialogDescription className="mt-1 text-foreground/70">
                 {category
                   ? "Update this catalog category."
-                  : "Add a root, subcategory, or sub-subcategory to the catalog."}
+                  : parentLabel
+                    ? `Add this under ${parentLabel}.`
+                    : "Add a root category. You can nest two more levels under it."}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
         <form
-          className="flex min-h-0 flex-col"
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
           onSubmit={(event) => void submit(event)}
           noValidate
         >
+          {formError ? (
+            <p
+              role="alert"
+              className="px-6 pt-4 text-sm whitespace-pre-line text-destructive"
+            >
+              {formError}
+            </p>
+          ) : null}
           <ScrollArea
             type="auto"
-            className="max-h-[calc(100dvh-16rem)]"
-            viewportClassName="max-h-[calc(100dvh-16rem)]"
+            className="min-h-0 flex-1 overflow-hidden"
+            viewportClassName="h-auto max-h-[min(32rem,calc(100dvh-16rem))]"
           >
             <FieldGroup className="gap-4 px-6 py-5">
-              {formError ? (
-                <p role="alert" className="text-sm text-destructive">
-                  {formError}
-                </p>
-              ) : null}
-
               <Field data-invalid={Boolean(errors.name) || undefined}>
                 <FieldLabel htmlFor="category-name">Name</FieldLabel>
                 <Input
@@ -318,46 +357,36 @@ function CategoryForm({
 
               <Field data-invalid={Boolean(errors.parentId) || undefined}>
                 <FieldLabel htmlFor="category-parent">Parent</FieldLabel>
-                <Select
+                <select
+                  id="category-parent"
+                  className="h-9 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive dark:bg-input/30"
                   value={form.parentId || ROOT_PARENT}
-                  onValueChange={(value) =>
-                    setField("parentId")(value === ROOT_PARENT ? "" : value)
-                  }
+                  aria-invalid={Boolean(errors.parentId)}
                   disabled={saving || tree.isLoading || hasChildren}
+                  onChange={(event) => {
+                    const value = event.target.value
+                    setField("parentId")(value === ROOT_PARENT ? "" : value)
+                  }}
                 >
-                  <SelectTrigger
-                    id="category-parent"
-                    className="h-9! w-full cursor-pointer"
-                    aria-invalid={Boolean(errors.parentId)}
-                  >
-                    <SelectValue
-                      placeholder={
-                        tree.isLoading ? "Loading categories…" : "Root category"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent
-                    position="popper"
-                    align="start"
-                    side="bottom"
-                    sideOffset={6}
-                    collisionPadding={16}
-                    className="pointer-events-auto z-[70] w-(--radix-select-trigger-width)"
-                  >
-                    <SelectItem value={ROOT_PARENT} className="cursor-pointer">
-                      None (root category)
-                    </SelectItem>
-                    {parents.map((parent) => (
-                      <SelectItem
-                        key={parent.id}
-                        value={parent.id}
-                        className="cursor-pointer"
-                      >
-                        {parent.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <option value={ROOT_PARENT}>
+                    {tree.isLoading
+                      ? "Loading categories…"
+                      : "None (root category)"}
+                  </option>
+                  {form.parentId &&
+                  initialParent &&
+                  form.parentId === initialParent.id &&
+                  !parents.some((parent) => parent.id === initialParent.id) ? (
+                    <option value={initialParent.id}>
+                      {initialParent.name}
+                    </option>
+                  ) : null}
+                  {parents.map((parent) => (
+                    <option key={parent.id} value={parent.id}>
+                      {parent.label}
+                    </option>
+                  ))}
+                </select>
                 <FieldDescription>
                   {hasChildren
                     ? "Move or delete child categories before changing the parent."
@@ -439,7 +468,7 @@ function CategoryForm({
             </FieldGroup>
           </ScrollArea>
 
-          <DialogFooter className="shrink-0 border-t border-border bg-card px-6 py-4">
+          <DialogFooter className="relative z-10 shrink-0 border-t border-border bg-card px-6 py-4">
             <Button
               type="button"
               variant="outline"
@@ -449,7 +478,17 @@ function CategoryForm({
             >
               Cancel
             </Button>
-            <Button type="submit" className="cursor-pointer" disabled={busy}>
+            <Button
+              type="button"
+              className="relative z-10 cursor-pointer"
+              disabled={busy}
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                void submit()
+              }}
+            >
               {uploadingImage
                 ? "Uploading…"
                 : saving
@@ -469,6 +508,7 @@ function CategoryForm({
 
 export function CategoryCreateDialog({
   open,
+  initialParent = null,
   onClose,
   onCreated,
 }: CategoryCreateDialogProps) {
@@ -477,7 +517,13 @@ export function CategoryCreateDialog({
   }
 
   return (
-    <CategoryForm category={null} onClose={onClose} onCreated={onCreated} />
+    <CategoryForm
+      key={initialParent?.id ?? "root"}
+      category={null}
+      initialParent={initialParent}
+      onClose={onClose}
+      onCreated={onCreated}
+    />
   )
 }
 
