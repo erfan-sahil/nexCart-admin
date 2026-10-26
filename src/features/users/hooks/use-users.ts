@@ -5,8 +5,18 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 
-import { deleteUser, listUsers, updateUser, usersQueryKey } from "../services"
-import type { ListUsersParams, UpdateUserPayload } from "../types"
+import {
+  deleteUser,
+  listUsers,
+  setUserStatus,
+  updateUser,
+  usersQueryKey,
+} from "../services"
+import type {
+  AccountStatusPayload,
+  ListUsersParams,
+  UpdateUserPayload,
+} from "../types"
 
 export function useUsersQuery(params: ListUsersParams) {
   return useQuery({
@@ -22,6 +32,23 @@ export function useUpdateUserMutation() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateUserPayload }) =>
       updateUser(id, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: usersQueryKey.lists() })
+    },
+  })
+}
+
+export function useSetUserStatusMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string
+      payload: AccountStatusPayload
+    }) => setUserStatus(id, payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: usersQueryKey.lists() })
     },

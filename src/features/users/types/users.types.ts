@@ -32,8 +32,10 @@ export type UpdateUserPayload = {
   firstName?: string
   lastName?: string
   phone?: string
-  role?: UserRole
-  status?: UserStatus
 }
 
 export type UsersPageRole = Extract<UserRole, "customer" | "vendor">
+
+export type AccountStatusPayload = {
+  status: UserStatus
+}

@@ -1,4 +1,5 @@
 export type {
+  AccountStatusPayload,
   AdminUser,
   ListUsersParams,
   ListUsersResult,

@@ -5,8 +5,10 @@ import {
   type LegacyColumnDef,
 } from "@tanstack/react-table/legacy"
 import {
+  Ban,
   ChevronLeft,
   ChevronRight,
+  CircleCheck,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -64,6 +66,7 @@ type UsersTableProps = {
   onRetry: () => void
   onEdit: (user: AdminUser) => void
   onDelete: (user: AdminUser) => void
+  onToggleStatus: (user: AdminUser) => void
   onRowClick?: (user: AdminUser) => void
 }
 
@@ -118,6 +121,7 @@ export function UsersTable({
   onRetry,
   onEdit,
   onDelete,
+  onToggleStatus,
   onRowClick,
 }: UsersTableProps) {
   const columns = useMemo<LegacyColumnDef<AdminUser>[]>(
@@ -181,6 +185,7 @@ export function UsersTable({
         cell: ({ row }) => {
           const user = row.original
           const name = fullName(user.firstName, user.lastName)
+          const suspending = user.status === "active"
 
           return (
             <div className="flex justify-end">
@@ -196,7 +201,7 @@ export function UsersTable({
                     <MoreHorizontal />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuItem
                     onSelect={() => {
                       window.setTimeout(() => onEdit(user), 0)
@@ -204,6 +209,14 @@ export function UsersTable({
                   >
                     <Pencil />
                     Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      window.setTimeout(() => onToggleStatus(user), 0)
+                    }}
+                  >
+                    {suspending ? <Ban /> : <CircleCheck />}
+                    {suspending ? "Suspend" : "Activate"}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -222,7 +235,7 @@ export function UsersTable({
         },
       },
     ],
-    [onDelete, onEdit]
+    [onDelete, onEdit, onToggleStatus]
   )
 
   const paginationState = useMemo<PaginationState>(

@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuthStore } from "@/features/auth/store"
 import { ApiError } from "@/lib/api/errors"
 import { formatDateTime } from "@/lib/format"
+import { cn } from "@/lib/utils"
 
 import {
   useCategoryNamesQuery,
@@ -73,6 +74,8 @@ function ReviewPanel({
     !isOwn &&
     (application.status === "submitted" ||
       application.status === "under_review")
+  const prioritizeReview =
+    canAct && application.status === "under_review" && confirm === null
   const name = application.personal.fullName || "Unnamed applicant"
   const businessType = application.business.businessType
     ? BUSINESS_TYPE_LABEL[application.business.businessType]
@@ -144,8 +147,17 @@ function ReviewPanel({
 
         <ScrollArea
           type="auto"
-          className="max-h-[calc(100dvh-24rem)] bg-muted/20"
-          viewportClassName="max-h-[calc(100dvh-24rem)]"
+          className={cn(
+            "bg-muted/20",
+            prioritizeReview
+              ? "max-h-[min(36vh,calc(100dvh-30rem))]"
+              : "max-h-[calc(100dvh-24rem)]"
+          )}
+          viewportClassName={
+            prioritizeReview
+              ? "max-h-[min(36vh,calc(100dvh-30rem))]"
+              : "max-h-[calc(100dvh-24rem)]"
+          }
         >
           <div className="space-y-5 px-6 py-5">
             <p className="text-xs text-muted-foreground">
@@ -161,7 +173,12 @@ function ReviewPanel({
           </div>
         </ScrollArea>
 
-        <DialogFooter className="shrink-0 flex-col items-stretch gap-3 border-t border-border bg-card px-6 py-4 sm:flex-col sm:items-stretch">
+        <DialogFooter
+          className={cn(
+            "shrink-0 flex-col items-stretch gap-3 border-t border-border bg-card px-6 py-4 sm:flex-col sm:items-stretch",
+            prioritizeReview && "gap-4 py-5"
+          )}
+        >
           {isOwn ? (
             <p className="text-sm text-muted-foreground">
               You cannot review your own application.
@@ -177,6 +194,7 @@ function ReviewPanel({
                 placeholder="Required when you request more information or reject."
                 aria-invalid={Boolean(noteError) || undefined}
                 disabled={review.isPending}
+                className={prioritizeReview ? "min-h-32" : undefined}
                 onChange={(event) => {
                   setNote(event.target.value)
                   setNoteError(null)
@@ -276,7 +294,8 @@ function ReviewPanel({
                 <Button
                   type="button"
                   variant="outline"
-                  className="cursor-pointer"
+                  size="lg"
+                  className="h-10 cursor-pointer px-4"
                   disabled={review.isPending}
                   onClick={() => {
                     if (requireNote()) {
@@ -296,7 +315,8 @@ function ReviewPanel({
                 <Button
                   type="button"
                   variant="destructive"
-                  className="cursor-pointer"
+                  size="lg"
+                  className="h-10 cursor-pointer px-4"
                   disabled={review.isPending}
                   onClick={() => {
                     if (requireNote()) {
@@ -309,7 +329,8 @@ function ReviewPanel({
                 </Button>
                 <Button
                   type="button"
-                  className="cursor-pointer"
+                  className="h-10 cursor-pointer px-4"
+                  size="lg"
                   disabled={review.isPending}
                   onClick={() => {
                     setNoteError(null)

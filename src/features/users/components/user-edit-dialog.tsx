@@ -25,7 +25,7 @@ import type { UserRole, UserStatus } from "@/features/auth/types"
 import { ApiError } from "@/lib/api/errors"
 import { fullName } from "@/lib/format"
 
-import { useUpdateUserMutation } from "../hooks"
+import { useSetUserStatusMutation, useUpdateUserMutation } from "../hooks"
 import type { AdminUser, UpdateUserPayload } from "../types"
 
 type UserEditDialogProps = {
@@ -40,7 +40,6 @@ type FormState = {
   email: string
   phone: string
   role: UserRole
-  status: UserStatus
 }
 
 const ROLE_LABEL: Record<UserRole, string> = {
@@ -56,7 +55,6 @@ function toForm(user: AdminUser): FormState {
     email: user.email,
     phone: user.phone ?? "",
     role: user.role,
-    status: user.status,
   }
 }
 
@@ -82,14 +80,6 @@ function buildPayload(user: AdminUser, form: FormState): UpdateUserPayload {
     payload.phone = nextPhone
   }
 
-  if (form.role !== user.role) {
-    payload.role = form.role
-  }
-
-  if (form.status !== user.status) {
-    payload.status = form.status
-  }
-
   return payload
 }
 
@@ -112,8 +102,12 @@ function UserEditForm({
   onClose: () => void
 }) {
   const updateUser = useUpdateUserMutation()
+  const setUserStatus = useSetUserStatusMutation()
+  const saving = updateUser.isPending || setUserStatus.isPending
   const [form, setForm] = useState(() => toForm(user))
+  const [status, setStatus] = useState(user.status)
   const [error, setError] = useState<string | null>(null)
+  const [statusError, setStatusError] = useState<string | null>(null)
   const name = fullName(form.firstName, form.lastName) || "Unnamed user"
   const roleLabel = ROLE_LABEL[form.role]
 
@@ -122,6 +116,28 @@ function UserEditForm({
     (value: FormState[K]) => {
       setForm((current) => ({ ...current, [key]: value }))
     }
+
+  const changeStatus = async (next: UserStatus) => {
+    if (next === status || setUserStatus.isPending) {
+      return
+    }
+
+    setStatusError(null)
+
+    try {
+      const updated = await setUserStatus.mutateAsync({
+        id: user.id,
+        payload: { status: next },
+      })
+      setStatus(updated.status)
+    } catch (err) {
+      setStatusError(
+        err instanceof ApiError
+          ? err.message
+          : "Could not update this account status. Please try again."
+      )
+    }
+  }
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
@@ -150,7 +166,7 @@ function UserEditForm({
     <Dialog
       open
       onOpenChange={(next) => {
-        if (!next && !updateUser.isPending) {
+        if (!next && !saving) {
           onClose()
         }
       }}
@@ -169,10 +185,7 @@ function UserEditForm({
                 Edit {roleLabel.toLowerCase()} account
               </DialogDescription>
               <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                <UniversalBadge
-                  name={form.status}
-                  colors={badgeColors[form.status]}
-                />
+                <UniversalBadge name={status} colors={badgeColors[status]} />
                 <UniversalBadge
                   name={roleLabel}
                   icon={UserRound}
@@ -256,16 +269,8 @@ function UserEditForm({
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="edit-role">Role</FieldLabel>
-                  <Select
-                    value={form.role}
-                    onValueChange={(value) =>
-                      setField("role")(value as UserRole)
-                    }
-                  >
-                    <SelectTrigger
-                      id="edit-role"
-                      className="h-9! w-full cursor-pointer"
-                    >
+                  <Select value={form.role} disabled>
+                    <SelectTrigger id="edit-role" className="h-9! w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -276,13 +281,17 @@ function UserEditForm({
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Buyer and vendor roles cannot be changed.
+                  </p>
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="edit-status">Status</FieldLabel>
                   <Select
-                    value={form.status}
+                    value={status}
+                    disabled={setUserStatus.isPending}
                     onValueChange={(value) =>
-                      setField("status")(value as UserStatus)
+                      void changeStatus(value as UserStatus)
                     }
                   >
                     <SelectTrigger
@@ -296,8 +305,25 @@ function UserEditForm({
                       <SelectItem value="suspended">Suspended</SelectItem>
                     </SelectContent>
                   </Select>
+                  {setUserStatus.isPending ? (
+                    <p className="text-sm text-muted-foreground">
+                      Updating status…
+                    </p>
+                  ) : statusError ? (
+                    <p role="alert" className="text-sm text-destructive">
+                      {statusError}
+                    </p>
+                  ) : null}
                 </Field>
               </div>
+
+              {form.role === "vendor" ? (
+                <p className="text-sm text-muted-foreground">
+                  Suspending this vendor suspends their store and hides its
+                  products. Setting the account back to active lifts that
+                  suspension.
+                </p>
+              ) : null}
             </FieldGroup>
           </ScrollArea>
 
@@ -307,16 +333,12 @@ function UserEditForm({
               variant="outline"
               className="cursor-pointer"
               onClick={onClose}
-              disabled={updateUser.isPending}
+              disabled={saving}
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="cursor-pointer"
-              disabled={updateUser.isPending}
-            >
-              {updateUser.isPending ? "Saving…" : "Save changes"}
+            <Button type="submit" className="cursor-pointer" disabled={saving}>
+              {saving ? "Saving…" : "Save changes"}
             </Button>
           </DialogFooter>
         </form>

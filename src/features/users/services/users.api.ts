@@ -3,6 +3,7 @@ import { toApiError } from "@/lib/api/errors"
 import type { ApiSuccess } from "@/lib/api/types"
 
 import type {
+  AccountStatusPayload,
   AdminUser,
   ListUsersParams,
   ListUsersResult,
@@ -52,6 +53,22 @@ export async function updateUser(id: string, payload: UpdateUserPayload) {
     const { data } = await api.patch<ApiSuccess<AdminUser>>("/users", payload, {
       params: { id },
     })
+
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function setUserStatus(id: string, payload: AccountStatusPayload) {
+  try {
+    const { data } = await api.patch<ApiSuccess<AdminUser>>(
+      "/users/status",
+      payload,
+      {
+        params: { id },
+      }
+    )
 
     return data.data
   } catch (error) {

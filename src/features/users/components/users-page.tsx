@@ -24,6 +24,7 @@ import type { AdminUser, UsersPageRole } from "../types"
 import { UserDeleteDialog } from "./user-delete-dialog"
 import { UserDetailsDialog } from "./user-details-dialog"
 import { UserEditDialog } from "./user-edit-dialog"
+import { UserStatusDialog } from "./user-status-dialog"
 import { UsersTable } from "./users-table"
 
 type UsersPageProps = {
@@ -50,6 +51,7 @@ export function UsersPage({
   const [viewing, setViewing] = useState<AdminUser | null>(null)
   const [editing, setEditing] = useState<AdminUser | null>(null)
   const [deleting, setDeleting] = useState<AdminUser | null>(null)
+  const [statusUser, setStatusUser] = useState<AdminUser | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
   const title = role === "customer" ? "Buyers" : "Vendors"
 
@@ -81,6 +83,10 @@ export function UsersPage({
 
   const handleDelete = useCallback((user: AdminUser) => {
     setDeleting(user)
+  }, [])
+
+  const handleToggleStatus = useCallback((user: AdminUser) => {
+    setStatusUser(user)
   }, [])
 
   const handleRowClick = useCallback((user: AdminUser) => {
@@ -156,7 +162,6 @@ export function UsersPage({
             </span>
           ) : null}
         </div>
-
         <UsersTable
           items={items}
           isLoading={users.isLoading}
@@ -172,6 +177,7 @@ export function UsersPage({
           onRetry={() => void users.refetch()}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onToggleStatus={handleToggleStatus}
           onRowClick={rowDetails ? handleRowClick : undefined}
         />
       </section>
@@ -189,6 +195,11 @@ export function UsersPage({
         user={editing}
         open={Boolean(editing)}
         onClose={() => setEditing(null)}
+      />
+      <UserStatusDialog
+        user={statusUser}
+        open={Boolean(statusUser)}
+        onClose={() => setStatusUser(null)}
       />
       <UserDeleteDialog
         user={deleting}
