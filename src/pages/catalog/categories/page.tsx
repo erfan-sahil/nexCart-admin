@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/shared"
+import { CategoriesPage as CatalogCategoriesPage } from "@/features/categories/components"
 
 export function CategoriesPage() {
-  return <PagePlaceholder />
+  return <CatalogCategoriesPage />
 }
