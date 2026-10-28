@@ -3,6 +3,7 @@ import { FolderTree } from "lucide-react"
 import type { ZodError } from "zod"
 
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import {
   Field,
+  FieldContent,
   FieldDescription,
   FieldError,
   FieldGroup,
@@ -20,6 +22,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { Textarea } from "@/components/ui/textarea"
 import { useAttributesQuery } from "@/features/attributes/hooks"
 import type { Attribute } from "@/features/attributes/types"
@@ -486,37 +489,45 @@ function CategoryForm({
 
               <Field data-invalid={Boolean(errors.parentId) || undefined}>
                 <FieldLabel htmlFor="category-parent">Parent</FieldLabel>
-                <select
+                <SearchableSelect
                   id="category-parent"
-                  className="h-9 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive dark:bg-input/30"
                   value={form.parentId || ROOT_PARENT}
-                  aria-invalid={Boolean(errors.parentId)}
+                  invalid={Boolean(errors.parentId)}
                   disabled={saving || tree.isLoading || hasChildren}
-                  onChange={(event) => {
-                    const value = event.target.value
-                    setField("parentId")(value === ROOT_PARENT ? "" : value)
-                  }}
-                >
-                  <option value={ROOT_PARENT}>
-                    {tree.isLoading
+                  placeholder={
+                    tree.isLoading
                       ? "Loading categories…"
-                      : "None (root category)"}
-                  </option>
-                  {form.parentId &&
-                  initialParent &&
-                  form.parentId === initialParent.id &&
-                  !parents.some((parent) => parent.id === initialParent.id) ? (
-                    <option value={initialParent.id}>
-                      {categoryLevelTitle(initialParent.level)} ·{" "}
-                      {initialParent.name}
-                    </option>
-                  ) : null}
-                  {parents.map((parent) => (
-                    <option key={parent.id} value={parent.id}>
-                      {parent.label}
-                    </option>
-                  ))}
-                </select>
+                      : "None (root category)"
+                  }
+                  searchPlaceholder="Search categories"
+                  emptyMessage="No categories match that search."
+                  options={[
+                    {
+                      value: ROOT_PARENT,
+                      label: tree.isLoading
+                        ? "Loading categories…"
+                        : "None (root category)",
+                    },
+                    ...(form.parentId &&
+                    initialParent &&
+                    form.parentId === initialParent.id &&
+                    !parents.some((parent) => parent.id === initialParent.id)
+                      ? [
+                          {
+                            value: initialParent.id,
+                            label: `${categoryLevelTitle(initialParent.level)} · ${initialParent.name}`,
+                          },
+                        ]
+                      : []),
+                    ...parents.map((parent) => ({
+                      value: parent.id,
+                      label: parent.label,
+                    })),
+                  ]}
+                  onValueChange={(value) =>
+                    setField("parentId")(value === ROOT_PARENT ? "" : value)
+                  }
+                />
                 <FieldDescription>
                   {hasChildren
                     ? "Move or delete child categories before changing the parent."
@@ -603,26 +614,25 @@ function CategoryForm({
                 <FieldError>{errors.sortOrder}</FieldError>
               </Field>
 
-              <label className="flex items-start gap-2.5">
-                <input
-                  type="checkbox"
-                  className="mt-0.5 size-4 accent-primary"
+              <Field orientation="horizontal">
+                <Checkbox
+                  id="category-active"
                   checked={form.isActive}
-                  onChange={(event) =>
-                    setField("isActive")(event.target.checked)
-                  }
                   disabled={saving}
+                  onCheckedChange={(checked) =>
+                    setField("isActive")(checked === true)
+                  }
                 />
-                <span>
-                  <span className="block text-sm font-medium">Active</span>
-                  <span className="block text-sm text-muted-foreground">
+                <FieldContent>
+                  <FieldLabel htmlFor="category-active">Active</FieldLabel>
+                  <FieldDescription>
                     Inactive categories stay out of the storefront.
                     {category
                       ? " Child categories are deactivated with this one."
                       : null}
-                  </span>
-                </span>
-              </label>
+                  </FieldDescription>
+                </FieldContent>
+              </Field>
             </FieldGroup>
           </ScrollArea>
 
