@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from "react"
+import { Images } from "lucide-react"
 import type { ZodError } from "zod"
 
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -20,7 +22,6 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError } from "@/lib/api/errors"
 
@@ -61,18 +62,40 @@ function fieldFromApiPath(path: string): HeroField | null {
   return isHeroField(key) ? key : null
 }
 
+function zodFormMessage(error: ZodError) {
+  const messages = [
+    ...new Set(
+      error.issues
+        .map((issue) => issue.message)
+        .filter((message) => message.length > 0)
+    ),
+  ]
+
+  return messages.join("\n") || "Check the highlighted fields and try again."
+}
+
 function errorsFromApi(error: ApiError) {
   const fields: FieldErrors = {}
+  let hasUnmapped = false
 
   for (const field of error.fields ?? []) {
     const key = fieldFromApiPath(field.path)
 
     if (key && !fields[key]) {
       fields[key] = field.message
+    } else {
+      hasUnmapped = true
     }
   }
 
-  return fields
+  const message =
+    Object.keys(fields).length > 0 &&
+    !hasUnmapped &&
+    error.message === "Validation failed"
+      ? null
+      : error.message
+
+  return { fields, message }
 }
 
 function toForm(
@@ -121,13 +144,13 @@ export function HeroFormDialog({
     setFormError(null)
   }
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const submit = async (event?: FormEvent) => {
+    event?.preventDefault()
     const parsed = parseHeroForm(form)
 
     if (!parsed.success) {
       setErrors(toFieldErrors(parsed.error))
-      setFormError(null)
+      setFormError(zodFormMessage(parsed.error))
       return
     }
 
@@ -139,12 +162,16 @@ export function HeroFormDialog({
     } catch (error) {
       if (error instanceof ApiError) {
         const next = errorsFromApi(error)
-        setErrors(next)
-        setFormError(Object.keys(next).length > 0 ? null : error.message)
+        setErrors(next.fields)
+        setFormError(next.message)
         return
       }
 
-      setFormError("Could not save this hero. Please try again.")
+      setFormError(
+        slide
+          ? "Could not update this hero. Please try again."
+          : "Could not create this hero. Please try again."
+      )
     }
   }
 
@@ -158,32 +185,53 @@ export function HeroFormDialog({
       }}
     >
       <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
-        <DialogHeader className="shrink-0 border-b px-6 py-5 text-left">
-          <DialogTitle>{slide ? "Edit hero" : "Add hero"}</DialogTitle>
-          <DialogDescription>
-            Copy and image for one homepage hero. Only three heroes can be
-            active at once.
-          </DialogDescription>
+        <DialogHeader className="shrink-0 border-b border-brand/20 bg-brand-soft px-6 py-6 text-left">
+          <div className="flex items-center gap-4 pr-8">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-brand text-brand-foreground shadow-sm ring-4 ring-background">
+              <Images className="size-6" />
+            </span>
+            <div className="min-w-0">
+              <DialogTitle className="truncate text-lg font-semibold">
+                {slide ? slide.title : "New hero"}
+              </DialogTitle>
+              <DialogDescription className="mt-1 text-foreground/70">
+                {slide
+                  ? "Update this homepage hero."
+                  : "Add copy and an image. Only three heroes can be active at once."}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
         <form
-          className="flex min-h-0 flex-1 flex-col"
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
           onSubmit={(event) => void submit(event)}
+          noValidate
         >
+          {formError ? (
+            <p
+              role="alert"
+              className="px-6 pt-4 text-sm whitespace-pre-line text-destructive"
+            >
+              {formError}
+            </p>
+          ) : null}
           <ScrollArea
             type="auto"
-            className="max-h-[calc(100dvh-16rem)]"
-            viewportClassName="max-h-[calc(100dvh-16rem)]"
+            className="min-h-0 flex-1 overflow-hidden"
+            viewportClassName="h-auto max-h-[min(32rem,calc(100dvh-16rem))]"
           >
-            <FieldGroup className="px-6 py-5">
+            <FieldGroup className="gap-4 px-6 py-5">
               <Field data-invalid={Boolean(errors.eyebrow) || undefined}>
                 <FieldLabel htmlFor="hero-eyebrow">Eyebrow</FieldLabel>
                 <Input
                   id="hero-eyebrow"
+                  className="h-9"
                   value={form.eyebrow}
                   maxLength={60}
                   disabled={busy}
-                  aria-invalid={Boolean(errors.eyebrow) || undefined}
+                  aria-invalid={Boolean(errors.eyebrow)}
                   onChange={(event) => setField("eyebrow", event.target.value)}
+                  autoFocus
                 />
                 <FieldError>{errors.eyebrow}</FieldError>
               </Field>
@@ -191,10 +239,11 @@ export function HeroFormDialog({
                 <FieldLabel htmlFor="hero-title">Title</FieldLabel>
                 <Input
                   id="hero-title"
+                  className="h-9"
                   value={form.title}
                   maxLength={140}
                   disabled={busy}
-                  aria-invalid={Boolean(errors.title) || undefined}
+                  aria-invalid={Boolean(errors.title)}
                   onChange={(event) => setField("title", event.target.value)}
                 />
                 <FieldError>{errors.title}</FieldError>
@@ -206,7 +255,7 @@ export function HeroFormDialog({
                   value={form.description}
                   maxLength={400}
                   disabled={busy}
-                  aria-invalid={Boolean(errors.description) || undefined}
+                  aria-invalid={Boolean(errors.description)}
                   onChange={(event) =>
                     setField("description", event.target.value)
                   }
@@ -220,10 +269,19 @@ export function HeroFormDialog({
                 onChange={(value) => setField("image", value)}
                 onPendingChange={setUploadingImage}
               />
-              <Field
-                orientation="horizontal"
-                className="items-center rounded-lg border border-border px-3 py-3 has-[>[data-slot=field-content]]:items-center"
-              >
+              <Field orientation="horizontal">
+                <Checkbox
+                  id="hero-active"
+                  checked={form.isActive}
+                  disabled={busy || (activationBlocked && !form.isActive)}
+                  onCheckedChange={(checked) => {
+                    setForm((current) => ({
+                      ...current,
+                      isActive: checked === true,
+                    }))
+                    setFormError(null)
+                  }}
+                />
                 <FieldContent>
                   <FieldLabel htmlFor="hero-active">Active</FieldLabel>
                   <FieldDescription>
@@ -232,24 +290,10 @@ export function HeroFormDialog({
                       : "Inactive heroes stay in the list and stay off the homepage."}
                   </FieldDescription>
                 </FieldContent>
-                <Switch
-                  id="hero-active"
-                  checked={form.isActive}
-                  disabled={busy || (activationBlocked && !form.isActive)}
-                  onCheckedChange={(checked) => {
-                    setForm((current) => ({ ...current, isActive: checked }))
-                    setFormError(null)
-                  }}
-                />
               </Field>
-              {formError ? (
-                <p className="text-sm text-destructive" role="alert">
-                  {formError}
-                </p>
-              ) : null}
             </FieldGroup>
           </ScrollArea>
-          <DialogFooter className="mx-0 mb-0 shrink-0 rounded-none border-t px-6 py-4">
+          <DialogFooter className="relative z-10 shrink-0 border-t border-border bg-card px-6 py-4">
             <Button
               type="button"
               variant="outline"
@@ -259,8 +303,26 @@ export function HeroFormDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" className="cursor-pointer" disabled={busy}>
-              {saving ? "Saving…" : "Save"}
+            <Button
+              type="button"
+              className="relative z-10 cursor-pointer"
+              disabled={busy}
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                void submit()
+              }}
+            >
+              {uploadingImage
+                ? "Uploading…"
+                : saving
+                  ? slide
+                    ? "Saving…"
+                    : "Creating…"
+                  : slide
+                    ? "Save changes"
+                    : "Create hero"}
             </Button>
           </DialogFooter>
         </form>

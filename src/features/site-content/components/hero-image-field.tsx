@@ -93,13 +93,9 @@ export function HeroImageField({
         onChange={(event) => void onFile(event.target.files)}
       />
       {value ? (
-        <div className="overflow-hidden rounded-xl border border-border bg-background">
-          <img
-            src={value}
-            alt=""
-            className="aspect-[16/9] max-h-56 w-full object-cover"
-          />
-          <div className="flex flex-wrap gap-2 p-3">
+        <div className="flex items-center gap-3 rounded-xl border border-border bg-background p-3">
+          <img src={value} alt="" className="size-16 rounded-lg object-cover" />
+          <div className="flex min-w-0 flex-1 flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
@@ -129,7 +125,7 @@ export function HeroImageField({
           type="button"
           disabled={busy}
           onClick={chooseFile}
-          className="flex h-36 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-background text-sm text-muted-foreground transition-colors hover:border-primary/50 disabled:cursor-not-allowed"
+          className="flex h-24 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-background text-sm text-muted-foreground transition-colors hover:border-primary/50 disabled:cursor-not-allowed"
         >
           <ImagePlus className="size-5" />
           {uploading ? "Uploading…" : "Upload image"}
