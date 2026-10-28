@@ -1,1 +1,1 @@
-export type { Hero, HeroInput } from "./hero.types"
+export type { HeroSection, HeroSlide } from "./hero.types"

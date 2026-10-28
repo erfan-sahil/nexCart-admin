@@ -2,26 +2,28 @@ import { api } from "@/lib/api/client"
 import { toApiError } from "@/lib/api/errors"
 import type { ApiSuccess } from "@/lib/api/types"
 
-import type { Hero, HeroInput } from "../types"
+import type { HeroSection } from "../types"
+
+const EMPTY_HERO: HeroSection = { slides: [] }
 
 export async function getHero() {
   try {
-    const { data } = await api.get<ApiSuccess<Hero>>("/hero")
+    const { data } = await api.get<ApiSuccess<HeroSection>>("/hero")
     return data.data
   } catch (error) {
     const apiError = toApiError(error)
 
     if (apiError.status === 404) {
-      return null
+      return EMPTY_HERO
     }
 
     throw apiError
   }
 }
 
-export async function saveHero(input: HeroInput) {
+export async function saveHero(input: HeroSection) {
   try {
-    const { data } = await api.put<ApiSuccess<Hero>>("/hero", input)
+    const { data } = await api.put<ApiSuccess<HeroSection>>("/hero", input)
     return data.data
   } catch (error) {
     throw toApiError(error)

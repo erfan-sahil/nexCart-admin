@@ -1,8 +1,11 @@
-export type Hero = {
+export type HeroSlide = {
   eyebrow: string
   title: string
   description: string
   image: string
+  isActive: boolean
 }
 
-export type HeroInput = Hero
+export type HeroSection = {
+  slides: HeroSlide[]
+}

@@ -1,6 +1,9 @@
 import { z } from "zod"
 
-import type { HeroInput } from "./types"
+import type { HeroSlide } from "./types"
+
+export const HERO_SLIDE_LIMIT = 8
+export const HERO_ACTIVE_LIMIT = 3
 
 const heroFormSchema = z.object({
   eyebrow: z
@@ -27,6 +30,7 @@ const heroFormSchema = z.object({
       (value) => z.string().url().safeParse(value).success,
       "Image must be a valid URL."
     ),
+  isActive: z.boolean(),
 })
 
 export type HeroFormValues = z.input<typeof heroFormSchema>
@@ -36,19 +40,21 @@ export const EMPTY_HERO_FORM: HeroFormValues = {
   title: "",
   description: "",
   image: "",
+  isActive: true,
 }
 
 export function parseHeroForm(values: HeroFormValues) {
   return heroFormSchema.safeParse(values)
 }
 
-export function toHeroInput(
+export function toHeroSlide(
   values: z.output<typeof heroFormSchema>
-): HeroInput {
+): HeroSlide {
   return {
     eyebrow: values.eyebrow,
     title: values.title,
     description: values.description,
     image: values.image,
+    isActive: values.isActive,
   }
 }

@@ -255,7 +255,7 @@ export const NAV = defineNav([
         kind: "page",
         label: "Hero Section",
         path: "/site-content/hero",
-        description: "Homepage hero eyebrow, title, description, and image.",
+        description: "Homepage heroes, each with its own copy and image.",
         icon: Image,
       },
     ],
