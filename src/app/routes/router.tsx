@@ -39,6 +39,7 @@ import { ReportsPage } from "@/pages/reports/page"
 import { SettingsPage } from "@/pages/settings/page"
 import { SupportPage } from "@/pages/support/page"
 import { BuyersPage } from "@/pages/users/buyers/page"
+import { ShopsPage } from "@/pages/users/shops/page"
 import { VendorApplicationsPage } from "@/pages/users/vendor-applications/page"
 import { VendorsPage } from "@/pages/users/vendors/page"
 
@@ -46,6 +47,7 @@ const pages: Record<AdminPath, ComponentType> = {
   "/": DashboardPage,
   "/users/buyers": BuyersPage,
   "/users/vendors": VendorsPage,
+  "/users/shops": ShopsPage,
   "/users/vendor-applications": VendorApplicationsPage,
   "/catalog/categories": CategoriesPage,
   "/catalog/attributes": AttributesPage,

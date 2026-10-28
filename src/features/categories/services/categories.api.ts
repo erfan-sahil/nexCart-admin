@@ -4,10 +4,12 @@ import type { ApiSuccess } from "@/lib/api/types"
 
 import type {
   Category,
+  CategoryAttributeAssignment,
   CategoryTreeNode,
   CreateCategoryPayload,
   ListCategoriesParams,
   ListCategoriesResult,
+  ReplaceCategoryAttributesPayload,
   UpdateCategoryPayload,
 } from "../types"
 
@@ -111,6 +113,34 @@ export async function updateCategory(
   try {
     const { data } = await api.patch<ApiSuccess<Category>>(
       `/categories/${id}`,
+      payload
+    )
+
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function listCategoryAttributes(id: string) {
+  try {
+    const { data } = await api.get<ApiSuccess<CategoryAttributeAssignment[]>>(
+      `/categories/${id}/attributes`
+    )
+
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function replaceCategoryAttributes(
+  id: string,
+  payload: ReplaceCategoryAttributesPayload
+) {
+  try {
+    const { data } = await api.put<ApiSuccess<CategoryAttributeAssignment[]>>(
+      `/categories/${id}/attributes`,
       payload
     )
 

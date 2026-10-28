@@ -28,6 +28,7 @@ import {
   UserRound,
   Users,
   Wallet,
+  Warehouse,
   Zap,
   type LucideIcon,
 } from "lucide-react"
@@ -79,6 +80,13 @@ export const NAV = defineNav([
         path: "/users/vendors",
         description: "Approved sellers and their store status.",
         icon: Store,
+      },
+      {
+        kind: "page",
+        label: "Shops",
+        path: "/users/shops",
+        description: "Vendor storefronts shoppers can browse.",
+        icon: Warehouse,
       },
       {
         kind: "page",

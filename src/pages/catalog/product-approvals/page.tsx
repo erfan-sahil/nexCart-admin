@@ -1,5 +1,1 @@
-import { PagePlaceholder } from "@/components/shared"
-
-export function ProductApprovalsPage() {
-  return <PagePlaceholder />
-}
+export { ProductApprovalsPage } from "@/features/product-approvals/components"

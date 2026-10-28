@@ -1,3 +1,4 @@
+import type { Attribute } from "@/features/attributes/types"
 import type { PaginationMeta } from "@/lib/api/types"
 
 export const CATEGORY_LEVELS = [1, 2, 3] as const
@@ -59,4 +60,39 @@ export type UpdateCategoryPayload = {
   parentId?: string | null
   isActive?: boolean
   sortOrder?: number
+}
+
+export type CategoryAttributeOption = {
+  id: string
+  label: string
+  value: string
+  sortOrder: number
+  isActive: boolean
+}
+
+export type CategoryAttributeAssignment = {
+  id: string
+  sourceCategoryId: string
+  inherited: boolean
+  isRequired: boolean
+  isFilterable: boolean
+  sortOrder: number
+  options: CategoryAttributeOption[]
+  attribute: Attribute
+}
+
+export type ReplaceCategoryAttributesPayload = {
+  attributes: Array<{
+    attributeId: string
+    isRequired?: boolean
+    isFilterable?: boolean
+    sortOrder?: number
+    options?: Array<{
+      id?: string
+      label: string
+      value?: string
+      sortOrder?: number
+      isActive?: boolean
+    }>
+  }>
 }
