@@ -2,6 +2,7 @@ import { useRef, useState, type DragEvent } from "react"
 import {
   ChevronDown,
   ChevronUp,
+  Eye,
   GripVertical,
   Loader2,
   MoreHorizontal,
@@ -34,6 +35,7 @@ import { ApiError } from "@/lib/api/errors"
 import { useHeroQuery, useSaveHeroMutation } from "../hooks"
 import { HERO_ACTIVE_LIMIT, HERO_SLIDE_LIMIT } from "../schema"
 import type { HeroSlide } from "../types"
+import { HeroDetailsDialog } from "./hero-details-dialog"
 import { HeroFormDialog } from "./hero-form-dialog"
 
 type EditorState = { mode: "create" } | { mode: "edit"; index: number } | null
@@ -123,6 +125,7 @@ export function HeroSectionPage() {
   const hero = useHeroQuery()
   const saveHero = useSaveHeroMutation()
   const [editor, setEditor] = useState<EditorState>(null)
+  const [detailsIndex, setDetailsIndex] = useState<number | null>(null)
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null)
   const [listError, setListError] = useState<string | null>(null)
   const dragIndex = useRef<number | null>(null)
@@ -413,6 +416,15 @@ export function HeroSectionPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
                           className="cursor-pointer"
+                          onSelect={() => {
+                            window.setTimeout(() => setDetailsIndex(index), 0)
+                          }}
+                        >
+                          <Eye />
+                          Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="cursor-pointer"
                           onClick={() => setEditor({ mode: "edit", index })}
                         >
                           <Pencil />
@@ -436,6 +448,22 @@ export function HeroSectionPage() {
           </ul>
         )}
       </section>
+
+      <HeroDetailsDialog
+        slide={detailsIndex === null ? null : (slides[detailsIndex] ?? null)}
+        position={detailsIndex === null ? 0 : detailsIndex + 1}
+        open={detailsIndex !== null && Boolean(slides[detailsIndex])}
+        onClose={() => setDetailsIndex(null)}
+        onEdit={() => {
+          if (detailsIndex === null) {
+            return
+          }
+
+          const index = detailsIndex
+          setDetailsIndex(null)
+          setEditor({ mode: "edit", index })
+        }}
+      />
 
       {editor ? (
         <HeroFormDialog
