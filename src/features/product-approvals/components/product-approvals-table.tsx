@@ -46,7 +46,11 @@ import { resolveAssetUrl } from "@/lib/api/assets"
 import { formatDateTime } from "@/lib/format"
 
 import { APPROVAL_BADGE, STATUS_BADGE } from "../badges"
-import { formatPriceRange, formatVariantCount } from "../lib/format"
+import {
+  formatOriginalPriceRange,
+  formatPriceRange,
+  formatVariantCount,
+} from "../lib/format"
 import { PRODUCT_APPROVAL_LABEL, PRODUCT_STATUS_LABEL } from "../labels"
 import type { Product } from "../types"
 
@@ -177,6 +181,11 @@ export function ProductApprovalsTable({
             <p className="truncate text-foreground">
               {formatPriceRange(row.original.offer)}
             </p>
+            {formatOriginalPriceRange(row.original.offer) ? (
+              <p className="truncate text-xs text-muted-foreground line-through">
+                {formatOriginalPriceRange(row.original.offer)}
+              </p>
+            ) : null}
             <p className="truncate text-xs text-muted-foreground">
               {formatVariantCount(row.original.offer.variantCount)}
             </p>

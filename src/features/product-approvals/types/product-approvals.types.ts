@@ -67,6 +67,8 @@ export type ProductAttribute = {
 export type ProductOffer = {
   minPrice: number | null
   maxPrice: number | null
+  minOriginalPrice: number | null
+  maxOriginalPrice: number | null
   inStock: boolean
   variantCount: number
   defaultVariantId: string | null
@@ -105,7 +107,9 @@ export type ProductVariant = {
   productId: string
   sku: string
   price: number
-  compareAtPrice: number | null
+  discountType: "percent" | "amount" | null
+  discountValue: number | null
+  currentPrice: number
   stock: number
   image: ProductImage | null
   attributes: ProductAttribute[]

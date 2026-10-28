@@ -23,6 +23,27 @@ export function formatPriceRange(offer: ProductOffer) {
   return `${priceFormat.format(minPrice)} – ${priceFormat.format(maxPrice)}`
 }
 
+export function formatOriginalPriceRange(offer: ProductOffer) {
+  const { minOriginalPrice, maxOriginalPrice } = offer
+
+  if (minOriginalPrice === null || maxOriginalPrice === null) {
+    return null
+  }
+
+  if (
+    minOriginalPrice === offer.minPrice &&
+    maxOriginalPrice === offer.maxPrice
+  ) {
+    return null
+  }
+
+  if (minOriginalPrice === maxOriginalPrice) {
+    return priceFormat.format(minOriginalPrice)
+  }
+
+  return `${priceFormat.format(minOriginalPrice)} – ${priceFormat.format(maxOriginalPrice)}`
+}
+
 export function formatVariantCount(count: number) {
   return count === 1 ? "1 variant" : `${count} variants`
 }

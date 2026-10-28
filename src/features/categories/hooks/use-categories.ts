@@ -10,12 +10,15 @@ import {
   createCategory,
   deleteCategory,
   listCategories,
+  listCategoryAttributes,
   listCategoryTree,
+  replaceCategoryAttributes,
   updateCategory,
 } from "../services"
 import type {
   CreateCategoryPayload,
   ListCategoriesParams,
+  ReplaceCategoryAttributesPayload,
   UpdateCategoryPayload,
 } from "../types"
 
@@ -32,6 +35,14 @@ export function useCategoryTreeQuery() {
     queryKey: categoriesQueryKey.tree(),
     queryFn: listCategoryTree,
     staleTime: 60_000,
+  })
+}
+
+export function useCategoryAttributesQuery(categoryId?: string) {
+  return useQuery({
+    queryKey: categoriesQueryKey.attributes(categoryId ?? "none"),
+    queryFn: () => listCategoryAttributes(categoryId ?? ""),
+    enabled: Boolean(categoryId),
   })
 }
 
@@ -59,6 +70,25 @@ export function useUpdateCategoryMutation() {
       id: string
       payload: UpdateCategoryPayload
     }) => updateCategory(id, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: categoriesQueryKey.all,
+      })
+    },
+  })
+}
+
+export function useReplaceCategoryAttributesMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string
+      payload: ReplaceCategoryAttributesPayload
+    }) => replaceCategoryAttributes(id, payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: categoriesQueryKey.all,

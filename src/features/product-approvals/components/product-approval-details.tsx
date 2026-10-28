@@ -260,8 +260,13 @@ function VariantList({
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
               <span className="text-sm tabular-nums">
-                {formatPrice(variant.price)}
+                {formatPrice(variant.currentPrice)}
               </span>
+              {variant.currentPrice !== variant.price ? (
+                <span className="text-xs text-muted-foreground tabular-nums line-through">
+                  {formatPrice(variant.price)}
+                </span>
+              ) : null}
               <span className="text-xs text-muted-foreground tabular-nums">
                 {variant.stock} in stock
               </span>

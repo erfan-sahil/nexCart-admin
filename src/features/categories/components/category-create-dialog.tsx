@@ -21,11 +21,22 @@ import {
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
+import { useAttributesQuery } from "@/features/attributes/hooks"
+import type { Attribute } from "@/features/attributes/types"
 import { ApiError } from "@/lib/api/errors"
 
 import {
+  attributeDraftErrors,
+  attributeDraftSignature,
+  toAttributeDraft,
+  toReplaceAttributesPayload,
+  type CategoryAttributeDraft,
+} from "../attribute-drafts"
+import {
+  useCategoryAttributesQuery,
   useCategoryTreeQuery,
   useCreateCategoryMutation,
+  useReplaceCategoryAttributesMutation,
   useUpdateCategoryMutation,
 } from "../hooks"
 import {
@@ -40,6 +51,7 @@ import {
   type CategoryFormValues,
 } from "../schema"
 import { categoryHasChildren, parentChoices } from "../tree"
+import { CategoryAttributesField } from "./category-attributes-field"
 import { CategoryImageField } from "./category-image-field"
 import type { Category, CategoryLevel } from "../types"
 
@@ -167,16 +179,37 @@ function CategoryForm({
 }) {
   const createCategory = useCreateCategoryMutation()
   const updateCategory = useUpdateCategoryMutation()
+  const replaceAttributes = useReplaceCategoryAttributesMutation()
   const tree = useCategoryTreeQuery()
-  const saving = createCategory.isPending || updateCategory.isPending
+  const catalog = useAttributesQuery({
+    page: 1,
+    limit: 100,
+    isActive: true,
+    sort: "name",
+  })
+  const savedAssignments = useCategoryAttributesQuery(category?.id)
   const [form, setForm] = useState<CategoryFormValues>(() =>
     category
       ? toForm(category)
       : { ...EMPTY_FORM, parentId: initialParent?.id ?? "" }
   )
+  const parentAssignments = useCategoryAttributesQuery(
+    category ? undefined : form.parentId || undefined
+  )
+  const [drafts, setDrafts] = useState<CategoryAttributeDraft[]>([])
+  const [baseline, setBaseline] = useState<CategoryAttributeDraft[]>([])
+  const [seedKey, setSeedKey] = useState<string | null>(null)
+  const [savedCategoryId, setSavedCategoryId] = useState<string | null>(
+    category?.id ?? null
+  )
+  const [showAttributeErrors, setShowAttributeErrors] = useState(false)
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const saving =
+    createCategory.isPending ||
+    updateCategory.isPending ||
+    replaceAttributes.isPending
   const busy = saving || uploadingImage
   const parents = useMemo(
     () => parentChoices(tree.data ?? [], category?.id),
@@ -195,6 +228,67 @@ function CategoryForm({
   const parentLabel =
     selectedParent?.name ??
     (form.parentId === initialParent?.id ? initialParent?.name : undefined)
+  const inherited = category
+    ? (savedAssignments.data ?? []).filter((item) => item.inherited)
+    : (parentAssignments.data ?? [])
+  const inheritedKey = inherited
+    .map((item) => item.attribute.id)
+    .sort()
+    .join(",")
+  const assignmentKey =
+    category && savedAssignments.data
+      ? `${category.id}:${savedAssignments.data
+          .map(
+            (item) =>
+              `${item.id}:${item.sortOrder}:${item.options
+                .map((option) => option.id)
+                .join(".")}`
+          )
+          .join(",")}`
+      : null
+  const knownAttributes = useMemo(() => {
+    const attributes = new Map<string, Attribute>()
+
+    for (const attribute of catalog.data?.items ?? []) {
+      attributes.set(attribute.id, attribute)
+    }
+
+    for (const item of savedAssignments.data ?? []) {
+      attributes.set(item.attribute.id, item.attribute)
+    }
+
+    for (const item of parentAssignments.data ?? []) {
+      attributes.set(item.attribute.id, item.attribute)
+    }
+
+    return attributes
+  }, [catalog.data?.items, parentAssignments.data, savedAssignments.data])
+  const attributeErrors = useMemo(
+    () => attributeDraftErrors(drafts, knownAttributes),
+    [drafts, knownAttributes]
+  )
+  const attributesBlocked = Boolean(category) && savedAssignments.isError
+  const assignmentsPending = Boolean(category) && savedAssignments.isPending
+  const attributesDirty =
+    attributeDraftSignature(drafts) !== attributeDraftSignature(baseline)
+
+  if (assignmentKey && seedKey !== assignmentKey && savedAssignments.data) {
+    const next = savedAssignments.data
+      .filter((item) => !item.inherited)
+      .map(toAttributeDraft)
+    setSeedKey(assignmentKey)
+    setDrafts(next)
+    setBaseline(next)
+  }
+
+  if (!category && seedKey !== `parent:${inheritedKey}`) {
+    const blocked = new Set(inherited.map((item) => item.attribute.id))
+    setSeedKey(`parent:${inheritedKey}`)
+    setDrafts((current) =>
+      current.filter((draft) => !blocked.has(draft.attributeId))
+    )
+    setBaseline([])
+  }
 
   const setField =
     <K extends keyof CategoryFormValues>(key: K) =>
@@ -239,22 +333,53 @@ function CategoryForm({
 
     setErrors({})
 
+    if (!attributesBlocked && Object.keys(attributeErrors).length > 0) {
+      setShowAttributeErrors(true)
+      setFormError(
+        [
+          ...new Set(
+            Object.values(attributeErrors).filter(
+              (message) => message.length > 0
+            )
+          ),
+        ].join("\n")
+      )
+      return
+    }
+
+    const shouldReplace =
+      !attributesBlocked && (category ? attributesDirty : drafts.length > 0)
+
     try {
+      let categoryId = savedCategoryId
+
       if (category) {
         const payload = toUpdatePayload(category, parsed.data)
 
-        if (Object.keys(payload).length === 0) {
+        if (Object.keys(payload).length === 0 && !shouldReplace) {
           onClose()
           return
         }
 
-        await updateCategory.mutateAsync({ id: category.id, payload })
-        onClose()
-        return
+        if (Object.keys(payload).length > 0) {
+          await updateCategory.mutateAsync({ id: category.id, payload })
+        }
+      } else if (!categoryId) {
+        const created = await createCategory.mutateAsync(
+          toCreatePayload(parsed.data)
+        )
+        categoryId = created.id
+        setSavedCategoryId(created.id)
+        onCreated?.(parsed.data.parentId)
       }
 
-      await createCategory.mutateAsync(toCreatePayload(parsed.data))
-      onCreated?.(parsed.data.parentId)
+      if (shouldReplace && categoryId) {
+        await replaceAttributes.mutateAsync({
+          id: categoryId,
+          payload: toReplaceAttributesPayload(drafts, knownAttributes),
+        })
+      }
+
       onClose()
     } catch (error) {
       if (error instanceof ApiError) {
@@ -429,6 +554,34 @@ function CategoryForm({
                 onPendingChange={setUploadingImage}
               />
 
+              {category && savedAssignments.isPending ? (
+                <p className="text-sm text-muted-foreground">
+                  Loading attributes…
+                </p>
+              ) : attributesBlocked ? (
+                <p className="text-sm text-destructive">
+                  Could not load this category&apos;s attributes. Other changes
+                  can still be saved.
+                </p>
+              ) : (
+                <CategoryAttributesField
+                  catalog={catalog.data?.items ?? []}
+                  attributesById={knownAttributes}
+                  catalogLoading={catalog.isLoading}
+                  catalogError={catalog.isError}
+                  inherited={inherited}
+                  inheritedLoading={
+                    !category &&
+                    Boolean(form.parentId) &&
+                    parentAssignments.isLoading
+                  }
+                  drafts={drafts}
+                  errors={showAttributeErrors ? attributeErrors : {}}
+                  disabled={saving}
+                  onChange={setDrafts}
+                />
+              )}
+
               <Field data-invalid={Boolean(errors.sortOrder) || undefined}>
                 <FieldLabel htmlFor="category-sort-order">
                   Sort order
@@ -486,7 +639,7 @@ function CategoryForm({
             <Button
               type="button"
               className="relative z-10 cursor-pointer"
-              disabled={busy}
+              disabled={busy || assignmentsPending}
               onPointerDown={(event) => event.stopPropagation()}
               onClick={(event) => {
                 event.preventDefault()
