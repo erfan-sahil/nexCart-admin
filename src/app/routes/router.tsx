@@ -36,6 +36,7 @@ import { SubscriptionsPage } from "@/pages/monetization/subscriptions/page"
 import { VendorPlansPage } from "@/pages/monetization/vendor-plans/page"
 import { NotFoundPage } from "@/pages/not-found/page"
 import { ReportsPage } from "@/pages/reports/page"
+import { HeroSectionPage } from "@/pages/site-content/hero/page"
 import { SettingsPage } from "@/pages/settings/page"
 import { SupportPage } from "@/pages/support/page"
 import { BuyersPage } from "@/pages/users/buyers/page"
@@ -66,6 +67,7 @@ const pages: Record<AdminPath, ComponentType> = {
   "/marketing/collections": CollectionsPage,
   "/marketing/coupons": CouponsPage,
   "/marketing/flash-deals": FlashDealsPage,
+  "/site-content/hero": HeroSectionPage,
   "/monetization/vendor-plans": VendorPlansPage,
   "/monetization/subscriptions": SubscriptionsPage,
   "/monetization/sponsored-ads": SponsoredAdsPage,
