@@ -1,1 +1,5 @@
-export { useHeroQuery, useSaveHeroMutation } from "./use-hero"
+export {
+  useHeroQuery,
+  useSaveHeroMutation,
+  useSetHeroActiveMutation,
+} from "./use-hero"

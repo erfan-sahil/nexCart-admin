@@ -30,6 +30,20 @@ export async function saveHero(input: HeroSection) {
   }
 }
 
+export async function setHeroActive(index: number, isActive: boolean) {
+  try {
+    const { data } = await api.patch<ApiSuccess<HeroSection>>(
+      `/hero/${index}`,
+      {
+        isActive,
+      }
+    )
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
 export async function uploadHeroImage(file: File) {
   const body = new FormData()
   body.append("image", file, file.name)

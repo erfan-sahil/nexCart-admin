@@ -32,7 +32,11 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { ApiError } from "@/lib/api/errors"
 
-import { useHeroQuery, useSaveHeroMutation } from "../hooks"
+import {
+  useHeroQuery,
+  useSaveHeroMutation,
+  useSetHeroActiveMutation,
+} from "../hooks"
 import { HERO_ACTIVE_LIMIT, HERO_SLIDE_LIMIT } from "../schema"
 import type { HeroSlide } from "../types"
 import { HeroDetailsDialog } from "./hero-details-dialog"
@@ -124,6 +128,8 @@ function HeroPositionControl({
 export function HeroSectionPage() {
   const hero = useHeroQuery()
   const saveHero = useSaveHeroMutation()
+  const setHeroActive = useSetHeroActiveMutation()
+  const listBusy = saveHero.isPending || setHeroActive.isPending
   const [editor, setEditor] = useState<EditorState>(null)
   const [detailsIndex, setDetailsIndex] = useState<number | null>(null)
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null)
@@ -184,11 +190,7 @@ export function HeroSectionPage() {
     }
 
     try {
-      await persist(
-        slides.map((item, itemIndex) =>
-          itemIndex === index ? { ...item, isActive } : item
-        )
-      )
+      await setHeroActive.mutateAsync({ index, isActive })
     } catch (error) {
       reportListError(error, "Could not update this hero. Please try again.")
     }
@@ -306,7 +308,7 @@ export function HeroSectionPage() {
           <Button
             type="button"
             className="cursor-pointer"
-            disabled={atLimit || saveHero.isPending}
+            disabled={atLimit || listBusy}
             onClick={() => setEditor({ mode: "create" })}
           >
             <Plus />
@@ -367,7 +369,7 @@ export function HeroSectionPage() {
                     <HeroPositionControl
                       index={index}
                       total={slides.length}
-                      disabled={saveHero.isPending}
+                      disabled={listBusy}
                       onMove={(direction) =>
                         void reorder(index, index + direction)
                       }
@@ -378,7 +380,7 @@ export function HeroSectionPage() {
                       <Switch
                         id={`hero-list-active-${index}`}
                         checked={slide.isActive}
-                        disabled={saveHero.isPending || activationBlocked}
+                        disabled={listBusy || activationBlocked}
                         aria-label={
                           slide.isActive
                             ? `Deactivate ${slide.title}`
@@ -408,7 +410,7 @@ export function HeroSectionPage() {
                           size="icon"
                           className="cursor-pointer"
                           aria-label="Hero actions"
-                          disabled={saveHero.isPending}
+                          disabled={listBusy}
                         >
                           <MoreHorizontal />
                         </Button>
