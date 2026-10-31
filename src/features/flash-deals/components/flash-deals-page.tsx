@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { listProductsForModeration } from "@/features/product-approvals/services/product-approvals.api"
 import { ApiError } from "@/lib/api/errors"
 
@@ -217,67 +216,66 @@ export function FlashDealsPageContent() {
         </Button>
       </section>
 
-      <Tabs
-        value={status}
-        onValueChange={(value) => setStatus(value as (typeof STATUSES)[number])}
-      >
-        <TabsList>
+      <section className="space-y-4">
+        <div className="flex flex-wrap gap-2">
           {STATUSES.map((tab) => (
-            <TabsTrigger key={tab} value={tab} className="capitalize">
+            <Button
+              key={tab}
+              type="button"
+              size="sm"
+              variant={status === tab ? "default" : "outline"}
+              className="capitalize"
+              onClick={() => setStatus(tab)}
+            >
               {tab}
-            </TabsTrigger>
+            </Button>
           ))}
-        </TabsList>
-        <TabsContent value={status} className="mt-4">
-          {dealsQuery.isLoading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" />
-              Loading…
-            </div>
-          ) : deals.length === 0 ? (
-            <p className="rounded-xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-              No {status} deals.
-            </p>
-          ) : (
-            <ul className="divide-y rounded-xl border bg-card">
-              {deals.map((deal) => (
-                <li
-                  key={deal.id}
-                  className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">{deal.productName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {deal.storeName} · {deal.discountType}{" "}
-                      {deal.discountValue}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {toLocalInputValue(deal.startsAt)} →{" "}
-                      {toLocalInputValue(deal.endsAt)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <UniversalBadge className={badgeColors.neutral}>
-                      {status}
-                    </UniversalBadge>
-                    {status !== "ended" ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={endDeal.isPending}
-                        onClick={() => endDeal.mutate(deal.id)}
-                      >
-                        End now
-                      </Button>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </TabsContent>
-      </Tabs>
+        </div>
+        {dealsQuery.isLoading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            Loading…
+          </div>
+        ) : deals.length === 0 ? (
+          <p className="rounded-xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
+            No {status} deals.
+          </p>
+        ) : (
+          <ul className="divide-y rounded-xl border bg-card">
+            {deals.map((deal) => (
+              <li
+                key={deal.id}
+                className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{deal.productName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {deal.storeName} · {deal.discountType} {deal.discountValue}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {toLocalInputValue(deal.startsAt)} →{" "}
+                    {toLocalInputValue(deal.endsAt)}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <UniversalBadge name={status} colors={badgeColors.neutral} />
+                  {status !== "ended" ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={endDeal.isPending}
+                      onClick={() => endDeal.mutate(deal.id)}
+                    >
+                      End now
+                    </Button>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   )
 }

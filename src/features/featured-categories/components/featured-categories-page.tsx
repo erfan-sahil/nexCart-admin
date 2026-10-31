@@ -69,9 +69,10 @@ export function FeaturedCategoriesPageContent() {
           <section className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-medium">Homepage order</h2>
-              <UniversalBadge className={badgeColors.neutral}>
-                {featured.length}/{MAX_FEATURED}
-              </UniversalBadge>
+              <UniversalBadge
+                name={`${featured.length}/${MAX_FEATURED}`}
+                colors={badgeColors.neutral}
+              />
             </div>
             {featured.length === 0 ? (
               <p className="rounded-xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
