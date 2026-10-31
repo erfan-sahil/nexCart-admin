@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/shared"
+import { SponsoredAdsPageContent } from "@/features/sponsored-placements/components"
 
 export function SponsoredAdsPage() {
-  return <PagePlaceholder />
+  return <SponsoredAdsPageContent />
 }
