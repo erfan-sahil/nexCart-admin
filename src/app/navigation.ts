@@ -13,6 +13,7 @@ import {
   LayoutGrid,
   LifeBuoy,
   Megaphone,
+  Truck,
   MousePointerClick,
   PackageSearch,
   PanelsTopLeft,
@@ -285,6 +286,21 @@ export const NAV = defineNav([
         path: "/monetization/sponsored-ads",
         description: "Paid placements running on the storefront.",
         icon: MousePointerClick,
+      },
+    ],
+  },
+  {
+    kind: "group",
+    label: "Site Settings",
+    icon: Settings,
+    children: [
+      {
+        kind: "page",
+        label: "Delivery Charge",
+        path: "/site-settings/delivery-charge",
+        description:
+          "Delivery fee and the order amount that unlocks free shipment.",
+        icon: Truck,
       },
     ],
   },
