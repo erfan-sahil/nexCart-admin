@@ -4,8 +4,9 @@ export type {
   FlashDealCampaign,
   FlashDealCampaignDetail,
   FlashDealDiscountType,
+  FlashDealFilter,
   FlashDealItem,
-  FlashDealStatus,
+  FlashDealLifecycle,
   ListFlashDealsParams,
   ListFlashDealsResult,
   UpdateFlashDealCampaignPayload,
@@ -14,5 +15,6 @@ export type {
 
 export {
   FLASH_DEAL_DISCOUNT_TYPES,
-  FLASH_DEAL_STATUSES,
+  FLASH_DEAL_FILTERS,
+  FLASH_DEAL_LIFECYCLES,
 } from "./flash-deals.types"

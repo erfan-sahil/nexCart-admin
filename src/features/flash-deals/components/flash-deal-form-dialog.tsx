@@ -206,8 +206,8 @@ function FlashDealForm({
               </DialogTitle>
               <DialogDescription className="mt-1 text-foreground/70">
                 {campaign
-                  ? "Update the name and schedule. This name is the storefront section title while active."
-                  : "Name the deal and set its window. Add products after it is created."}
+                  ? "Update the name and schedule. Only one flash deal can be active at a time."
+                  : "Name the deal and set its window. Only one flash deal can run at a time—schedules cannot overlap."}
               </DialogDescription>
             </div>
           </div>

@@ -82,6 +82,18 @@ export async function endFlashDeal(id: string) {
   }
 }
 
+export async function setFlashDealEnabled(id: string, isEnabled: boolean) {
+  try {
+    const { data } = await api.patch<ApiSuccess<FlashDealCampaign>>(
+      `/flash-deals/${id}/enabled`,
+      { isEnabled }
+    )
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
 export async function addFlashDealItem(
   campaignId: string,
   payload: CreateFlashDealItemPayload

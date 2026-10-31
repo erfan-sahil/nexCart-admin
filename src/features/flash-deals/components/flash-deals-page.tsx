@@ -1,64 +1,101 @@
 "use client"
 
-import { useState } from "react"
-import {
-  Loader2,
-  MoreHorizontal,
-  Package,
-  Pencil,
-  Plus,
-  Zap,
-} from "lucide-react"
+import { useMemo, useState } from "react"
+import { Loader2, Plus, Search, Zap } from "lucide-react"
 
-import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { ApiError } from "@/lib/api/errors"
+import { useDebouncedValue } from "@/hooks"
 
-import { formatDealDate } from "../datetime"
-import { useFlashDealsManageQuery } from "../hooks"
-import { FLASH_DEAL_STATUS_BADGE, FLASH_DEAL_STATUS_LABEL } from "../labels"
 import {
-  FLASH_DEAL_STATUSES,
+  useFlashDealsManageQuery,
+  useSetFlashDealEnabledMutation,
+} from "../hooks"
+import { FLASH_DEAL_FILTER_LABEL } from "../labels"
+import {
+  FLASH_DEAL_FILTERS,
   type FlashDealCampaign,
-  type FlashDealStatus,
+  type FlashDealFilter,
 } from "../types"
 import { FlashDealEndDialog } from "./flash-deal-end-dialog"
 import { FlashDealFormDialog } from "./flash-deal-form-dialog"
 import { FlashDealManageDialog } from "./flash-deal-manage-dialog"
+import { FlashDealsTable } from "./flash-deals-table"
 
 export function FlashDealsPageContent() {
-  const [status, setStatus] = useState<FlashDealStatus>("active")
+  const [filter, setFilter] = useState<FlashDealFilter>("all")
+  const [search, setSearch] = useState("")
+  const debouncedSearch = useDebouncedValue(search.trim(), 350)
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<FlashDealCampaign | null>(null)
   const [managingId, setManagingId] = useState<string | null>(null)
   const [ending, setEnding] = useState<FlashDealCampaign | null>(null)
+  const [toggleError, setToggleError] = useState<string | null>(null)
 
-  const dealsQuery = useFlashDealsManageQuery({ status, limit: 50 })
+  const listParams = useMemo(
+    () => ({
+      status: filter,
+      limit: 50,
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
+    }),
+    [debouncedSearch, filter]
+  )
+
+  const dealsQuery = useFlashDealsManageQuery(listParams)
+  const setEnabled = useSetFlashDealEnabledMutation()
   const campaigns = dealsQuery.data?.items ?? []
+
+  const onToggleEnabled = async (
+    campaign: FlashDealCampaign,
+    isEnabled: boolean
+  ) => {
+    setToggleError(null)
+
+    try {
+      await setEnabled.mutateAsync({ id: campaign.id, isEnabled })
+    } catch (error) {
+      setToggleError(
+        error instanceof ApiError
+          ? error.message
+          : "Could not update flash deal status."
+      )
+    }
+  }
+
+  const emptyMessage = debouncedSearch
+    ? `No deals match “${debouncedSearch}”.`
+    : `No ${FLASH_DEAL_FILTER_LABEL[filter].toLowerCase()}.`
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <h1 className="inline-flex items-center gap-2 text-2xl font-semibold tracking-tight">
-            <Zap className="size-6 text-primary" />
+            <Zap className="size-6 shrink-0 text-primary" />
             Flash deals
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             Create a named deal with a schedule, then add products with their
-            own discounts. The active deal name is the storefront section title.
+            own discounts. Only one flash deal can be active at a time; the
+            active deal name is the storefront section title.
           </p>
         </div>
         <Button
           type="button"
-          className="cursor-pointer self-start"
+          className="shrink-0 cursor-pointer self-start whitespace-nowrap"
           onClick={() => {
             setEditing(null)
             setCreating(true)
@@ -77,7 +114,51 @@ export function FlashDealsPageContent() {
         </p>
       ) : null}
 
+      {toggleError ? (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {toggleError}
+        </p>
+      ) : null}
+
       <section className="space-y-4">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+          <FieldGroup className="gap-4 sm:flex-row sm:items-end">
+            <Field className="min-w-0 flex-1">
+              <FieldLabel htmlFor="flash-deal-search">Search</FieldLabel>
+              <InputGroup className="h-10">
+                <InputGroupAddon>
+                  <Search />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="flash-deal-search"
+                  className="h-10"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search flash deals"
+                />
+              </InputGroup>
+            </Field>
+            <Field className="sm:w-52">
+              <FieldLabel htmlFor="flash-deal-filter">Filter</FieldLabel>
+              <Select
+                value={filter}
+                onValueChange={(value) => setFilter(value as FlashDealFilter)}
+              >
+                <SelectTrigger id="flash-deal-filter" className="h-10! w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {FLASH_DEAL_FILTERS.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {FLASH_DEAL_FILTER_LABEL[option]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </FieldGroup>
+        </div>
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-medium">Deals</h2>
           {dealsQuery.isFetching && !dealsQuery.isLoading ? (
@@ -88,128 +169,40 @@ export function FlashDealsPageContent() {
           ) : null}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {FLASH_DEAL_STATUSES.map((tab) => (
+        <FlashDealsTable
+          items={campaigns}
+          isLoading={dealsQuery.isLoading}
+          isToggling={setEnabled.isPending}
+          emptyMessage={emptyMessage}
+          onManage={(campaign) => setManagingId(campaign.id)}
+          onEdit={(campaign) => {
+            setCreating(false)
+            setEditing(campaign)
+          }}
+          onToggleEnabled={(campaign, isEnabled) =>
+            void onToggleEnabled(campaign, isEnabled)
+          }
+          onEnd={setEnding}
+        />
+
+        {!dealsQuery.isLoading &&
+        campaigns.length === 0 &&
+        filter !== "ended" ? (
+          <div className="flex justify-center">
             <Button
-              key={tab}
               type="button"
-              size="sm"
-              variant={status === tab ? "default" : "outline"}
-              className="cursor-pointer"
-              onClick={() => setStatus(tab)}
+              variant="outline"
+              className="cursor-pointer whitespace-nowrap"
+              onClick={() => {
+                setEditing(null)
+                setCreating(true)
+              }}
             >
-              {FLASH_DEAL_STATUS_LABEL[tab]}
+              <Plus />
+              Create flash deal
             </Button>
-          ))}
-        </div>
-
-        {dealsQuery.isLoading ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" />
-            Loading deals…
           </div>
-        ) : campaigns.length === 0 ? (
-          <div className="rounded-xl border border-dashed px-4 py-10 text-center">
-            <p className="text-sm text-muted-foreground">
-              No {FLASH_DEAL_STATUS_LABEL[status].toLowerCase()} deals.
-            </p>
-            {status === "active" || status === "upcoming" ? (
-              <Button
-                type="button"
-                variant="outline"
-                className="mt-4 cursor-pointer"
-                onClick={() => {
-                  setEditing(null)
-                  setCreating(true)
-                }}
-              >
-                <Plus />
-                Create flash deal
-              </Button>
-            ) : null}
-          </div>
-        ) : (
-          <ul className="divide-y rounded-xl border bg-card">
-            {campaigns.map((campaign) => (
-              <li
-                key={campaign.id}
-                className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0 space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-medium">{campaign.name}</p>
-                    <UniversalBadge
-                      name={FLASH_DEAL_STATUS_LABEL[status]}
-                      colors={FLASH_DEAL_STATUS_BADGE[status]}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {campaign.itemCount} product
-                    {campaign.itemCount === 1 ? "" : "s"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDealDate(campaign.startsAt)} →{" "}
-                    {formatDealDate(campaign.endsAt)}
-                  </p>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="cursor-pointer"
-                    onClick={() => setManagingId(campaign.id)}
-                  >
-                    <Package className="size-3.5" />
-                    Products
-                  </Button>
-                  {status !== "ended" ? (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          className="cursor-pointer"
-                          aria-label={`More actions for ${campaign.name}`}
-                        >
-                          <MoreHorizontal className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          className="cursor-pointer"
-                          onClick={() => setManagingId(campaign.id)}
-                        >
-                          Manage products
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="cursor-pointer"
-                          onClick={() => {
-                            setCreating(false)
-                            setEditing(campaign)
-                          }}
-                        >
-                          <Pencil className="size-3.5" />
-                          Edit schedule
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          variant="destructive"
-                          className="cursor-pointer"
-                          onClick={() => setEnding(campaign)}
-                        >
-                          End deal now
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+        ) : null}
       </section>
 
       <FlashDealFormDialog
@@ -225,13 +218,11 @@ export function FlashDealsPageContent() {
       />
       <FlashDealManageDialog
         campaignId={managingId}
-        status={status}
         open={Boolean(managingId)}
         onClose={() => setManagingId(null)}
       />
       <FlashDealEndDialog
         campaign={ending}
-        status={status}
         open={Boolean(ending)}
         onClose={() => setEnding(null)}
       />

@@ -6,6 +6,7 @@ export {
   getFlashDeal,
   listFlashDeals,
   removeFlashDealItem,
+  setFlashDealEnabled,
   updateFlashDeal,
   updateFlashDealItem,
 } from "./flash-deals.api"

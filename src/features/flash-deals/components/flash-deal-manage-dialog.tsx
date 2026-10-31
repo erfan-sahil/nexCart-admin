@@ -16,27 +16,20 @@ import { ApiError } from "@/lib/api/errors"
 import { formatDealDate } from "../datetime"
 import { useFlashDealQuery, useRemoveFlashDealItemMutation } from "../hooks"
 import { formatDiscount } from "../labels"
-import type {
-  FlashDealCampaign,
-  FlashDealItem,
-  FlashDealStatus,
-} from "../types"
+import type { FlashDealCampaign, FlashDealItem } from "../types"
 import { FlashDealItemFormDialog } from "./flash-deal-item-form-dialog"
 
 type FlashDealManageDialogProps = {
   campaignId: string | null
-  status: FlashDealStatus
   open: boolean
   onClose: () => void
 }
 
 function FlashDealManageContent({
   campaignId,
-  status,
   onClose,
 }: {
   campaignId: string
-  status: FlashDealStatus
   onClose: () => void
 }) {
   const detail = useFlashDealQuery(campaignId)
@@ -47,7 +40,7 @@ function FlashDealManageContent({
   const [actionError, setActionError] = useState<string | null>(null)
 
   const campaign = detail.data
-  const ended = status === "ended"
+  const ended = campaign?.lifecycle === "ended"
 
   const remove = async (item: FlashDealItem) => {
     setActionError(null)
@@ -123,7 +116,7 @@ function FlashDealManageContent({
                     <Button
                       type="button"
                       size="sm"
-                      className="cursor-pointer"
+                      className="shrink-0 cursor-pointer whitespace-nowrap"
                       onClick={() => {
                         setEditingItem(null)
                         setAdding(true)
@@ -242,7 +235,6 @@ function FlashDealManageContent({
 
 export function FlashDealManageDialog({
   campaignId,
-  status,
   open,
   onClose,
 }: FlashDealManageDialogProps) {
@@ -254,7 +246,6 @@ export function FlashDealManageDialog({
     <FlashDealManageContent
       key={campaignId}
       campaignId={campaignId}
-      status={status}
       onClose={onClose}
     />
   )

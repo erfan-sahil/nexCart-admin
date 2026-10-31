@@ -15,23 +15,23 @@ import { ApiError } from "@/lib/api/errors"
 
 import { formatDealDate } from "../datetime"
 import { useEndFlashDealMutation } from "../hooks"
-import { FLASH_DEAL_STATUS_BADGE } from "../labels"
-import type { FlashDealCampaign, FlashDealStatus } from "../types"
+import {
+  FLASH_DEAL_LIFECYCLE_BADGE,
+  FLASH_DEAL_LIFECYCLE_LABEL,
+} from "../labels"
+import type { FlashDealCampaign } from "../types"
 
 type FlashDealEndDialogProps = {
   campaign: FlashDealCampaign | null
-  status: FlashDealStatus
   open: boolean
   onClose: () => void
 }
 
 function FlashDealEndForm({
   campaign,
-  status,
   onClose,
 }: {
   campaign: FlashDealCampaign
-  status: FlashDealStatus
   onClose: () => void
 }) {
   const endDeal = useEndFlashDealMutation()
@@ -76,8 +76,8 @@ function FlashDealEndForm({
               </DialogDescription>
               <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                 <UniversalBadge
-                  name={status}
-                  colors={FLASH_DEAL_STATUS_BADGE[status]}
+                  name={FLASH_DEAL_LIFECYCLE_LABEL[campaign.lifecycle]}
+                  colors={FLASH_DEAL_LIFECYCLE_BADGE[campaign.lifecycle]}
                 />
               </div>
             </div>
@@ -130,7 +130,6 @@ function FlashDealEndForm({
 
 export function FlashDealEndDialog({
   campaign,
-  status,
   open,
   onClose,
 }: FlashDealEndDialogProps) {
@@ -139,11 +138,6 @@ export function FlashDealEndDialog({
   }
 
   return (
-    <FlashDealEndForm
-      key={campaign.id}
-      campaign={campaign}
-      status={status}
-      onClose={onClose}
-    />
+    <FlashDealEndForm key={campaign.id} campaign={campaign} onClose={onClose} />
   )
 }

@@ -8,6 +8,7 @@ import {
   getFlashDeal,
   listFlashDeals,
   removeFlashDealItem,
+  setFlashDealEnabled,
   updateFlashDeal,
   updateFlashDealItem,
 } from "../services"
@@ -75,6 +76,23 @@ export function useEndFlashDealMutation() {
     mutationFn: endFlashDeal,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: flashDealsKeys.all })
+    },
+  })
+}
+
+export function useSetFlashDealEnabledMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, isEnabled }: { id: string; isEnabled: boolean }) =>
+      setFlashDealEnabled(id, isEnabled),
+    onSuccess: (campaign) => {
+      void queryClient.invalidateQueries({ queryKey: flashDealsKeys.all })
+      queryClient.setQueryData(flashDealsKeys.detail(campaign.id), (current) =>
+        current && typeof current === "object"
+          ? { ...current, ...campaign }
+          : current
+      )
     },
   })
 }
