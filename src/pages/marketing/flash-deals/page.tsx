@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/shared"
+import { FlashDealsPageContent } from "@/features/flash-deals/components"
 
 export function FlashDealsPage() {
-  return <PagePlaceholder />
+  return <FlashDealsPageContent />
 }
