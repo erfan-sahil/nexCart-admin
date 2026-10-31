@@ -28,6 +28,7 @@ import { LoginPage } from "@/pages/login/page"
 import { CouponsPage } from "@/pages/marketing/coupons/page"
 import { FeaturedCategoriesPage } from "@/pages/marketing/featured-categories/page"
 import { FlashDealsPage } from "@/pages/marketing/flash-deals/page"
+import { SponsoredProductPage } from "@/pages/marketing/sponsored-product/page"
 import { NotFoundPage } from "@/pages/not-found/page"
 import { ReportsPage } from "@/pages/reports/page"
 import { HeroSectionPage } from "@/pages/site-content/hero/page"
@@ -56,6 +57,7 @@ const pages: Record<AdminPath, ComponentType> = {
   "/finance/withdrawals": WithdrawalsPage,
   "/finance/settlements": SettlementsPage,
   "/marketing/featured-categories": FeaturedCategoriesPage,
+  "/marketing/sponsored-product": SponsoredProductPage,
   "/marketing/coupons": CouponsPage,
   "/marketing/flash-deals": FlashDealsPage,
   "/site-content/hero": HeroSectionPage,

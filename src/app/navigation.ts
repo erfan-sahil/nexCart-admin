@@ -9,6 +9,7 @@ import {
   Image,
   LayoutDashboard,
   Megaphone,
+  MousePointerClick,
   Truck,
   PackageSearch,
   PanelsTopLeft,
@@ -202,6 +203,13 @@ export const NAV = defineNav([
         path: "/marketing/featured-categories",
         description: "Categories promoted on the storefront.",
         icon: Sparkles,
+      },
+      {
+        kind: "page",
+        label: "Sponsored Product",
+        path: "/marketing/sponsored-product",
+        description: "Paid product placements on the storefront.",
+        icon: MousePointerClick,
       },
       {
         kind: "page",
