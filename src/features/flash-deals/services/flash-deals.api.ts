@@ -3,66 +3,23 @@ import { toApiError } from "@/lib/api/errors"
 import type { ApiSuccess } from "@/lib/api/types"
 import type { PaginationMeta } from "@/lib/api/types"
 
-export type FlashDealDiscountType = "percent" | "amount"
+import type {
+  CreateFlashDealCampaignPayload,
+  CreateFlashDealItemPayload,
+  FlashDealCampaign,
+  FlashDealCampaignDetail,
+  FlashDealItem,
+  ListFlashDealsParams,
+  ListFlashDealsResult,
+  UpdateFlashDealCampaignPayload,
+  UpdateFlashDealItemPayload,
+} from "../types"
 
-export type FlashDeal = {
-  id: string
-  productId: string
-  productName: string
-  productSlug: string
-  storeName: string
-  discountType: FlashDealDiscountType
-  discountValue: number
-  startsAt: string
-  endsAt: string
-  createdAt: string
-  updatedAt: string
-}
-
-export type FlashDealSettings = {
-  sectionTitle: string
-}
-
-export type ListFlashDealsParams = {
-  page?: number
-  limit?: number
-  status?: "active" | "upcoming" | "ended"
-}
-
-export type CreateFlashDealPayload = {
-  productId: string
-  discountType: FlashDealDiscountType
-  discountValue: number
-  startsAt: string
-  endsAt: string
-}
-
-export async function getFlashDealSettings() {
+export async function listFlashDeals(
+  params: ListFlashDealsParams = {}
+): Promise<ListFlashDealsResult> {
   try {
-    const { data } = await api.get<ApiSuccess<FlashDealSettings>>(
-      "/flash-deals/settings"
-    )
-    return data.data
-  } catch (error) {
-    throw toApiError(error)
-  }
-}
-
-export async function updateFlashDealSettings(sectionTitle: string) {
-  try {
-    const { data } = await api.put<ApiSuccess<FlashDealSettings>>(
-      "/flash-deals/settings",
-      { sectionTitle }
-    )
-    return data.data
-  } catch (error) {
-    throw toApiError(error)
-  }
-}
-
-export async function listFlashDeals(params: ListFlashDealsParams = {}) {
-  try {
-    const { data } = await api.get<ApiSuccess<FlashDeal[]>>(
+    const { data } = await api.get<ApiSuccess<FlashDealCampaign[]>>(
       "/flash-deals/manage",
       { params }
     )
@@ -76,10 +33,36 @@ export async function listFlashDeals(params: ListFlashDealsParams = {}) {
   }
 }
 
-export async function createFlashDeal(payload: CreateFlashDealPayload) {
+export async function getFlashDeal(id: string) {
   try {
-    const { data } = await api.post<ApiSuccess<FlashDeal>>(
+    const { data } = await api.get<ApiSuccess<FlashDealCampaignDetail>>(
+      `/flash-deals/${id}`
+    )
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function createFlashDeal(payload: CreateFlashDealCampaignPayload) {
+  try {
+    const { data } = await api.post<ApiSuccess<FlashDealCampaign>>(
       "/flash-deals",
+      payload
+    )
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function updateFlashDeal(
+  id: string,
+  payload: UpdateFlashDealCampaignPayload
+) {
+  try {
+    const { data } = await api.patch<ApiSuccess<FlashDealCampaign>>(
+      `/flash-deals/${id}`,
       payload
     )
     return data.data
@@ -90,10 +73,49 @@ export async function createFlashDeal(payload: CreateFlashDealPayload) {
 
 export async function endFlashDeal(id: string) {
   try {
-    const { data } = await api.post<ApiSuccess<FlashDeal>>(
+    const { data } = await api.post<ApiSuccess<FlashDealCampaign>>(
       `/flash-deals/${id}/end`
     )
     return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function addFlashDealItem(
+  campaignId: string,
+  payload: CreateFlashDealItemPayload
+) {
+  try {
+    const { data } = await api.post<ApiSuccess<FlashDealItem>>(
+      `/flash-deals/${campaignId}/items`,
+      payload
+    )
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function updateFlashDealItem(
+  campaignId: string,
+  itemId: string,
+  payload: UpdateFlashDealItemPayload
+) {
+  try {
+    const { data } = await api.patch<ApiSuccess<FlashDealItem>>(
+      `/flash-deals/${campaignId}/items/${itemId}`,
+      payload
+    )
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function removeFlashDealItem(campaignId: string, itemId: string) {
+  try {
+    await api.delete(`/flash-deals/${campaignId}/items/${itemId}`)
   } catch (error) {
     throw toApiError(error)
   }
