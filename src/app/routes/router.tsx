@@ -25,21 +25,14 @@ import { SettlementsPage } from "@/pages/finance/settlements/page"
 import { VendorEarningsPage } from "@/pages/finance/vendor-earnings/page"
 import { WithdrawalsPage } from "@/pages/finance/withdrawals/page"
 import { LoginPage } from "@/pages/login/page"
-import { BannersPage } from "@/pages/marketing/banners/page"
-import { CollectionsPage } from "@/pages/marketing/collections/page"
 import { CouponsPage } from "@/pages/marketing/coupons/page"
 import { FeaturedCategoriesPage } from "@/pages/marketing/featured-categories/page"
-import { FeaturedProductsPage } from "@/pages/marketing/featured-products/page"
 import { FlashDealsPage } from "@/pages/marketing/flash-deals/page"
-import { SponsoredAdsPage } from "@/pages/monetization/sponsored-ads/page"
-import { SubscriptionsPage } from "@/pages/monetization/subscriptions/page"
-import { VendorPlansPage } from "@/pages/monetization/vendor-plans/page"
 import { NotFoundPage } from "@/pages/not-found/page"
 import { ReportsPage } from "@/pages/reports/page"
 import { HeroSectionPage } from "@/pages/site-content/hero/page"
 import { DeliveryChargePage } from "@/pages/site-settings/delivery-charge/page"
 import { SettingsPage } from "@/pages/settings/page"
-import { SupportPage } from "@/pages/support/page"
 import { BuyersPage } from "@/pages/users/buyers/page"
 import { ShopsPage } from "@/pages/users/shops/page"
 import { VendorApplicationsPage } from "@/pages/users/vendor-applications/page"
@@ -62,19 +55,12 @@ const pages: Record<AdminPath, ComponentType> = {
   "/finance/vendor-earnings": VendorEarningsPage,
   "/finance/withdrawals": WithdrawalsPage,
   "/finance/settlements": SettlementsPage,
-  "/marketing/banners": BannersPage,
-  "/marketing/featured-products": FeaturedProductsPage,
   "/marketing/featured-categories": FeaturedCategoriesPage,
-  "/marketing/collections": CollectionsPage,
   "/marketing/coupons": CouponsPage,
   "/marketing/flash-deals": FlashDealsPage,
   "/site-content/hero": HeroSectionPage,
-  "/monetization/vendor-plans": VendorPlansPage,
-  "/monetization/subscriptions": SubscriptionsPage,
-  "/monetization/sponsored-ads": SponsoredAdsPage,
   "/site-settings/delivery-charge": DeliveryChargePage,
   "/reports": ReportsPage,
-  "/support": SupportPage,
   "/settings": SettingsPage,
 }
 
