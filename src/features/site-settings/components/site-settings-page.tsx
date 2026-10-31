@@ -27,11 +27,13 @@ function MoneyField({
   id,
   currency,
   invalid,
+  disabled,
   ...field
 }: {
   id: string
   currency: string
   invalid?: boolean
+  disabled?: boolean
 } & Omit<ComponentProps<typeof InputGroupInput>, "id" | "type">) {
   return (
     <InputGroup className="h-10 max-w-xs bg-background">
@@ -49,6 +51,7 @@ function MoneyField({
         className="h-10 tabular-nums"
         aria-invalid={invalid}
         {...field}
+        disabled={disabled}
       />
     </InputGroup>
   )
@@ -67,6 +70,7 @@ export function SiteSettingsPage() {
   const saveSettings = useSaveSiteSettingsMutation()
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [editing, setEditing] = useState(false)
   const currency = settingsQuery.data?.currency ?? "BDT"
 
   const form = useForm<SiteSettingsFormValues>({
@@ -105,6 +109,7 @@ export function SiteSettingsPage() {
         freeDeliveryMinAmount: savedSettings.freeDeliveryMinAmount,
       })
       setSaved(true)
+      setEditing(false)
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -144,6 +149,8 @@ export function SiteSettingsPage() {
     )
   }
 
+  const canSave = editing && isDirty && !saveSettings.isPending
+
   return (
     <form
       className="w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm"
@@ -158,6 +165,21 @@ export function SiteSettingsPage() {
           {error}
         </p>
       ) : null}
+
+      <div className="flex items-center justify-end border-b border-border px-4 py-4 sm:px-5">
+        <Button
+          type="button"
+          variant="outline"
+          className="cursor-pointer"
+          disabled={editing || saveSettings.isPending}
+          onClick={() => {
+            setSaved(false)
+            setEditing(true)
+          }}
+        >
+          Edit
+        </Button>
+      </div>
 
       <div className="divide-y divide-border">
         <Controller
@@ -177,6 +199,7 @@ export function SiteSettingsPage() {
                 id="delivery-fee"
                 currency={currency}
                 invalid={fieldState.invalid}
+                disabled={!editing}
                 name={field.name}
                 ref={field.ref}
                 onBlur={field.onBlur}
@@ -208,6 +231,7 @@ export function SiteSettingsPage() {
               <Switch
                 id="free-delivery"
                 checked={field.value}
+                disabled={!editing}
                 onCheckedChange={field.onChange}
               />
             </div>
@@ -235,6 +259,7 @@ export function SiteSettingsPage() {
                   id="free-delivery-amount"
                   currency={currency}
                   invalid={fieldState.invalid}
+                  disabled={!editing}
                   name={field.name}
                   ref={field.ref}
                   onBlur={field.onBlur}
@@ -256,13 +281,9 @@ export function SiteSettingsPage() {
         <p className="mr-auto text-sm text-muted-foreground" aria-live="polite">
           {saved && !isDirty ? "Saved." : ""}
         </p>
-        <Button
-          type="submit"
-          className="cursor-pointer"
-          disabled={saveSettings.isPending}
-        >
+        <Button type="submit" className="cursor-pointer" disabled={!canSave}>
           {saveSettings.isPending ? <Loader2 className="animate-spin" /> : null}
-          Save settings
+          Save changes
         </Button>
       </div>
     </form>
