@@ -26,6 +26,7 @@ type SearchableSelectProps = {
   invalid?: boolean
   clearOnSelect?: boolean
   onValueChange: (value: string) => void
+  onSearchChange?: (value: string) => void
 }
 
 const contentClass =
@@ -42,6 +43,7 @@ export function SearchableSelect({
   invalid = false,
   clearOnSelect = false,
   onValueChange,
+  onSearchChange,
 }: SearchableSelectProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
@@ -58,6 +60,11 @@ export function SearchableSelect({
     )
   })
 
+  const updateSearch = (next: string) => {
+    setSearch(next)
+    onSearchChange?.(next)
+  }
+
   return (
     <Select
       key={clearOnSelect ? pick : undefined}
@@ -68,14 +75,14 @@ export function SearchableSelect({
         setOpen(next)
 
         if (!next) {
-          setSearch("")
+          updateSearch("")
         }
       }}
       onValueChange={(next) => {
         onValueChange(next)
 
         if (clearOnSelect) {
-          setSearch("")
+          updateSearch("")
           setOpen(false)
           setPick((current) => current + 1)
         }
@@ -113,7 +120,7 @@ export function SearchableSelect({
             value={search}
             className="h-8"
             placeholder={searchPlaceholder}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => updateSearch(event.target.value)}
             onKeyDown={(event) => event.stopPropagation()}
           />
         </div>

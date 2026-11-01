@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/shared"
+import { CouponsPageContent } from "@/features/coupons/components"
 
 export function CouponsPage() {
-  return <PagePlaceholder />
+  return <CouponsPageContent />
 }

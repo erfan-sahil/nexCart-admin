@@ -2,17 +2,20 @@ import { api } from "@/lib/api/client"
 import { toApiError } from "@/lib/api/errors"
 import type { ApiSuccess } from "@/lib/api/types"
 
-export type SponsoredSection = "top-selling" | "trending" | "new-arrivals"
+export const SPONSORED_SECTIONS = ["top-selling", "new-arrivals"] as const
+export const SPONSORED_SLOTS = ["1", "2"] as const
+
+export type SponsoredSection = (typeof SPONSORED_SECTIONS)[number]
+export type SponsoredSlot = (typeof SPONSORED_SLOTS)[number]
 
 export type SponsoredPlacement = {
-  slot: "1" | "2"
+  slot: SponsoredSlot
   productId: string | null
   productName: string
   section: SponsoredSection | null
   title: string
   subtitle: string
   ctaLabel: string
-  image: string
   isActive: boolean
 }
 
@@ -22,7 +25,6 @@ export type UpsertSponsoredPayload = {
   title?: string
   subtitle?: string
   ctaLabel?: string
-  image?: string
   isActive: boolean
 }
 
@@ -38,7 +40,7 @@ export async function listSponsoredPlacementsManage() {
 }
 
 export async function upsertSponsoredPlacement(
-  slot: "1" | "2",
+  slot: SponsoredSlot,
   payload: UpsertSponsoredPayload
 ) {
   try {

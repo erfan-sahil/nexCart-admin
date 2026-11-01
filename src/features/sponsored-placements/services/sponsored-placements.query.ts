@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   listSponsoredPlacementsManage,
   upsertSponsoredPlacement,
+  type SponsoredSlot,
   type UpsertSponsoredPayload,
 } from "./sponsored-placements.api"
 
@@ -17,12 +18,17 @@ export function useSponsoredPlacementsQuery() {
   })
 }
 
-export function useUpsertSponsoredMutation(slot: "1" | "2") {
+export function useUpsertSponsoredMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: UpsertSponsoredPayload) =>
-      upsertSponsoredPlacement(slot, payload),
+    mutationFn: ({
+      slot,
+      payload,
+    }: {
+      slot: SponsoredSlot
+      payload: UpsertSponsoredPayload
+    }) => upsertSponsoredPlacement(slot, payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: sponsoredKeys.manage })
     },
