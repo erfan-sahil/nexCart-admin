@@ -159,6 +159,20 @@ export const NAV = defineNav([
   },
   {
     kind: "group",
+    label: "Warehouse",
+    icon: Warehouse,
+    children: [
+      {
+        kind: "page",
+        label: "Incoming",
+        path: "/warehouse/incoming",
+        description: "Vendor shipments arriving at the NexCart warehouse.",
+        icon: PackageSearch,
+      },
+    ],
+  },
+  {
+    kind: "group",
     label: "Finance",
     icon: Wallet,
     children: [

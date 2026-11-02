@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/shared"
+import { AdminWithdrawalsPage } from "@/features/finance/components/admin-withdrawals-page"
 
 export function WithdrawalsPage() {
-  return <PagePlaceholder />
+  return <AdminWithdrawalsPage />
 }
