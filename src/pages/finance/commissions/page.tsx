@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/shared"
+import { AdminCommissionsPage } from "@/features/finance/components/admin-commissions-page"
 
 export function CommissionsPage() {
-  return <PagePlaceholder />
+  return <AdminCommissionsPage />
 }
