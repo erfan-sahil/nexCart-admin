@@ -1,8 +1,13 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { ChevronRight, ChevronUp, LogOut, Settings, X } from "lucide-react"
 import { Link, NavLink, useLocation } from "react-router"
 
-import { isNavGroup, NAV, type NavPage } from "@/app/navigation"
+import {
+  isNavGroup,
+  isNavPathActive,
+  NAV,
+  type NavPage,
+} from "@/app/navigation"
 import { BrandLogo } from "@/components/shared"
 import {
   DropdownMenu,
@@ -43,7 +48,7 @@ function PageLink({
   return (
     <NavLink
       to={page.path}
-      end
+      end={!nested}
       title={page.label}
       onClick={onNavigate}
       className={({ isActive }) =>
@@ -76,6 +81,20 @@ export function AdminSidebar({
     open: Record<string, boolean>
   } | null>(null)
   const openGroups = manual?.path === pathname ? manual.open : {}
+
+  const activeGroupLabel = useMemo(() => {
+    for (const entry of NAV) {
+      if (!isNavGroup(entry)) {
+        continue
+      }
+
+      if (entry.children.some((page) => isNavPathActive(page.path, pathname))) {
+        return entry.label
+      }
+    }
+
+    return null
+  }, [pathname])
 
   return (
     <aside
@@ -128,11 +147,16 @@ export function AdminSidebar({
             )
           }
 
-          const activeChild = entry.children.find(
-            (page) => page.path === pathname
+          const activeChild = entry.children.find((page) =>
+            isNavPathActive(page.path, pathname)
           )
           const groupActive = Boolean(activeChild)
-          const open = openGroups[entry.label] ?? groupActive
+          const manualOpen = openGroups[entry.label]
+          const open = activeGroupLabel
+            ? entry.label === activeGroupLabel
+              ? (manualOpen ?? true)
+              : false
+            : Boolean(manualOpen)
           const Icon = entry.icon
           const iconTarget = activeChild?.path ?? entry.children[0].path
 
