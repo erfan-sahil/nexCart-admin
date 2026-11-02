@@ -1,240 +1,199 @@
-"use client"
-
-import { Loader2, Search } from "lucide-react"
 import { useMemo, useState } from "react"
+import { Loader2, Search } from "lucide-react"
+import { useNavigate } from "react-router"
 
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { badgeColors, UniversalBadge } from "@/components/shared"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDebouncedValue } from "@/hooks"
 import { ApiError } from "@/lib/api/errors"
 
-import {
-  useAdminOrder,
-  useAdminOrders,
-  useCancelAdminOrder,
-} from "../hooks/use-admin-orders"
+import { useAdminOrders } from "../hooks"
+import { FULFILLMENT_STATUS_LABEL } from "../labels"
+import type { AdminOrderListItem } from "../types/admin-orders.types"
+import { AdminOrdersTable } from "./admin-orders-table"
 
-function AdminOrderDetailDialog({
-  orderId,
-  open,
-  onOpenChange,
-}: {
-  orderId: string | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const detail = useAdminOrder(orderId ?? "")
-  const cancel = useCancelAdminOrder()
-  const order = detail.data
-  const [error, setError] = useState<string | null>(null)
+const FULFILLMENT_TABS = [
+  { value: "all", label: "All" },
+  { value: "pending", label: FULFILLMENT_STATUS_LABEL.pending },
+  { value: "processing", label: FULFILLMENT_STATUS_LABEL.processing },
+  {
+    value: "partially_fulfilled",
+    label: FULFILLMENT_STATUS_LABEL.partially_fulfilled,
+  },
+  { value: "fulfilled", label: FULFILLMENT_STATUS_LABEL.fulfilled },
+  { value: "cancelled", label: FULFILLMENT_STATUS_LABEL.cancelled },
+] as const
 
-  const onCancel = async () => {
-    if (!order) return
-    setError(null)
-    try {
-      await cancel.mutateAsync(order.id)
-      onOpenChange(false)
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Could not cancel order."
-      )
-    }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{order?.orderNumber ?? "Order"}</DialogTitle>
-        </DialogHeader>
-        {detail.isLoading ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="size-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : order ? (
-          <div className="space-y-4 text-sm">
-            <div className="grid gap-2 sm:grid-cols-2">
-              <p>
-                <span className="text-muted-foreground">Fulfillment:</span>{" "}
-                {order.fulfillmentStatus}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Payment:</span>{" "}
-                {order.paymentStatus}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Method:</span>{" "}
-                {order.paymentMethod}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Total:</span>{" "}
-                {order.currency} {order.grandTotal.toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium">Ship to</h3>
-              <p className="text-muted-foreground">
-                {order.shipping.recipientName} · {order.shipping.phone}
-                <br />
-                {order.shipping.line1}, {order.shipping.city}
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium">Vendor orders</h3>
-              <ul className="mt-2 divide-y rounded-md border">
-                {order.vendorOrders.map((vo) => (
-                  <li key={vo.id} className="flex justify-between px-3 py-2">
-                    <span>
-                      {vo.vendorOrderNumber} · {vo.storeName}
-                    </span>
-                    <span className="text-muted-foreground">{vo.status}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-medium">Activity</h3>
-              <ul className="mt-2 space-y-1 text-muted-foreground">
-                {order.activity.length === 0 ? (
-                  <li>No activity yet.</li>
-                ) : (
-                  order.activity.map((row) => (
-                    <li key={row.id}>
-                      {row.action} · {row.actorRole} ·{" "}
-                      {new Date(row.createdAt).toLocaleString()}
-                    </li>
-                  ))
-                )}
-              </ul>
-            </div>
-            {error ? <p className="text-destructive">{error}</p> : null}
-            {order.canCancel ? (
-              <Button
-                variant="destructive"
-                disabled={cancel.isPending}
-                onClick={onCancel}
-              >
-                Cancel order
-              </Button>
-            ) : null}
-          </div>
-        ) : null}
-      </DialogContent>
-    </Dialog>
-  )
-}
+const PAYMENT_FILTERS = [
+  { value: "all", label: "All payments" },
+  { value: "unpaid", label: "Unpaid" },
+  { value: "partially_paid", label: "Partially paid" },
+  { value: "paid", label: "Paid" },
+  { value: "refunded", label: "Refunded" },
+] as const
 
 export function AdminOrdersPageContent() {
+  const navigate = useNavigate()
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [search, setSearch] = useState("")
+  const [fulfillmentTab, setFulfillmentTab] = useState<string>("all")
+  const [paymentStatus, setPaymentStatus] = useState("")
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
+
+  const fulfillmentStatus = fulfillmentTab === "all" ? "" : fulfillmentTab
+
   const params = useMemo(
     () => ({
-      limit: 50,
+      page,
+      limit: pageSize,
+      sort: "-createdAt" as const,
       ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      ...(fulfillmentStatus ? { fulfillmentStatus } : {}),
+      ...(paymentStatus ? { paymentStatus } : {}),
     }),
-    [debouncedSearch]
+    [page, pageSize, debouncedSearch, fulfillmentStatus, paymentStatus]
   )
+
   const listQuery = useAdminOrders(params)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
   const items = listQuery.data?.items ?? []
+  const pagination = listQuery.data?.pagination
+
+  const errorMessage =
+    listQuery.error instanceof ApiError
+      ? listQuery.error.message
+      : listQuery.isError
+        ? "Could not load orders."
+        : null
+
+  const openOrder = (order: AdminOrderListItem) => {
+    navigate(`/commerce/orders/${order.id}`)
+  }
+
+  const table = (
+    <AdminOrdersTable
+      items={items}
+      isLoading={listQuery.isLoading}
+      isFetching={listQuery.isFetching}
+      errorMessage={errorMessage}
+      emptyLabel="Try another search, fulfillment tab, or payment filter."
+      page={pagination?.page ?? page}
+      pageSize={pagination?.limit ?? pageSize}
+      total={pagination?.total ?? 0}
+      totalPages={pagination?.totalPages ?? 0}
+      onPageChange={setPage}
+      onPageSizeChange={setPageSize}
+      onRetry={() => void listQuery.refetch()}
+      onOpen={openOrder}
+    />
+  )
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          All orders
-        </h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Parent checkout orders and each vendor&apos;s fulfillment progress.
-        </p>
-      </div>
-
-      <InputGroup className="max-w-md">
-        <InputGroupAddon>
-          <Search className="size-4" />
-        </InputGroupAddon>
-        <InputGroupInput
-          placeholder="Search order number"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-      </InputGroup>
-
-      {listQuery.isLoading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="size-8 animate-spin text-muted-foreground" />
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+      <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
+        <div className="mb-4">
+          <h1 className="font-display text-xl font-semibold tracking-tight">
+            All orders
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Search by order number, filter payment, and browse fulfillment by
+            tab.
+          </p>
         </div>
-      ) : (
-        <div className="rounded-xl border bg-card shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order</TableHead>
-                <TableHead>Fulfillment</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead>Vendors</TableHead>
-                <TableHead className="text-right">Placed</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="py-10 text-center text-muted-foreground"
-                  >
-                    No orders found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                items.map((order) => (
-                  <TableRow
-                    key={order.id}
-                    className="cursor-pointer"
-                    onClick={() => setSelectedId(order.id)}
-                  >
-                    <TableCell className="font-medium">
-                      {order.orderNumber}
-                    </TableCell>
-                    <TableCell>{order.fulfillmentStatus}</TableCell>
-                    <TableCell>{order.paymentStatus}</TableCell>
-                    <TableCell>{order.vendorOrderCount}</TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleString()}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+        <FieldGroup className="gap-4 sm:flex-row sm:items-end">
+          <Field className="min-w-0 flex-1">
+            <FieldLabel htmlFor="orders-search">Search orders</FieldLabel>
+            <InputGroup className="h-10">
+              <InputGroupAddon>
+                <Search />
+              </InputGroupAddon>
+              <InputGroupInput
+                id="orders-search"
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value)
+                  setPage(1)
+                }}
+                placeholder="Order number"
+              />
+            </InputGroup>
+          </Field>
+          <Field className="sm:w-56">
+            <FieldLabel htmlFor="orders-payment">Payment</FieldLabel>
+            <Select
+              value={paymentStatus || "all"}
+              onValueChange={(value) => {
+                setPaymentStatus(value === "all" ? "" : value)
+                setPage(1)
+              }}
+            >
+              <SelectTrigger id="orders-payment" className="h-10! w-full">
+                <SelectValue placeholder="All payments" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                {PAYMENT_FILTERS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        </FieldGroup>
+      </section>
 
-      <AdminOrderDetailDialog
-        orderId={selectedId}
-        open={selectedId !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedId(null)
-        }}
-      />
+      <section className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+        <Tabs
+          value={fulfillmentTab}
+          onValueChange={(value) => {
+            setFulfillmentTab(value)
+            setPage(1)
+          }}
+        >
+          <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h2 className="text-sm font-semibold">Fulfillment</h2>
+              <UniversalBadge
+                name={pagination ? String(pagination.total) : "—"}
+                colors={badgeColors.neutral}
+                showDot={false}
+                className="normal-case tabular-nums"
+              />
+            </div>
+            {listQuery.isFetching && !listQuery.isLoading ? (
+              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 animate-spin" />
+                Refreshing
+              </span>
+            ) : null}
+          </div>
+          <div className="border-b border-border bg-gradient-to-b from-muted/40 to-transparent px-4 py-4 sm:px-5">
+            <TabsList className="w-full sm:w-auto">
+              {FULFILLMENT_TABS.map((tab) => (
+                <TabsTrigger key={tab.value} value={tab.value}>
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+          <TabsContent value={fulfillmentTab} className="mt-0">
+            {table}
+          </TabsContent>
+        </Tabs>
+      </section>
     </div>
   )
 }

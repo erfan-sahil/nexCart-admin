@@ -8,10 +8,23 @@ import {
 import {
   adminOrderKeys,
   cancelAdminOrder,
+  collectCod,
   getAdminOrder,
   listAdminOrders,
+  listAdminVendorOrders,
+  reconcileCod,
+  remitCod,
+  updateAdminOrderStatus,
+  updateAdminVendorOrderStatus,
 } from "../services"
-import type { ListAdminOrdersParams } from "../types/admin-orders.types"
+import type {
+  CodCollectionPayload,
+  CodRemittancePayload,
+  ListAdminOrdersParams,
+  ListAdminVendorOrdersParams,
+  UpdateAdminOrderStatusPayload,
+  UpdateAdminVendorOrderStatusPayload,
+} from "../types/admin-orders.types"
 
 export function useAdminOrders(params: ListAdminOrdersParams) {
   return useQuery({
@@ -30,13 +43,89 @@ export function useAdminOrder(orderId: string) {
   })
 }
 
-export function useCancelAdminOrder() {
+export function useAdminVendorOrders(params: ListAdminVendorOrdersParams) {
+  return useQuery({
+    queryKey: adminOrderKeys.vendorList(params),
+    queryFn: () => listAdminVendorOrders(params),
+    placeholderData: keepPreviousData,
+    staleTime: 15_000,
+  })
+}
+
+function useInvalidateOrders() {
   const queryClient = useQueryClient()
+
+  return async (orderId?: string) => {
+    await queryClient.invalidateQueries({ queryKey: adminOrderKeys.all })
+    if (orderId) {
+      await queryClient.invalidateQueries({
+        queryKey: adminOrderKeys.detail(orderId),
+      })
+    }
+  }
+}
+
+export function useCancelAdminOrder() {
+  const invalidate = useInvalidateOrders()
 
   return useMutation({
     mutationFn: cancelAdminOrder,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: adminOrderKeys.all })
+    onSuccess: async (order) => {
+      await invalidate(order.id)
     },
   })
+}
+
+export function useUpdateAdminOrderStatus(orderId: string) {
+  const invalidate = useInvalidateOrders()
+
+  return useMutation({
+    mutationFn: (payload: UpdateAdminOrderStatusPayload) =>
+      updateAdminOrderStatus(orderId, payload),
+    onSuccess: async () => {
+      await invalidate(orderId)
+    },
+  })
+}
+
+export function useUpdateAdminVendorOrderStatus(orderId: string) {
+  const invalidate = useInvalidateOrders()
+
+  return useMutation({
+    mutationFn: ({
+      vendorOrderId,
+      payload,
+    }: {
+      vendorOrderId: string
+      payload: UpdateAdminVendorOrderStatusPayload
+    }) => updateAdminVendorOrderStatus(vendorOrderId, payload),
+    onSuccess: async () => {
+      await invalidate(orderId)
+    },
+  })
+}
+
+export function useCodMutations(orderId: string) {
+  const invalidate = useInvalidateOrders()
+
+  const onSuccess = async () => {
+    await invalidate(orderId)
+  }
+
+  const collect = useMutation({
+    mutationFn: (payload: CodCollectionPayload) => collectCod(orderId, payload),
+    onSuccess,
+  })
+
+  const remit = useMutation({
+    mutationFn: (payload: CodRemittancePayload) => remitCod(orderId, payload),
+    onSuccess,
+  })
+
+  const reconcile = useMutation({
+    mutationFn: () => reconcileCod(orderId),
+    onSuccess,
+  })
+
+  return { collect, remit, reconcile }
 }
