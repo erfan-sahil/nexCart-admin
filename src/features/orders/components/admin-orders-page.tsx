@@ -3,6 +3,12 @@ import { Loader2, Search } from "lucide-react"
 import { useNavigate } from "react-router"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  dataTableTabSectionHeader,
+  dataTableTabStrip,
+  dataTableTabsList,
+  dataTableTabTrigger,
+} from "@/components/shared/data-table-section"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   InputGroup,
@@ -162,8 +168,9 @@ export function AdminOrdersPageContent() {
             setFulfillmentTab(value)
             setPage(1)
           }}
+          className="gap-0"
         >
-          <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className={dataTableTabSectionHeader}>
             <div className="flex flex-wrap items-center gap-2.5">
               <h2 className="text-sm font-semibold">Fulfillment</h2>
               <UniversalBadge
@@ -180,10 +187,14 @@ export function AdminOrdersPageContent() {
               </span>
             ) : null}
           </div>
-          <div className="border-b border-border bg-gradient-to-b from-muted/40 to-transparent px-4 py-4 sm:px-5">
-            <TabsList className="w-full sm:w-auto">
+          <div className={dataTableTabStrip}>
+            <TabsList className={dataTableTabsList}>
               {FULFILLMENT_TABS.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value}>
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className={dataTableTabTrigger}
+                >
                   {tab.label}
                 </TabsTrigger>
               ))}

@@ -58,10 +58,13 @@ export async function setStoreCommission(
   commissionRate: number | null
 ) {
   try {
-    const { data } = await api.patch<ApiSuccess<{ storeId: string }>>(
-      `/admin/commission/stores/${storeId}`,
-      { commissionRate }
-    )
+    const { data } = await api.patch<
+      ApiSuccess<{
+        storeId: string
+        storeName?: string
+        commissionRate?: number | null
+      }>
+    >(`/admin/commission/stores/${storeId}`, { commissionRate })
     return data.data
   } catch (error) {
     throw toApiError(error)

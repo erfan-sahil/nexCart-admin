@@ -39,8 +39,6 @@ import { BuyersPage } from "@/pages/users/buyers/page"
 import { ShopsPage } from "@/pages/users/shops/page"
 import { VendorApplicationsPage } from "@/pages/users/vendor-applications/page"
 import { VendorsPage } from "@/pages/users/vendors/page"
-import { WarehouseIncomingRoutePage } from "@/pages/warehouse/incoming/page"
-
 const pages: Record<AdminPath, ComponentType> = {
   "/": DashboardPage,
   "/users/buyers": BuyersPage,
@@ -54,7 +52,6 @@ const pages: Record<AdminPath, ComponentType> = {
   "/commerce/payments": PaymentsPage,
   "/commerce/returns": ReturnsPage,
   "/commerce/disputes": DisputesPage,
-  "/warehouse/incoming": WarehouseIncomingRoutePage,
   "/finance/commissions": CommissionsPage,
   "/finance/vendor-earnings": VendorEarningsPage,
   "/finance/withdrawals": WithdrawalsPage,

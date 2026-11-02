@@ -7,6 +7,10 @@ import {
 import { ChevronLeft, ChevronRight, Eye, MoreHorizontal } from "lucide-react"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  dataTableBodyCell,
+  dataTableHeadCell,
+} from "@/components/shared/data-table-section"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -243,10 +247,7 @@ export function AdminOrdersTable({
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="hover:bg-transparent">
               {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className="h-10 px-3 text-xs font-medium text-muted-foreground first:pl-4 last:pr-4"
-                >
+                <TableHead key={header.id} className={dataTableHeadCell}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -262,7 +263,7 @@ export function AdminOrdersTable({
           {isLoading ? (
             Array.from({ length: 6 }, (_, index) => (
               <TableRow key={index} className="hover:bg-transparent">
-                <TableCell colSpan={columns.length} className="px-4 py-2.5">
+                <TableCell colSpan={columns.length} className="px-4 py-2">
                   <div className="h-3 w-48 animate-pulse rounded-md bg-muted" />
                 </TableCell>
               </TableRow>
@@ -306,7 +307,7 @@ export function AdminOrdersTable({
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
-                    className="px-3 py-2.5 first:pl-4 last:pr-4"
+                    className={dataTableBodyCell}
                     onClick={
                       cell.column.id === "actions"
                         ? (event) => event.stopPropagation()
