@@ -1,240 +1,200 @@
-"use client"
-
-import { Loader2, Search } from "lucide-react"
 import { useMemo, useState } from "react"
+import { Loader2, Search } from "lucide-react"
+import { useNavigate } from "react-router"
 
-import { Button } from "@/components/ui/button"
+import { badgeColors, UniversalBadge } from "@/components/shared"
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+  dataTableTabsList,
+  dataTableTabTrigger,
+} from "@/components/shared/data-table-section"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDebouncedValue } from "@/hooks"
 import { ApiError } from "@/lib/api/errors"
 
-import {
-  useAdminOrder,
-  useAdminOrders,
-  useCancelAdminOrder,
-} from "../hooks/use-admin-orders"
+import { useAdminOrders } from "../hooks"
+import { FULFILLMENT_STATUS_LABEL } from "../labels"
+import type { AdminOrderListItem } from "../types/admin-orders.types"
+import { AdminOrdersTable } from "./admin-orders-table"
 
-function AdminOrderDetailDialog({
-  orderId,
-  open,
-  onOpenChange,
-}: {
-  orderId: string | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const detail = useAdminOrder(orderId ?? "")
-  const cancel = useCancelAdminOrder()
-  const order = detail.data
-  const [error, setError] = useState<string | null>(null)
+const FULFILLMENT_TABS = [
+  { value: "all", label: "All" },
+  { value: "pending", label: FULFILLMENT_STATUS_LABEL.pending },
+  { value: "processing", label: FULFILLMENT_STATUS_LABEL.processing },
+  {
+    value: "partially_fulfilled",
+    label: FULFILLMENT_STATUS_LABEL.partially_fulfilled,
+  },
+  { value: "fulfilled", label: FULFILLMENT_STATUS_LABEL.fulfilled },
+  { value: "cancelled", label: FULFILLMENT_STATUS_LABEL.cancelled },
+] as const
 
-  const onCancel = async () => {
-    if (!order) return
-    setError(null)
-    try {
-      await cancel.mutateAsync(order.id)
-      onOpenChange(false)
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Could not cancel order."
-      )
-    }
+const PAYMENT_FILTERS = [
+  { value: "all", label: "All payments" },
+  { value: "unpaid", label: "Unpaid" },
+  { value: "partially_paid", label: "Partially paid" },
+  { value: "paid", label: "Paid" },
+  { value: "refunded", label: "Refunded" },
+] as const
+
+export function AdminOrdersPageContent() {
+  const navigate = useNavigate()
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const [search, setSearch] = useState("")
+  const [fulfillmentTab, setFulfillmentTab] = useState<string>("all")
+  const [paymentStatus, setPaymentStatus] = useState("")
+  const debouncedSearch = useDebouncedValue(search.trim(), 350)
+
+  const fulfillmentStatus = fulfillmentTab === "all" ? "" : fulfillmentTab
+
+  const params = useMemo(
+    () => ({
+      page,
+      limit: pageSize,
+      sort: "-createdAt" as const,
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      ...(fulfillmentStatus ? { fulfillmentStatus } : {}),
+      ...(paymentStatus ? { paymentStatus } : {}),
+    }),
+    [page, pageSize, debouncedSearch, fulfillmentStatus, paymentStatus]
+  )
+
+  const listQuery = useAdminOrders(params)
+  const items = listQuery.data?.items ?? []
+  const pagination = listQuery.data?.pagination
+
+  const errorMessage =
+    listQuery.error instanceof ApiError
+      ? listQuery.error.message
+      : listQuery.isError
+        ? "Could not load orders."
+        : null
+
+  const openOrder = (order: AdminOrderListItem) => {
+    navigate(`/commerce/orders/${order.id}`)
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{order?.orderNumber ?? "Order"}</DialogTitle>
-        </DialogHeader>
-        {detail.isLoading ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="size-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : order ? (
-          <div className="space-y-4 text-sm">
-            <div className="grid gap-2 sm:grid-cols-2">
-              <p>
-                <span className="text-muted-foreground">Fulfillment:</span>{" "}
-                {order.fulfillmentStatus}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Payment:</span>{" "}
-                {order.paymentStatus}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Method:</span>{" "}
-                {order.paymentMethod}
-              </p>
-              <p>
-                <span className="text-muted-foreground">Total:</span>{" "}
-                {order.currency} {order.grandTotal.toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium">Ship to</h3>
-              <p className="text-muted-foreground">
-                {order.shipping.recipientName} · {order.shipping.phone}
-                <br />
-                {order.shipping.line1}, {order.shipping.city}
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium">Vendor orders</h3>
-              <ul className="mt-2 divide-y rounded-md border">
-                {order.vendorOrders.map((vo) => (
-                  <li key={vo.id} className="flex justify-between px-3 py-2">
-                    <span>
-                      {vo.vendorOrderNumber} · {vo.storeName}
-                    </span>
-                    <span className="text-muted-foreground">{vo.status}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-medium">Activity</h3>
-              <ul className="mt-2 space-y-1 text-muted-foreground">
-                {order.activity.length === 0 ? (
-                  <li>No activity yet.</li>
-                ) : (
-                  order.activity.map((row) => (
-                    <li key={row.id}>
-                      {row.action} · {row.actorRole} ·{" "}
-                      {new Date(row.createdAt).toLocaleString()}
-                    </li>
-                  ))
-                )}
-              </ul>
-            </div>
-            {error ? <p className="text-destructive">{error}</p> : null}
-            {order.canCancel ? (
-              <Button
-                variant="destructive"
-                disabled={cancel.isPending}
-                onClick={onCancel}
-              >
-                Cancel order
-              </Button>
-            ) : null}
-          </div>
-        ) : null}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-export function AdminOrdersPageContent() {
-  const [search, setSearch] = useState("")
-  const debouncedSearch = useDebouncedValue(search.trim(), 350)
-  const params = useMemo(
-    () => ({
-      limit: 50,
-      ...(debouncedSearch ? { search: debouncedSearch } : {}),
-    }),
-    [debouncedSearch]
-  )
-  const listQuery = useAdminOrders(params)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const items = listQuery.data?.items ?? []
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          All orders
-        </h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Parent checkout orders and each vendor&apos;s fulfillment progress.
+    <div className="flex w-full min-w-0 flex-col gap-4">
+      <header className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            Orders
+          </h1>
+          <UniversalBadge
+            name={pagination ? String(pagination.total) : "—"}
+            colors={badgeColors.neutral}
+            showDot={false}
+            className="normal-case tabular-nums"
+          />
+          {listQuery.isFetching && !listQuery.isLoading ? (
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" />
+              Refreshing
+            </span>
+          ) : null}
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Find orders, check payment, and open a record to fulfill.
         </p>
-      </div>
+      </header>
 
-      <InputGroup className="max-w-md">
-        <InputGroupAddon>
-          <Search className="size-4" />
-        </InputGroupAddon>
-        <InputGroupInput
-          placeholder="Search order number"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-      </InputGroup>
-
-      {listQuery.isLoading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="size-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <div className="rounded-xl border bg-card shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order</TableHead>
-                <TableHead>Fulfillment</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead>Vendors</TableHead>
-                <TableHead className="text-right">Placed</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="py-10 text-center text-muted-foreground"
+      <section className="min-w-0 overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+        <Tabs
+          value={fulfillmentTab}
+          onValueChange={(value) => {
+            setFulfillmentTab(value)
+            setPage(1)
+          }}
+          className="gap-0"
+        >
+          <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0 overflow-x-auto">
+              <TabsList className={dataTableTabsList}>
+                {FULFILLMENT_TABS.map((tab) => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className={dataTableTabTrigger}
                   >
-                    No orders found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                items.map((order) => (
-                  <TableRow
-                    key={order.id}
-                    className="cursor-pointer"
-                    onClick={() => setSelectedId(order.id)}
-                  >
-                    <TableCell className="font-medium">
-                      {order.orderNumber}
-                    </TableCell>
-                    <TableCell>{order.fulfillmentStatus}</TableCell>
-                    <TableCell>{order.paymentStatus}</TableCell>
-                    <TableCell>{order.vendorOrderCount}</TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleString()}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
 
-      <AdminOrderDetailDialog
-        orderId={selectedId}
-        open={selectedId !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedId(null)
-        }}
-      />
+            <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-auto lg:shrink-0">
+              <InputGroup className="h-9 w-full bg-background sm:max-w-xs lg:w-64">
+                <InputGroupAddon>
+                  <Search />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="orders-search"
+                  value={search}
+                  onChange={(event) => {
+                    setSearch(event.target.value)
+                    setPage(1)
+                  }}
+                  placeholder="Search order number…"
+                  aria-label="Search orders"
+                />
+              </InputGroup>
+              <Select
+                value={paymentStatus || "all"}
+                onValueChange={(value) => {
+                  setPaymentStatus(value === "all" ? "" : value)
+                  setPage(1)
+                }}
+              >
+                <SelectTrigger
+                  id="orders-payment"
+                  className="h-9! w-full bg-background sm:w-44"
+                  aria-label="Payment filter"
+                >
+                  <SelectValue placeholder="All payments" />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {PAYMENT_FILTERS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <TabsContent value={fulfillmentTab} className="mt-0">
+            <AdminOrdersTable
+              items={items}
+              isLoading={listQuery.isLoading}
+              isFetching={listQuery.isFetching}
+              errorMessage={errorMessage}
+              emptyLabel="Try another search, fulfillment tab, or payment filter."
+              page={pagination?.page ?? page}
+              pageSize={pagination?.limit ?? pageSize}
+              total={pagination?.total ?? 0}
+              totalPages={pagination?.totalPages ?? 0}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              onRetry={() => void listQuery.refetch()}
+              onOpen={openOrder}
+            />
+          </TabsContent>
+        </Tabs>
+      </section>
     </div>
   )
 }

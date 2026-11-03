@@ -159,20 +159,6 @@ export const NAV = defineNav([
   },
   {
     kind: "group",
-    label: "Warehouse",
-    icon: Warehouse,
-    children: [
-      {
-        kind: "page",
-        label: "Incoming",
-        path: "/warehouse/incoming",
-        description: "Vendor shipments arriving at the NexCart warehouse.",
-        icon: PackageSearch,
-      },
-    ],
-  },
-  {
-    kind: "group",
     label: "Finance",
     icon: Wallet,
     children: [
@@ -321,4 +307,13 @@ export function pathSegment(path: string) {
 export function groupBase(group: NavGroup) {
   const [base] = group.children[0].path.split("/").filter(Boolean)
   return base ?? ""
+}
+
+/** Match a nav page and nested routes (e.g. order detail under All Orders). */
+export function isNavPathActive(path: string, pathname: string) {
+  if (pathname === path) {
+    return true
+  }
+
+  return pathname.startsWith(`${path}/`)
 }

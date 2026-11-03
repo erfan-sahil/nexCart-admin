@@ -2,75 +2,30 @@ import { api } from "@/lib/api/client"
 import { toApiError } from "@/lib/api/errors"
 import type { ApiSuccess, PaginationMeta } from "@/lib/api/types"
 
-export type InboundShipment = {
-  id: string
-  orderNumber: string
-  storeName: string
-  status: string
-  inboundCarrier: string
-  inboundTracking: string
-  items: {
-    variantId: string
-    productName: string
-    sku: string
-    quantityOrdered: number
-    quantityReceived: number
-    quantityAccepted: number
-    quantityRejected: number
-  }[]
-}
+import type { ListAdminVendorOrdersParams } from "@/features/orders/types/admin-orders.types"
+import type { AdminVendorOrderListItem } from "@/features/orders/types/admin-orders.types"
 
-export async function listInboundShipments(params: {
-  page?: number
-  limit?: number
-  status?: string
-}) {
+export async function listWarehouseQueue(
+  params: ListAdminVendorOrdersParams = {}
+) {
   try {
-    const { data } = await api.get<ApiSuccess<InboundShipment[]>>(
-      "/admin/fulfillments",
-      {
-        params,
-      }
+    const { data } = await api.get<ApiSuccess<AdminVendorOrderListItem[]>>(
+      "/admin/vendor-orders",
+      { params }
     )
+
     return {
       items: data.data,
-      pagination: data.meta?.pagination as PaginationMeta,
+      pagination: (data.meta?.pagination ?? {
+        page: params.page ?? 1,
+        limit: params.limit ?? 20,
+        total: data.data.length,
+        totalPages: 1,
+      }) as PaginationMeta,
     }
   } catch (error) {
     throw toApiError(error)
   }
 }
 
-export async function receiveInbound(
-  fulfillmentId: string,
-  items: { variantId: string; quantity: number }[]
-) {
-  const { data } = await api.post<ApiSuccess<InboundShipment>>(
-    `/admin/fulfillments/${fulfillmentId}/receive`,
-    { items }
-  )
-  return data.data
-}
-
-export async function startInspection(fulfillmentId: string) {
-  const { data } = await api.post<ApiSuccess<InboundShipment>>(
-    `/admin/fulfillments/${fulfillmentId}/inspect/start`
-  )
-  return data.data
-}
-
-export async function submitInspection(
-  fulfillmentId: string,
-  items: {
-    variantId: string
-    quantityAccepted: number
-    quantityRejected: number
-    rejectionReason?: string
-  }[]
-) {
-  const { data } = await api.post<ApiSuccess<InboundShipment>>(
-    `/admin/fulfillments/${fulfillmentId}/inspect`,
-    { items }
-  )
-  return data.data
-}
+export { updateAdminVendorOrderStatus } from "@/features/orders/services/admin-orders.api"

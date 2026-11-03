@@ -1,112 +1,154 @@
-"use client"
+import { useMemo, useState } from "react"
+import { Loader2, Search } from "lucide-react"
+import { useNavigate } from "react-router"
 
-import { Loader2 } from "lucide-react"
-import { useState } from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-
-import { Button } from "@/components/ui/button"
+import { badgeColors, UniversalBadge } from "@/components/shared"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import {
-  listInboundShipments,
-  receiveInbound,
-  startInspection,
-  submitInspection,
-} from "../services/warehouse.api"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { useDebouncedValue } from "@/hooks"
+import { ApiError } from "@/lib/api/errors"
+
+import { useAdminVendorOrders } from "@/features/orders/hooks"
+
+import { WarehouseIncomingTable } from "./warehouse-incoming-table"
+
+const STATUS_FILTERS = [
+  { value: "sending_to_warehouse", label: "In transit" },
+  { value: "received_at_warehouse", label: "Received" },
+  { value: "inspecting", label: "Inspecting" },
+  { value: "partially_accepted", label: "Partially accepted" },
+  { value: "rejected_at_warehouse", label: "Rejected" },
+] as const
 
 export function WarehouseIncomingPage() {
-  const queryClient = useQueryClient()
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const query = useQuery({
-    queryKey: ["warehouse-incoming"],
-    queryFn: () => listInboundShipments({ limit: 50 }),
-  })
-  const selected = query.data?.items.find((row) => row.id === selectedId)
+  const navigate = useNavigate()
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const [search, setSearch] = useState("")
+  const [status, setStatus] = useState<string>("sending_to_warehouse")
+  const debouncedSearch = useDebouncedValue(search.trim(), 350)
 
-  const refresh = () =>
-    queryClient.invalidateQueries({ queryKey: ["warehouse-incoming"] })
+  const params = useMemo(
+    () => ({
+      page,
+      limit: pageSize,
+      sort: "-updatedAt" as const,
+      ...(status ? { status } : {}),
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
+    }),
+    [page, pageSize, status, debouncedSearch]
+  )
 
-  const onReceive = async () => {
-    if (!selected) return
-    await receiveInbound(
-      selected.id,
-      selected.items.map((item) => ({
-        variantId: item.variantId,
-        quantity: item.quantityOrdered,
-      }))
-    )
-    await refresh()
-  }
+  const queue = useAdminVendorOrders(params)
+  const items = queue.data?.items ?? []
+  const pagination = queue.data?.pagination
 
-  const onInspect = async () => {
-    if (!selected) return
-    await startInspection(selected.id)
-    await submitInspection(
-      selected.id,
-      selected.items.map((item) => ({
-        variantId: item.variantId,
-        quantityAccepted: item.quantityOrdered,
-        quantityRejected: 0,
-      }))
-    )
-    await refresh()
-  }
+  const errorMessage =
+    queue.error instanceof ApiError
+      ? queue.error.message
+      : queue.isError
+        ? "Could not load inbound queue."
+        : null
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          Incoming shipments
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Vendor inbound shipments waiting for receive and inspection.
-        </p>
-      </div>
-      {query.isLoading ? (
-        <Loader2 className="mx-auto size-8 animate-spin text-muted-foreground" />
-      ) : (
-        <div className="rounded-xl border bg-card shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order</TableHead>
-                <TableHead>Vendor</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Tracking</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(query.data?.items ?? []).map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="cursor-pointer"
-                  onClick={() => setSelectedId(row.id)}
-                >
-                  <TableCell>{row.orderNumber}</TableCell>
-                  <TableCell>{row.storeName}</TableCell>
-                  <TableCell>{row.status}</TableCell>
-                  <TableCell>{row.inboundTracking || "—"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+      <section className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
+        <div className="mb-4">
+          <h1 className="font-display text-xl font-semibold tracking-tight">
+            Incoming vendor orders
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Vendor slices in the unified status pipeline — receive, inspect, and
+            return rejects from the parent order detail.
+          </p>
         </div>
-      )}
-      {selected ? (
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={onReceive}>Receive (full qty)</Button>
-          <Button variant="secondary" onClick={onInspect}>
-            Accept inspection (full qty)
-          </Button>
+        <FieldGroup className="gap-4 sm:flex-row sm:items-end">
+          <Field className="min-w-0 flex-1">
+            <FieldLabel htmlFor="warehouse-search">Search</FieldLabel>
+            <InputGroup className="h-10">
+              <InputGroupAddon>
+                <Search />
+              </InputGroupAddon>
+              <InputGroupInput
+                id="warehouse-search"
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value)
+                  setPage(1)
+                }}
+                placeholder="Vendor or parent order number"
+              />
+            </InputGroup>
+          </Field>
+          <Field className="sm:w-56">
+            <FieldLabel htmlFor="warehouse-status">Status</FieldLabel>
+            <Select
+              value={status || "all"}
+              onValueChange={(value) => {
+                setStatus(value === "all" ? "" : value)
+                setPage(1)
+              }}
+            >
+              <SelectTrigger id="warehouse-status" className="h-10! w-full">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All warehouse statuses</SelectItem>
+                {STATUS_FILTERS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        </FieldGroup>
+      </section>
+
+      <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-5">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold">Queue</h2>
+            <UniversalBadge
+              name={pagination ? String(pagination.total) : "—"}
+              colors={badgeColors.neutral}
+              showDot={false}
+              className="normal-case tabular-nums"
+            />
+          </div>
+          {queue.isFetching && !queue.isLoading ? (
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" />
+              Refreshing
+            </span>
+          ) : null}
         </div>
-      ) : null}
+        <WarehouseIncomingTable
+          items={items}
+          isLoading={queue.isLoading}
+          isFetching={queue.isFetching}
+          errorMessage={errorMessage}
+          page={pagination?.page ?? page}
+          pageSize={pagination?.limit ?? pageSize}
+          total={pagination?.total ?? 0}
+          totalPages={pagination?.totalPages ?? 0}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          onRetry={() => void queue.refetch()}
+          onManage={(row) => navigate(`/commerce/orders/${row.parentOrderId}`)}
+        />
+      </section>
     </div>
   )
 }

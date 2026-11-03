@@ -2,7 +2,12 @@ import { useState } from "react"
 import { ChevronRight, ChevronUp, LogOut, Settings, X } from "lucide-react"
 import { Link, NavLink, useLocation } from "react-router"
 
-import { isNavGroup, NAV, type NavPage } from "@/app/navigation"
+import {
+  isNavGroup,
+  isNavPathActive,
+  NAV,
+  type NavPage,
+} from "@/app/navigation"
 import { BrandLogo } from "@/components/shared"
 import {
   DropdownMenu,
@@ -43,7 +48,7 @@ function PageLink({
   return (
     <NavLink
       to={page.path}
-      end
+      end={!nested}
       title={page.label}
       onClick={onNavigate}
       className={({ isActive }) =>
@@ -128,11 +133,12 @@ export function AdminSidebar({
             )
           }
 
-          const activeChild = entry.children.find(
-            (page) => page.path === pathname
+          const activeChild = entry.children.find((page) =>
+            isNavPathActive(page.path, pathname)
           )
           const groupActive = Boolean(activeChild)
-          const open = openGroups[entry.label] ?? groupActive
+          const manualOpen = openGroups[entry.label]
+          const open = manualOpen ?? groupActive
           const Icon = entry.icon
           const iconTarget = activeChild?.path ?? entry.children[0].path
 

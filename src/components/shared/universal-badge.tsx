@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 export type BadgeColorCodes = {
@@ -24,17 +25,16 @@ export function UniversalBadge({
   className,
 }: UniversalBadgeProps) {
   return (
-    <span
-      className={cn(
-        "inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap capitalize",
-        className
-      )}
+    <Badge
+      variant="outline"
+      data-icon={Icon ? "inline-start" : undefined}
+      className={cn("border-transparent capitalize shadow-none", className)}
       style={{
         backgroundColor: colors.background,
         color: colors.foreground,
       }}
     >
-      {Icon ? <Icon className="size-3 shrink-0" aria-hidden /> : null}
+      {Icon ? <Icon data-icon="inline-start" aria-hidden /> : null}
       {showDot ? (
         <span
           className="size-1.5 shrink-0 rounded-full"
@@ -43,6 +43,6 @@ export function UniversalBadge({
         />
       ) : null}
       {name}
-    </span>
+    </Badge>
   )
 }

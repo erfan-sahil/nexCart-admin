@@ -10,6 +10,11 @@ export type CommissionSettings = {
 export type VendorEarningsRow = {
   storeId: string
   storeName: string
+  /** Store-specific override; null when using the platform default. */
+  commissionRate: number | null
+  /** Rate actually applied to new orders for this store. */
+  effectiveCommissionRate: number
+  hasOverride: boolean
   pendingSettlement: number
   availableBalance: number
   withdrawnBalance: number
@@ -58,10 +63,13 @@ export async function setStoreCommission(
   commissionRate: number | null
 ) {
   try {
-    const { data } = await api.patch<ApiSuccess<{ storeId: string }>>(
-      `/admin/commission/stores/${storeId}`,
-      { commissionRate }
-    )
+    const { data } = await api.patch<
+      ApiSuccess<{
+        storeId: string
+        storeName?: string
+        commissionRate?: number | null
+      }>
+    >(`/admin/commission/stores/${storeId}`, { commissionRate })
     return data.data
   } catch (error) {
     throw toApiError(error)

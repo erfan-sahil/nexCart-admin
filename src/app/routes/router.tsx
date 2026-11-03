@@ -17,6 +17,7 @@ import { CategoriesPage } from "@/pages/catalog/categories/page"
 import { ProductApprovalsPage } from "@/pages/catalog/product-approvals/page"
 import { DisputesPage } from "@/pages/commerce/disputes/page"
 import { OrdersPage } from "@/pages/commerce/orders/page"
+import { AdminOrderDetailPage } from "@/pages/commerce/orders/detail/page"
 import { PaymentsPage } from "@/pages/commerce/payments/page"
 import { ReturnsPage } from "@/pages/commerce/returns/page"
 import { DashboardPage } from "@/pages/dashboard/page"
@@ -38,8 +39,6 @@ import { BuyersPage } from "@/pages/users/buyers/page"
 import { ShopsPage } from "@/pages/users/shops/page"
 import { VendorApplicationsPage } from "@/pages/users/vendor-applications/page"
 import { VendorsPage } from "@/pages/users/vendors/page"
-import { WarehouseIncomingRoutePage } from "@/pages/warehouse/incoming/page"
-
 const pages: Record<AdminPath, ComponentType> = {
   "/": DashboardPage,
   "/users/buyers": BuyersPage,
@@ -53,7 +52,6 @@ const pages: Record<AdminPath, ComponentType> = {
   "/commerce/payments": PaymentsPage,
   "/commerce/returns": ReturnsPage,
   "/commerce/disputes": DisputesPage,
-  "/warehouse/incoming": WarehouseIncomingRoutePage,
   "/finance/commissions": CommissionsPage,
   "/finance/vendor-earnings": VendorEarningsPage,
   "/finance/withdrawals": WithdrawalsPage,
@@ -98,6 +96,18 @@ const childRoutes: RouteObject[] = NAV.map((entry) => {
         element: <Navigate to={pathSegment(first.path)} replace />,
       },
       ...entry.children.map((page) => pageRoute(page)),
+      ...(groupBase(entry) === "commerce"
+        ? [
+            {
+              path: "orders/:orderId",
+              element: createElement(AdminOrderDetailPage),
+              handle: {
+                title: "Order detail",
+                description: "Manage vendor inbound, outbound, and COD steps.",
+              } satisfies PageHandle,
+            },
+          ]
+        : []),
     ],
   }
 })
