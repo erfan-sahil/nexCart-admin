@@ -1,7 +1,7 @@
 import { ArrowLeft, Loader2 } from "lucide-react"
 import { Link, useParams } from "react-router"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import { ApiError } from "@/lib/api/errors"
 import { formatDateTime } from "@/lib/format"
@@ -9,9 +9,9 @@ import { formatDateTime } from "@/lib/format"
 import { useAdminOrder, useCancelAdminOrder } from "../hooks"
 import {
   formatMoney,
-  FULFILLMENT_STATUS_LABEL,
-  ORDER_STATUS_LABEL,
-  PAYMENT_STATUS_LABEL,
+  fulfillmentStatusBadge,
+  orderStatusBadge,
+  paymentStatusBadge,
 } from "../labels"
 import { CodActionsCard } from "./cod-actions-card"
 import { ParentOrderFulfillmentCard } from "./parent-order-fulfillment-card"
@@ -59,6 +59,10 @@ export function AdminOrderDetailPageContent() {
     )
   }
 
+  const status = orderStatusBadge(order.status)
+  const fulfillment = fulfillmentStatusBadge(order.fulfillmentStatus)
+  const payment = paymentStatusBadge(order.paymentStatus)
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <div className="flex flex-wrap items-center gap-3">
@@ -82,21 +86,19 @@ export function AdminOrderDetailPageContent() {
           </div>
           <div className="flex flex-wrap gap-2">
             <UniversalBadge
-              name={ORDER_STATUS_LABEL[order.status] ?? order.status}
-              colors={badgeColors.submitted}
+              name={status.name}
+              colors={status.colors}
+              icon={status.icon}
             />
             <UniversalBadge
-              name={
-                FULFILLMENT_STATUS_LABEL[order.fulfillmentStatus] ??
-                order.fulfillmentStatus
-              }
-              colors={badgeColors.neutral}
+              name={fulfillment.name}
+              colors={fulfillment.colors}
+              icon={fulfillment.icon}
             />
             <UniversalBadge
-              name={
-                PAYMENT_STATUS_LABEL[order.paymentStatus] ?? order.paymentStatus
-              }
-              colors={badgeColors.neutral}
+              name={payment.name}
+              colors={payment.colors}
+              icon={payment.icon}
             />
           </div>
         </div>

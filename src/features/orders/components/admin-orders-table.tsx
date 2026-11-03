@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-table/legacy"
 import { ChevronLeft, ChevronRight, Eye, MoreHorizontal } from "lucide-react"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import { UniversalBadge } from "@/components/shared"
 import {
   dataTableBodyCell,
   dataTableHeadCell,
@@ -44,9 +44,9 @@ import { cn } from "@/lib/utils"
 
 import {
   formatMoney,
-  FULFILLMENT_STATUS_LABEL,
-  ORDER_STATUS_LABEL,
-  PAYMENT_STATUS_LABEL,
+  fulfillmentStatusBadge,
+  orderStatusBadge,
+  paymentStatusBadge,
 } from "../labels"
 import type { AdminOrderListItem } from "../types/admin-orders.types"
 
@@ -113,37 +113,50 @@ export function AdminOrdersTable({
       {
         accessorKey: "orderNumber",
         header: "Order",
-        cell: ({ row }) => (
-          <div>
-            <p className="font-medium">{row.original.orderNumber}</p>
-            <p className="text-xs text-muted-foreground">
-              {ORDER_STATUS_LABEL[row.original.status] ?? row.original.status}
-            </p>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const status = orderStatusBadge(row.original.status)
+
+          return (
+            <div className="flex flex-col items-start gap-1.5">
+              <p className="font-medium">{row.original.orderNumber}</p>
+              <UniversalBadge
+                name={status.name}
+                colors={status.colors}
+                icon={status.icon}
+              />
+            </div>
+          )
+        },
       },
       {
         accessorKey: "fulfillmentStatus",
         header: "Fulfillment",
-        cell: ({ row }) => (
-          <UniversalBadge
-            name={
-              FULFILLMENT_STATUS_LABEL[row.original.fulfillmentStatus] ??
-              row.original.fulfillmentStatus
-            }
-            colors={badgeColors.neutral}
-          />
-        ),
+        cell: ({ row }) => {
+          const status = fulfillmentStatusBadge(row.original.fulfillmentStatus)
+
+          return (
+            <UniversalBadge
+              name={status.name}
+              colors={status.colors}
+              icon={status.icon}
+            />
+          )
+        },
       },
       {
         accessorKey: "paymentStatus",
         header: "Payment",
-        cell: ({ row }) => (
-          <span className="text-sm">
-            {PAYMENT_STATUS_LABEL[row.original.paymentStatus] ??
-              row.original.paymentStatus}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const status = paymentStatusBadge(row.original.paymentStatus)
+
+          return (
+            <UniversalBadge
+              name={status.name}
+              colors={status.colors}
+              icon={status.icon}
+            />
+          )
+        },
       },
       {
         accessorKey: "grandTotal",
