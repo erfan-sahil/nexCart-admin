@@ -40,7 +40,7 @@ export function AdminOrderDetailPageContent() {
 
   if (detailQuery.isLoading) {
     return (
-      <div className="flex justify-center py-20">
+      <div className="flex w-full justify-center py-24">
         <Loader2 className="size-8 animate-spin text-muted-foreground" />
       </div>
     )
@@ -48,7 +48,7 @@ export function AdminOrderDetailPageContent() {
 
   if (errorMessage || !order) {
     return (
-      <div className="mx-auto max-w-lg space-y-4 py-16 text-center">
+      <div className="flex w-full flex-col items-center gap-4 py-20 text-center">
         <p className="text-sm text-destructive">
           {errorMessage ?? "Order not found."}
         </p>
@@ -62,120 +62,228 @@ export function AdminOrderDetailPageContent() {
   const status = orderStatusBadge(order.status)
   const fulfillment = fulfillmentStatusBadge(order.fulfillmentStatus)
   const payment = paymentStatusBadge(order.paymentStatus)
+  const shipLine = [order.shipping.line1, order.shipping.line2]
+    .filter(Boolean)
+    .join(", ")
+  const shipLocality = [
+    order.shipping.city,
+    order.shipping.state,
+    order.shipping.postalCode,
+  ]
+    .filter(Boolean)
+    .join(", ")
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <Button type="button" variant="ghost" size="sm" asChild>
+    <div className="flex w-full min-w-0 flex-col gap-6">
+      {/* Identity */}
+      <header className="space-y-4">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="-ml-2 w-fit text-muted-foreground"
+          asChild
+        >
           <Link to="/commerce/orders">
             <ArrowLeft />
-            All orders
+            Orders
           </Link>
         </Button>
-      </div>
 
-      <header className="rounded-xl border border-border bg-card p-5 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="font-display text-2xl font-semibold tracking-tight">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 space-y-2">
+            <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               {order.orderNumber}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Placed {formatDateTime(order.createdAt)}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <UniversalBadge
-              name={status.name}
-              colors={status.colors}
-              icon={status.icon}
-            />
-            <UniversalBadge
-              name={fulfillment.name}
-              colors={fulfillment.colors}
-              icon={fulfillment.icon}
-            />
-            <UniversalBadge
-              name={payment.name}
-              colors={payment.colors}
-              icon={payment.icon}
-            />
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <p className="text-xs text-muted-foreground uppercase">Customer</p>
-            <p className="text-sm font-medium">
-              {order.shipping.recipientName}
-            </p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <UniversalBadge
+                name={status.name}
+                colors={status.colors}
+                icon={status.icon}
+              />
+              <UniversalBadge
+                name={fulfillment.name}
+                colors={fulfillment.colors}
+                icon={fulfillment.icon}
+              />
+              <UniversalBadge
+                name={payment.name}
+                colors={payment.colors}
+                icon={payment.icon}
+              />
+            </div>
             <p className="text-sm text-muted-foreground">
-              {order.shipping.phone}
+              Placed {formatDateTime(order.createdAt)}
+              <span className="mx-1.5 text-border">·</span>
+              {order.vendorOrders.length} vendor
+              {order.vendorOrders.length === 1 ? "" : "s"}
             </p>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground uppercase">Ship to</p>
-            <p className="text-sm">
-              {order.shipping.line1}, {order.shipping.city}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground uppercase">Payment</p>
-            <p className="text-sm">{order.paymentMethod.toUpperCase()}</p>
-            <p className="text-sm tabular-nums">
-              Paid {formatMoney(order.currency, order.payment.amountPaid)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground uppercase">Total</p>
-            <p className="text-lg font-semibold tabular-nums">
-              {formatMoney(order.currency, order.grandTotal)}
-            </p>
+
+          <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+            <div className="min-w-[8.5rem]">
+              <p className="text-xs text-muted-foreground">Grand total</p>
+              <p className="text-2xl font-semibold tracking-tight tabular-nums">
+                {formatMoney(order.currency, order.grandTotal)}
+              </p>
+            </div>
+            {order.canCancel ? (
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={cancel.isPending}
+                onClick={() => void onCancel()}
+              >
+                {cancel.isPending ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : null}
+                Cancel order
+              </Button>
+            ) : null}
           </div>
         </div>
-
-        {order.canCancel ? (
-          <Button
-            type="button"
-            variant="destructive"
-            className="mt-5"
-            disabled={cancel.isPending}
-            onClick={() => void onCancel()}
-          >
-            Cancel entire order
-          </Button>
-        ) : null}
       </header>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-semibold">Vendor fulfillment</h2>
-        {order.vendorOrders.map((vendorOrder) => (
-          <VendorOrderFulfillmentCard
-            key={vendorOrder.id}
-            order={order}
-            vendorOrder={vendorOrder}
-          />
-        ))}
+      {/* Context: who / where / money */}
+      <section className="grid gap-4 lg:grid-cols-2">
+        <article className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
+          <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Delivery
+          </h2>
+          <dl className="mt-3 space-y-3 text-sm">
+            <div>
+              <dt className="text-muted-foreground">Customer</dt>
+              <dd className="mt-0.5 font-medium">
+                {order.shipping.recipientName}
+              </dd>
+              <dd className="text-muted-foreground">{order.shipping.phone}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">Address</dt>
+              <dd className="mt-0.5">{shipLine}</dd>
+              {shipLocality ? (
+                <dd className="text-muted-foreground">{shipLocality}</dd>
+              ) : null}
+              {order.shipping.country ? (
+                <dd className="text-muted-foreground">
+                  {order.shipping.country}
+                </dd>
+              ) : null}
+            </div>
+          </dl>
+        </article>
+
+        <article className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
+          <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Payment summary
+          </h2>
+          <dl className="mt-3 space-y-2.5 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <dt className="text-muted-foreground">Method</dt>
+              <dd className="font-medium uppercase">{order.paymentMethod}</dd>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <dt className="text-muted-foreground">Items</dt>
+              <dd className="tabular-nums">
+                {formatMoney(order.currency, order.totals.itemsSubtotal)}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <dt className="text-muted-foreground">Delivery fee</dt>
+              <dd className="tabular-nums">
+                {formatMoney(order.currency, order.totals.deliveryFee)}
+              </dd>
+            </div>
+            {order.totals.discountTotal > 0 ? (
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted-foreground">Discount</dt>
+                <dd className="text-emerald-700 tabular-nums dark:text-emerald-400">
+                  −{formatMoney(order.currency, order.totals.discountTotal)}
+                </dd>
+              </div>
+            ) : null}
+            <div className="flex items-center justify-between gap-3 border-t border-border pt-2.5">
+              <dt className="font-medium">Paid</dt>
+              <dd className="font-medium tabular-nums">
+                {formatMoney(order.currency, order.payment.amountPaid)}
+              </dd>
+            </div>
+            {order.payment.balanceDue > 0 ? (
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted-foreground">Balance due</dt>
+                <dd className="font-medium text-amber-700 tabular-nums dark:text-amber-300">
+                  {formatMoney(order.currency, order.payment.balanceDue)}
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+        </article>
       </section>
 
-      <ParentOrderFulfillmentCard order={order} />
-      <CodActionsCard order={order} />
+      {/* Workflow: intake left, outbound + audit right */}
+      <div className="grid w-full min-w-0 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]">
+        <section className="min-w-0 space-y-3">
+          <div>
+            <h2 className="text-base font-semibold tracking-tight">
+              Vendor intake
+            </h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Receive, inspect, and accept each vendor slice before packing.
+            </p>
+          </div>
+          <div className="space-y-3">
+            {order.vendorOrders.map((vendorOrder) => (
+              <VendorOrderFulfillmentCard
+                key={vendorOrder.id}
+                order={order}
+                vendorOrder={vendorOrder}
+              />
+            ))}
+          </div>
+        </section>
 
-      <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
-        <h2 className="text-sm font-semibold">Activity</h2>
-        <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto text-sm text-muted-foreground">
-          {order.activity.length === 0 ? (
-            <li>No activity recorded yet.</li>
-          ) : (
-            order.activity.map((row) => (
-              <li key={row.id}>
-                {row.action.replaceAll("_", " ")} · {row.actorRole} ·{" "}
-                {formatDateTime(row.createdAt)}
-              </li>
-            ))
-          )}
-        </ul>
-      </section>
+        <aside className="min-w-0 space-y-3 xl:sticky xl:top-20 xl:self-start">
+          <div>
+            <h2 className="text-base font-semibold tracking-tight">
+              Outbound & records
+            </h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Ship the parent order, settle COD, and review activity.
+            </p>
+          </div>
+          <ParentOrderFulfillmentCard order={order} />
+          <CodActionsCard order={order} />
+
+          <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-5">
+              <h3 className="text-sm font-semibold">Activity</h3>
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {order.activity.length}
+              </span>
+            </div>
+            {order.activity.length === 0 ? (
+              <p className="px-4 py-8 text-center text-sm text-muted-foreground sm:px-5">
+                No activity recorded yet.
+              </p>
+            ) : (
+              <ol className="max-h-80 divide-y divide-border overflow-y-auto">
+                {order.activity.map((row) => (
+                  <li key={row.id} className="px-4 py-3 sm:px-5">
+                    <p className="text-sm font-medium capitalize">
+                      {row.action.replaceAll("_", " ")}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {row.actorRole}
+                      <span className="mx-1.5 text-border">·</span>
+                      {formatDateTime(row.createdAt)}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        </aside>
+      </div>
     </div>
   )
 }

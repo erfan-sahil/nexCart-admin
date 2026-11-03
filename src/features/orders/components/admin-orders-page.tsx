@@ -4,12 +4,9 @@ import { useNavigate } from "react-router"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import {
-  dataTableTabSectionHeader,
-  dataTableTabStrip,
   dataTableTabsList,
   dataTableTabTrigger,
 } from "@/components/shared/data-table-section"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   InputGroup,
   InputGroupAddon,
@@ -89,79 +86,32 @@ export function AdminOrdersPageContent() {
     navigate(`/commerce/orders/${order.id}`)
   }
 
-  const table = (
-    <AdminOrdersTable
-      items={items}
-      isLoading={listQuery.isLoading}
-      isFetching={listQuery.isFetching}
-      errorMessage={errorMessage}
-      emptyLabel="Try another search, fulfillment tab, or payment filter."
-      page={pagination?.page ?? page}
-      pageSize={pagination?.limit ?? pageSize}
-      total={pagination?.total ?? 0}
-      totalPages={pagination?.totalPages ?? 0}
-      onPageChange={setPage}
-      onPageSizeChange={setPageSize}
-      onRetry={() => void listQuery.refetch()}
-      onOpen={openOrder}
-    />
-  )
-
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-      <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
-        <div className="mb-4">
-          <h1 className="font-display text-xl font-semibold tracking-tight">
-            All orders
+    <div className="flex w-full min-w-0 flex-col gap-4">
+      <header className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            Orders
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Search by order number, filter payment, and browse fulfillment by
-            tab.
-          </p>
+          <UniversalBadge
+            name={pagination ? String(pagination.total) : "—"}
+            colors={badgeColors.neutral}
+            showDot={false}
+            className="normal-case tabular-nums"
+          />
+          {listQuery.isFetching && !listQuery.isLoading ? (
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" />
+              Refreshing
+            </span>
+          ) : null}
         </div>
-        <FieldGroup className="gap-4 sm:flex-row sm:items-end">
-          <Field className="min-w-0 flex-1">
-            <FieldLabel htmlFor="orders-search">Search orders</FieldLabel>
-            <InputGroup className="h-10">
-              <InputGroupAddon>
-                <Search />
-              </InputGroupAddon>
-              <InputGroupInput
-                id="orders-search"
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value)
-                  setPage(1)
-                }}
-                placeholder="Order number"
-              />
-            </InputGroup>
-          </Field>
-          <Field className="sm:w-56">
-            <FieldLabel htmlFor="orders-payment">Payment</FieldLabel>
-            <Select
-              value={paymentStatus || "all"}
-              onValueChange={(value) => {
-                setPaymentStatus(value === "all" ? "" : value)
-                setPage(1)
-              }}
-            >
-              <SelectTrigger id="orders-payment" className="h-10! w-full">
-                <SelectValue placeholder="All payments" />
-              </SelectTrigger>
-              <SelectContent align="end">
-                {PAYMENT_FILTERS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        </FieldGroup>
-      </section>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Find orders, check payment, and open a record to fulfill.
+        </p>
+      </header>
 
-      <section className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+      <section className="min-w-0 overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
         <Tabs
           value={fulfillmentTab}
           onValueChange={(value) => {
@@ -170,38 +120,78 @@ export function AdminOrdersPageContent() {
           }}
           className="gap-0"
         >
-          <div className={dataTableTabSectionHeader}>
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h2 className="text-sm font-semibold">Fulfillment</h2>
-              <UniversalBadge
-                name={pagination ? String(pagination.total) : "—"}
-                colors={badgeColors.neutral}
-                showDot={false}
-                className="normal-case tabular-nums"
-              />
+          <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0 overflow-x-auto">
+              <TabsList className={dataTableTabsList}>
+                {FULFILLMENT_TABS.map((tab) => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className={dataTableTabTrigger}
+                  >
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
             </div>
-            {listQuery.isFetching && !listQuery.isLoading ? (
-              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Loader2 className="size-3.5 animate-spin" />
-                Refreshing
-              </span>
-            ) : null}
-          </div>
-          <div className={dataTableTabStrip}>
-            <TabsList className={dataTableTabsList}>
-              {FULFILLMENT_TABS.map((tab) => (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  className={dataTableTabTrigger}
+
+            <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-auto lg:shrink-0">
+              <InputGroup className="h-9 w-full bg-background sm:max-w-xs lg:w-64">
+                <InputGroupAddon>
+                  <Search />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="orders-search"
+                  value={search}
+                  onChange={(event) => {
+                    setSearch(event.target.value)
+                    setPage(1)
+                  }}
+                  placeholder="Search order number…"
+                  aria-label="Search orders"
+                />
+              </InputGroup>
+              <Select
+                value={paymentStatus || "all"}
+                onValueChange={(value) => {
+                  setPaymentStatus(value === "all" ? "" : value)
+                  setPage(1)
+                }}
+              >
+                <SelectTrigger
+                  id="orders-payment"
+                  className="h-9! w-full bg-background sm:w-44"
+                  aria-label="Payment filter"
                 >
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+                  <SelectValue placeholder="All payments" />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {PAYMENT_FILTERS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+
           <TabsContent value={fulfillmentTab} className="mt-0">
-            {table}
+            <AdminOrdersTable
+              items={items}
+              isLoading={listQuery.isLoading}
+              isFetching={listQuery.isFetching}
+              errorMessage={errorMessage}
+              emptyLabel="Try another search, fulfillment tab, or payment filter."
+              page={pagination?.page ?? page}
+              pageSize={pagination?.limit ?? pageSize}
+              total={pagination?.total ?? 0}
+              totalPages={pagination?.totalPages ?? 0}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              onRetry={() => void listQuery.refetch()}
+              onOpen={openOrder}
+            />
           </TabsContent>
         </Tabs>
       </section>

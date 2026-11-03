@@ -4,7 +4,7 @@ import {
   useLegacyTable,
   type LegacyColumnDef,
 } from "@tanstack/react-table/legacy"
-import { ChevronLeft, ChevronRight, Eye, MoreHorizontal } from "lucide-react"
+import { ChevronLeft, ChevronRight, Eye } from "lucide-react"
 
 import { UniversalBadge } from "@/components/shared"
 import {
@@ -12,12 +12,6 @@ import {
   dataTableHeadCell,
 } from "@/components/shared/data-table-section"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
   Pagination,
   PaginationContent,
@@ -113,18 +107,29 @@ export function AdminOrdersTable({
       {
         accessorKey: "orderNumber",
         header: "Order",
+        cell: ({ row }) => (
+          <div className="min-w-0">
+            <p className="font-medium text-foreground">
+              {row.original.orderNumber}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {formatDateTime(row.original.createdAt)}
+            </p>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: "Order status",
         cell: ({ row }) => {
           const status = orderStatusBadge(row.original.status)
 
           return (
-            <div className="flex flex-col items-start gap-1.5">
-              <p className="font-medium">{row.original.orderNumber}</p>
-              <UniversalBadge
-                name={status.name}
-                colors={status.colors}
-                icon={status.icon}
-              />
-            </div>
+            <UniversalBadge
+              name={status.name}
+              colors={status.colors}
+              icon={status.icon}
+            />
           )
         },
       },
@@ -150,37 +155,32 @@ export function AdminOrdersTable({
           const status = paymentStatusBadge(row.original.paymentStatus)
 
           return (
-            <UniversalBadge
-              name={status.name}
-              colors={status.colors}
-              icon={status.icon}
-            />
+            <div className="flex flex-col items-start gap-1">
+              <UniversalBadge
+                name={status.name}
+                colors={status.colors}
+                icon={status.icon}
+              />
+              <span className="text-xs text-muted-foreground uppercase">
+                {row.original.paymentMethod}
+              </span>
+            </div>
           )
         },
       },
       {
         accessorKey: "grandTotal",
-        header: "Total",
+        header: () => <span className="block text-right">Total</span>,
         cell: ({ row }) => (
-          <span className="tabular-nums">
-            {formatMoney(row.original.currency, row.original.grandTotal)}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "vendorOrderCount",
-        header: "Vendors",
-        cell: ({ row }) => (
-          <span className="tabular-nums">{row.original.vendorOrderCount}</span>
-        ),
-      },
-      {
-        accessorKey: "createdAt",
-        header: "Placed",
-        cell: ({ row }) => (
-          <span className="text-muted-foreground">
-            {formatDateTime(row.original.createdAt)}
-          </span>
+          <div className="text-right">
+            <p className="font-medium tabular-nums">
+              {formatMoney(row.original.currency, row.original.grandTotal)}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
+              {row.original.vendorOrderCount} vendor
+              {row.original.vendorOrderCount === 1 ? "" : "s"}
+            </p>
+          </div>
         ),
       },
       {
@@ -191,28 +191,19 @@ export function AdminOrdersTable({
 
           return (
             <div className="flex justify-end">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={`Actions for ${order.orderNumber}`}
-                  >
-                    <MoreHorizontal />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      window.setTimeout(() => onOpen(order), 0)
-                    }}
-                  >
-                    <Eye />
-                    Manage
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-label={`Open ${order.orderNumber}`}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onOpen(order)
+                }}
+              >
+                <Eye />
+                Open
+              </Button>
             </div>
           )
         },
@@ -256,7 +247,7 @@ export function AdminOrdersTable({
   return (
     <div>
       <Table>
-        <TableHeader className="bg-muted/50">
+        <TableHeader className="bg-muted/40">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="hover:bg-transparent">
               {headerGroup.headers.map((header) => (
@@ -276,7 +267,7 @@ export function AdminOrdersTable({
           {isLoading ? (
             Array.from({ length: 6 }, (_, index) => (
               <TableRow key={index} className="hover:bg-transparent">
-                <TableCell colSpan={columns.length} className="px-4 py-2">
+                <TableCell colSpan={columns.length} className="px-4 py-3">
                   <div className="h-3 w-48 animate-pulse rounded-md bg-muted" />
                 </TableCell>
               </TableRow>
@@ -314,13 +305,17 @@ export function AdminOrdersTable({
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                className="cursor-pointer hover:bg-brand-soft/60"
+                className="cursor-pointer hover:bg-brand-soft/50"
                 onClick={() => onOpen(row.original)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
-                    className={dataTableBodyCell}
+                    className={cn(
+                      dataTableBodyCell,
+                      cell.column.id === "grandTotal" && "text-right",
+                      cell.column.id === "actions" && "w-28"
+                    )}
                     onClick={
                       cell.column.id === "actions"
                         ? (event) => event.stopPropagation()
@@ -337,7 +332,7 @@ export function AdminOrdersTable({
       </Table>
 
       {showPagination ? (
-        <div className="flex flex-col gap-3 border-t border-border bg-muted/40 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div className="flex flex-col gap-3 border-t border-border bg-muted/30 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
             <p className="tabular-nums">
               <span className="font-medium text-foreground">

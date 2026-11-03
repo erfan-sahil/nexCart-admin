@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Banknote } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -38,94 +39,103 @@ export function CodActionsCard({ order }: CodActionsCardProps) {
   }
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <h2 className="text-sm font-semibold">COD reconciliation</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Collection status:{" "}
-        {order.payment.codCollectionStatus.replaceAll("_", " ")}
-      </p>
-      <p className="mt-2 text-sm">
-        Balance due{" "}
-        <span className="font-medium tabular-nums">
-          {formatMoney(order.currency, order.payment.balanceDue)}
+    <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <div className="flex items-start gap-3 border-b border-border px-4 py-3.5 sm:px-5">
+        <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
+          <Banknote className="size-4" />
         </span>
-      </p>
-
-      <FieldGroup className="mt-4 gap-3 sm:grid-cols-2">
-        <Field>
-          <FieldLabel htmlFor="cod-collected">Amount collected</FieldLabel>
-          <Input
-            id="cod-collected"
-            type="number"
-            min={0}
-            value={amountCollected}
-            onChange={(event) => setAmountCollected(event.target.value)}
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="cod-reference">Courier reference</FieldLabel>
-          <Input
-            id="cod-reference"
-            value={courierReference}
-            onChange={(event) => setCourierReference(event.target.value)}
-            placeholder="Optional"
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="cod-remit">Remitted amount</FieldLabel>
-          <Input
-            id="cod-remit"
-            type="number"
-            min={0}
-            value={remittedAmount}
-            onChange={(event) => setRemittedAmount(event.target.value)}
-          />
-        </Field>
-      </FieldGroup>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Button
-          type="button"
-          size="sm"
-          disabled={pending}
-          onClick={() =>
-            void handle(() =>
-              collect.mutateAsync({
-                amountCollected: Number(amountCollected),
-                ...(courierReference.trim()
-                  ? { courierReference: courierReference.trim() }
-                  : {}),
-              })
-            )
-          }
-        >
-          Record collection
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          disabled={pending}
-          onClick={() =>
-            void handle(() =>
-              remit.mutateAsync({ remittedAmount: Number(remittedAmount) })
-            )
-          }
-        >
-          Record remittance
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={pending}
-          onClick={() => void handle(() => reconcile.mutateAsync())}
-        >
-          Reconcile
-        </Button>
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold">COD collection</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground capitalize">
+            {order.payment.codCollectionStatus.replaceAll("_", " ")}
+          </p>
+        </div>
       </div>
 
-      {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+      <div className="space-y-4 px-4 py-4 sm:px-5">
+        <p className="text-sm">
+          Balance due{" "}
+          <span className="font-semibold tabular-nums">
+            {formatMoney(order.currency, order.payment.balanceDue)}
+          </span>
+        </p>
+
+        <FieldGroup className="gap-3">
+          <Field>
+            <FieldLabel htmlFor="cod-collected">Amount collected</FieldLabel>
+            <Input
+              id="cod-collected"
+              type="number"
+              min={0}
+              value={amountCollected}
+              onChange={(event) => setAmountCollected(event.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="cod-reference">Courier reference</FieldLabel>
+            <Input
+              id="cod-reference"
+              value={courierReference}
+              onChange={(event) => setCourierReference(event.target.value)}
+              placeholder="Optional"
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="cod-remit">Remitted amount</FieldLabel>
+            <Input
+              id="cod-remit"
+              type="number"
+              min={0}
+              value={remittedAmount}
+              onChange={(event) => setRemittedAmount(event.target.value)}
+            />
+          </Field>
+        </FieldGroup>
+
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            size="sm"
+            disabled={pending}
+            onClick={() =>
+              void handle(() =>
+                collect.mutateAsync({
+                  amountCollected: Number(amountCollected),
+                  ...(courierReference.trim()
+                    ? { courierReference: courierReference.trim() }
+                    : {}),
+                })
+              )
+            }
+          >
+            Record collection
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={pending}
+            onClick={() =>
+              void handle(() =>
+                remit.mutateAsync({ remittedAmount: Number(remittedAmount) })
+              )
+            }
+          >
+            Record remittance
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={pending}
+            onClick={() => void handle(() => reconcile.mutateAsync())}
+          >
+            Reconcile
+          </Button>
+        </div>
+
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      </div>
     </section>
   )
 }

@@ -75,12 +75,16 @@ export function VendorOrderFulfillmentCard({
   }
 
   return (
-    <article className="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+    <article className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-4 py-3.5 sm:px-5">
+        <div className="min-w-0">
           <p className="font-medium">{vendorOrder.storeName}</p>
-          <p className="text-sm text-muted-foreground">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             {vendorOrder.vendorOrderNumber}
+            <span className="mx-1.5 text-border">·</span>
+            <span className="tabular-nums">
+              {formatMoney(order.currency, vendorOrder.itemsSubtotal)}
+            </span>
           </p>
         </div>
         <UniversalBadge
@@ -91,27 +95,47 @@ export function VendorOrderFulfillmentCard({
         />
       </div>
 
-      <ul className="mt-4 space-y-2 text-sm">
-        {vendorOrder.items.map((line) => (
-          <li
-            key={line.variantId}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-muted/40 px-3 py-2"
-          >
-            <span>
-              {line.productName}{" "}
-              <span className="text-muted-foreground">· {line.sku}</span>
-            </span>
-            <span className="text-muted-foreground tabular-nums">
-              accepted {line.acceptedQtyCumulative} / target {line.targetQty}{" "}
-              (ordered {line.expectedQty})
-            </span>
-          </li>
-        ))}
-      </ul>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[28rem] text-left text-sm">
+          <thead className="border-b border-border bg-muted/30 text-xs text-muted-foreground">
+            <tr>
+              <th className="px-4 py-2 font-medium sm:px-5">Item</th>
+              <th className="px-3 py-2 text-right font-medium tabular-nums">
+                Ordered
+              </th>
+              <th className="px-3 py-2 text-right font-medium tabular-nums">
+                Target
+              </th>
+              <th className="px-4 py-2 text-right font-medium tabular-nums sm:px-5">
+                Accepted
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {vendorOrder.items.map((line) => (
+              <tr key={line.variantId}>
+                <td className="px-4 py-2.5 sm:px-5">
+                  <p className="font-medium">{line.productName}</p>
+                  <p className="text-xs text-muted-foreground">{line.sku}</p>
+                </td>
+                <td className="px-3 py-2.5 text-right text-muted-foreground tabular-nums">
+                  {line.expectedQty}
+                </td>
+                <td className="px-3 py-2.5 text-right tabular-nums">
+                  {line.targetQty}
+                </td>
+                <td className="px-4 py-2.5 text-right font-medium tabular-nums sm:px-5">
+                  {line.acceptedQtyCumulative}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {vendorOrder.inboundBatches.length > 0 ? (
-        <div className="mt-4">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        <div className="border-t border-border px-4 py-3 sm:px-5">
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
             Inbound batches
           </p>
           <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
@@ -128,15 +152,15 @@ export function VendorOrderFulfillmentCard({
       ) : null}
 
       {vendorOrder.rejectReturns.length > 0 ? (
-        <div className="mt-4">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        <div className="border-t border-border px-4 py-3 sm:px-5">
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
             Reject returns
           </p>
           <ul className="mt-2 space-y-2">
             {vendorOrder.rejectReturns.map((ret) => (
               <li
                 key={ret.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed px-3 py-2 text-sm"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2 text-sm"
               >
                 <span>{ret.status.replaceAll("_", " ")}</span>
                 {ret.status === "pending_return" ? (
@@ -161,7 +185,7 @@ export function VendorOrderFulfillmentCard({
         </div>
       ) : null}
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2 border-t border-border bg-muted/20 px-4 py-3 sm:px-5">
         {vendorOrder.status === "sending_to_warehouse" ? (
           <Button
             type="button"
@@ -221,7 +245,7 @@ export function VendorOrderFulfillmentCard({
           </Button>
         ) : null}
         {packReady ? (
-          <span className="inline-flex items-center text-xs text-emerald-700">
+          <span className="inline-flex items-center text-xs font-medium text-emerald-700 dark:text-emerald-400">
             Ready to pack with siblings
           </span>
         ) : null}
@@ -231,6 +255,7 @@ export function VendorOrderFulfillmentCard({
             type="button"
             size="sm"
             variant="destructive"
+            className="ml-auto"
             disabled={mutation.isPending}
             onClick={() => void runStatus({ status: "cancelled" })}
           >
@@ -240,10 +265,12 @@ export function VendorOrderFulfillmentCard({
       </div>
 
       {actionError ? (
-        <p className="mt-3 text-sm text-destructive">{actionError}</p>
+        <p className="border-t border-border px-4 py-2.5 text-sm text-destructive sm:px-5">
+          {actionError}
+        </p>
       ) : null}
       {mutation.isPending ? (
-        <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+        <p className="inline-flex items-center gap-1.5 border-t border-border px-4 py-2 text-xs text-muted-foreground sm:px-5">
           <Loader2 className="size-3 animate-spin" />
           Updating…
         </p>
@@ -312,10 +339,6 @@ export function VendorOrderFulfillmentCard({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <p className="mt-3 text-xs text-muted-foreground">
-        Subtotal {formatMoney(order.currency, vendorOrder.itemsSubtotal)}
-      </p>
     </article>
   )
 }
