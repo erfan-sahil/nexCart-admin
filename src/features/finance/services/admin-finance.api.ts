@@ -10,6 +10,11 @@ export type CommissionSettings = {
 export type VendorEarningsRow = {
   storeId: string
   storeName: string
+  /** Store-specific override; null when using the platform default. */
+  commissionRate: number | null
+  /** Rate actually applied to new orders for this store. */
+  effectiveCommissionRate: number
+  hasOverride: boolean
   pendingSettlement: number
   availableBalance: number
   withdrawnBalance: number

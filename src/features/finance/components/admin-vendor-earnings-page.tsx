@@ -92,9 +92,14 @@ export function AdminVendorEarningsPage() {
         title="Vendor earnings"
         description="Pending settlement, withdrawable balance, and paid-out totals for every active store."
         aside={
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/finance/withdrawals">Review withdrawals</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/finance/commissions">Commission rates</Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/finance/withdrawals">Review withdrawals</Link>
+            </Button>
+          </div>
         }
       />
 
@@ -157,7 +162,7 @@ export function AdminVendorEarningsPage() {
                 Refreshing
               </span>
             ) : null}
-            <InputGroup className="h-9 w-full min-w-[12rem] sm:w-56">
+            <InputGroup className="h-9 w-full min-w-48 sm:w-56">
               <InputGroupAddon>
                 <Search className="size-4" aria-hidden="true" />
               </InputGroupAddon>

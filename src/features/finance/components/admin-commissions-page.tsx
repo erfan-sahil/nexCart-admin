@@ -4,13 +4,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   BadgePercent,
   CalendarClock,
-  CheckCircle2,
   Loader2,
+  Pencil,
   Percent,
+  Store,
 } from "lucide-react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Link } from "react-router"
 
+import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -24,8 +26,8 @@ import {
 } from "@/components/ui/table"
 import { ApiError } from "@/lib/api/errors"
 
+import { EditStoreCommissionDialog } from "./edit-store-commission-dialog"
 import {
-  BalanceMixBar,
   FinanceLayout,
   FinancePageIntro,
   FinanceSection,
@@ -35,13 +37,11 @@ import {
   FinanceTableSkeleton,
   StoreAvatar,
 } from "./finance-ui"
-import { sumVendorEarnings } from "../lib/aggregates"
-import { formatBdt } from "../lib/format"
 import {
   getCommissionSettings,
   listVendorEarnings,
-  setStoreCommission,
   updateCommissionSettings,
+  type VendorEarningsRow,
 } from "../services/admin-finance.api"
 
 export function AdminCommissionsPage() {
@@ -58,10 +58,7 @@ export function AdminCommissionsPage() {
   const [rate, setRate] = useState<number | "">("")
   const [holdDays, setHoldDays] = useState<number | "">("")
   const [settingsError, setSettingsError] = useState<string | null>(null)
-  const [storeId, setStoreId] = useState("")
-  const [storeRate, setStoreRate] = useState<number | "">("")
-  const [overrideError, setOverrideError] = useState<string | null>(null)
-  const [overrideSuccess, setOverrideSuccess] = useState<string | null>(null)
+  const [editTarget, setEditTarget] = useState<VendorEarningsRow | null>(null)
 
   const saveSettings = useMutation({
     mutationFn: updateCommissionSettings,
@@ -72,21 +69,14 @@ export function AdminCommissionsPage() {
     },
   })
 
-  const saveStoreRate = useMutation({
-    mutationFn: (payload: { storeId: string; commissionRate: number | null }) =>
-      setStoreCommission(payload.storeId, payload.commissionRate),
-    onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: ["admin", "commission"] })
-      setOverrideSuccess(
-        data.storeName
-          ? `Updated rate for ${data.storeName}.`
-          : "Store commission updated."
-      )
-      setOverrideError(null)
-      setStoreId("")
-      setStoreRate("")
-    },
-  })
+  const items = useMemo(
+    () => earnings.data?.items ?? [],
+    [earnings.data?.items]
+  )
+  const overrideCount = useMemo(
+    () => items.filter((row) => row.hasOverride).length,
+    [items]
+  )
 
   if (settings.isLoading) {
     return (
@@ -97,10 +87,8 @@ export function AdminCommissionsPage() {
   }
 
   const current = settings.data
-  const items = earnings.data?.items ?? []
-  const totals = sumVendorEarnings(items)
-  const effectiveRate =
-    rate !== "" ? rate : (current?.defaultCommissionRate ?? 10)
+  const defaultCommissionRate = current?.defaultCommissionRate ?? 10
+  const effectiveRate = rate !== "" ? rate : defaultCommissionRate
   const effectiveHold =
     holdDays !== "" ? holdDays : (current?.settlementHoldDays ?? 7)
 
@@ -108,10 +96,10 @@ export function AdminCommissionsPage() {
     <FinanceLayout>
       <FinancePageIntro
         title="Commissions"
-        description="Set the platform default fee and settlement hold. Per-store overrides apply when a custom rate is saved for that store."
+        description="Set the platform default fee and settlement hold, then override rates for individual stores."
         aside={
           <Button variant="outline" size="sm" asChild>
-            <Link to="/finance/settlements">Settlements overview</Link>
+            <Link to="/finance/vendor-earnings">Vendor earnings</Link>
           </Button>
         }
       />
@@ -121,36 +109,36 @@ export function AdminCommissionsPage() {
           icon={Percent}
           tone="brand"
           label="Default commission"
-          value={`${current?.defaultCommissionRate ?? 10}%`}
-          detail="Applied to vendor orders unless a store override exists"
+          value={`${defaultCommissionRate}%`}
+          detail="Applied unless a store has a custom override"
         />
         <FinanceStatCard
           icon={CalendarClock}
           tone="warning"
           label="Settlement hold"
           value={`${current?.settlementHoldDays ?? 7} days`}
-          detail="Earnings stay pending until the hold window passes"
+          detail="How long earnings stay pending before release"
         />
         <FinanceStatCard
           icon={BadgePercent}
           tone="info"
-          label="Vendor pending"
-          value={formatBdt(totals.pendingSettlement)}
-          detail={`Across ${totals.storeCount} active stores`}
+          label="Custom overrides"
+          value={String(overrideCount)}
+          detail={`Of ${items.length} stores on this list`}
         />
         <FinanceStatCard
-          icon={CheckCircle2}
+          icon={Store}
           tone="success"
-          label="Available to withdraw"
-          value={formatBdt(totals.availableBalance)}
-          detail="Released balances vendors can request"
+          label="Using default"
+          value={String(Math.max(items.length - overrideCount, 0))}
+          detail="Stores billed at the platform rate"
         />
       </FinanceStatGrid>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)] lg:items-start">
         <FinanceSection
           title="Platform defaults"
-          description="Changes apply to new commission calculations."
+          description="Changes apply to new commission calculations only."
         >
           <form
             className="space-y-4 px-4 py-4 sm:px-5"
@@ -171,7 +159,7 @@ export function AdminCommissionsPage() {
               }
             }}
           >
-            <FieldGroup className="gap-4 sm:grid-cols-2">
+            <FieldGroup className="gap-4">
               <Field>
                 <FieldLabel htmlFor="defaultRate">
                   Default commission (%)
@@ -181,7 +169,7 @@ export function AdminCommissionsPage() {
                   type="number"
                   min={0}
                   max={100}
-                  placeholder={String(current?.defaultCommissionRate ?? 10)}
+                  placeholder={String(defaultCommissionRate)}
                   value={rate}
                   onChange={(e) =>
                     setRate(e.target.value === "" ? "" : Number(e.target.value))
@@ -224,150 +212,93 @@ export function AdminCommissionsPage() {
         </FinanceSection>
 
         <FinanceSection
-          title="Store override"
-          description="Paste a store id and optional custom rate. Leave rate empty and save to clear an override."
-        >
-          <form
-            className="space-y-4 px-4 py-4 sm:px-5"
-            onSubmit={async (event) => {
-              event.preventDefault()
-              setOverrideError(null)
-              setOverrideSuccess(null)
-              const trimmedId = storeId.trim()
-
-              if (!trimmedId) {
-                setOverrideError("Store id is required.")
-                return
-              }
-
-              try {
-                await saveStoreRate.mutateAsync({
-                  storeId: trimmedId,
-                  commissionRate: storeRate === "" ? null : Number(storeRate),
-                })
-              } catch (err) {
-                setOverrideError(
-                  err instanceof ApiError
-                    ? err.message
-                    : "Could not update store commission."
-                )
-              }
-            }}
-          >
-            <FieldGroup className="gap-4">
-              <Field>
-                <FieldLabel htmlFor="storeId">Store id</FieldLabel>
-                <Input
-                  id="storeId"
-                  value={storeId}
-                  onChange={(e) => setStoreId(e.target.value)}
-                  placeholder="MongoDB store id"
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="storeRate">
-                  Custom rate (%) — optional
-                </FieldLabel>
-                <Input
-                  id="storeRate"
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={storeRate}
-                  onChange={(e) =>
-                    setStoreRate(
-                      e.target.value === "" ? "" : Number(e.target.value)
-                    )
-                  }
-                  placeholder="Clear override when empty on save"
-                />
-              </Field>
-            </FieldGroup>
-            {overrideError ? (
-              <p className="text-sm text-destructive">{overrideError}</p>
-            ) : null}
-            {overrideSuccess ? (
-              <p className="text-sm text-emerald-600 dark:text-emerald-400">
-                {overrideSuccess}
-              </p>
-            ) : null}
-            <Button
-              type="submit"
-              variant="secondary"
-              disabled={saveStoreRate.isPending}
-            >
-              Apply store override
+          title="Store commission rates"
+          description="Override the platform fee for a specific store. Balances live on Vendor earnings."
+          action={
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/finance/vendor-earnings">View balances</Link>
             </Button>
-          </form>
+          }
+          noPadding
+        >
+          {earnings.isLoading ? (
+            <FinanceTableSkeleton />
+          ) : items.length === 0 ? (
+            <p className="px-4 py-12 text-center text-sm text-muted-foreground sm:px-5">
+              No active stores yet.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Store</TableHead>
+                    <TableHead>Commission</TableHead>
+                    <TableHead>Source</TableHead>
+                    <TableHead className="w-[1%] text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {items.map((row) => (
+                    <TableRow key={row.storeId}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <StoreAvatar name={row.storeName} />
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">
+                              {row.storeName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {row.storeId}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium tabular-nums">
+                        {row.effectiveCommissionRate}%
+                      </TableCell>
+                      <TableCell>
+                        <UniversalBadge
+                          name={row.hasOverride ? "Override" : "Default"}
+                          colors={
+                            row.hasOverride
+                              ? badgeColors.under_review
+                              : badgeColors.neutral
+                          }
+                          showDot={false}
+                          className="normal-case"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditTarget(row)}
+                        >
+                          <Pencil className="size-3.5" aria-hidden="true" />
+                          Edit
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </FinanceSection>
       </div>
 
-      <FinanceSection
-        title="Vendor balances"
-        description="Snapshot of pending settlement and withdrawable balances."
-        action={
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/finance/vendor-earnings">View all stores</Link>
-          </Button>
-        }
-        noPadding
-      >
-        {earnings.isLoading ? (
-          <FinanceTableSkeleton />
-        ) : items.length === 0 ? (
-          <p className="px-4 py-12 text-center text-sm text-muted-foreground sm:px-5">
-            No active stores with wallet data yet.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Store</TableHead>
-                  <TableHead>Mix</TableHead>
-                  <TableHead className="text-right">Pending</TableHead>
-                  <TableHead className="text-right">Available</TableHead>
-                  <TableHead className="text-right">Withdrawn</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.slice(0, 8).map((row) => (
-                  <TableRow key={row.storeId}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <StoreAvatar name={row.storeName} />
-                        <div className="min-w-0">
-                          <p className="truncate font-medium">
-                            {row.storeName}
-                          </p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {row.storeId}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <BalanceMixBar
-                        pending={row.pendingSettlement}
-                        available={row.availableBalance}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatBdt(row.pendingSettlement)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatBdt(row.availableBalance)}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground tabular-nums">
-                      {formatBdt(row.withdrawnBalance)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </FinanceSection>
+      <EditStoreCommissionDialog
+        store={editTarget}
+        defaultCommissionRate={defaultCommissionRate}
+        open={editTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditTarget(null)
+          }
+        }}
+      />
     </FinanceLayout>
   )
 }
