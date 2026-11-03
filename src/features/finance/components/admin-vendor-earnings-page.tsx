@@ -30,6 +30,7 @@ import {
 import { useDebouncedValue } from "@/hooks"
 import { ApiError } from "@/lib/api/errors"
 
+import { VendorEarningsDetailsDialog } from "./vendor-earnings-details-dialog"
 import {
   BalanceMixBar,
   FinanceLayout,
@@ -43,12 +44,18 @@ import {
 } from "./finance-ui"
 import { sumVendorEarnings } from "../lib/aggregates"
 import { formatBdt } from "../lib/format"
-import { listVendorEarnings } from "../services/admin-finance.api"
+import {
+  listVendorEarnings,
+  type VendorEarningsRow,
+} from "../services/admin-finance.api"
 
 export function AdminVendorEarningsPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [search, setSearch] = useState("")
+  const [selectedStore, setSelectedStore] = useState<VendorEarningsRow | null>(
+    null
+  )
   const debouncedSearch = useDebouncedValue(search.trim().toLowerCase(), 250)
 
   const query = useQuery({
@@ -151,8 +158,7 @@ export function AdminVendorEarningsPage() {
               />
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Search by store name or id. Amounts refresh when settlement
-              releases run.
+              Search by store name or id. Click a row to view store details.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:items-end">
@@ -212,7 +218,19 @@ export function AdminVendorEarningsPage() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map((row) => (
-                    <TableRow key={row.storeId}>
+                    <TableRow
+                      key={row.storeId}
+                      className="cursor-pointer"
+                      tabIndex={0}
+                      aria-label={`View details for ${row.storeName}`}
+                      onClick={() => setSelectedStore(row)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault()
+                          setSelectedStore(row)
+                        }
+                      }}
+                    >
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <StoreAvatar name={row.storeName} />
@@ -260,6 +278,16 @@ export function AdminVendorEarningsPage() {
           </>
         )}
       </section>
+
+      <VendorEarningsDetailsDialog
+        store={selectedStore}
+        open={selectedStore !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedStore(null)
+          }
+        }}
+      />
     </FinanceLayout>
   )
 }
