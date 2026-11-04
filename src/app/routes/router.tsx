@@ -30,8 +30,9 @@ import { CouponsPage } from "@/pages/marketing/coupons/page"
 import { FeaturedCategoriesPage } from "@/pages/marketing/featured-categories/page"
 import { FlashDealsPage } from "@/pages/marketing/flash-deals/page"
 import { SponsoredProductPage } from "@/pages/marketing/sponsored-product/page"
+import { ReportsPage } from "@/pages/moderation/reports/page"
+import { ReviewsPage } from "@/pages/moderation/reviews/page"
 import { NotFoundPage } from "@/pages/not-found/page"
-import { ReportsPage } from "@/pages/reports/page"
 import { HeroSectionPage } from "@/pages/site-content/hero/page"
 import { DeliveryChargePage } from "@/pages/site-settings/delivery-charge/page"
 import { SettingsPage } from "@/pages/settings/page"
@@ -48,6 +49,8 @@ const pages: Record<AdminPath, ComponentType> = {
   "/catalog/categories": CategoriesPage,
   "/catalog/attributes": AttributesPage,
   "/catalog/product-approvals": ProductApprovalsPage,
+  "/moderation/reviews": ReviewsPage,
+  "/moderation/reports": ReportsPage,
   "/commerce/orders": OrdersPage,
   "/commerce/payments": PaymentsPage,
   "/commerce/returns": ReturnsPage,
@@ -62,7 +65,6 @@ const pages: Record<AdminPath, ComponentType> = {
   "/marketing/flash-deals": FlashDealsPage,
   "/site-content/hero": HeroSectionPage,
   "/site-settings/delivery-charge": DeliveryChargePage,
-  "/reports": ReportsPage,
   "/settings": SettingsPage,
 }
 
@@ -125,6 +127,14 @@ export const router = createBrowserRouter([
         element: <AdminShell />,
         children: [
           ...childRoutes,
+          {
+            path: "catalog/reviews",
+            element: <Navigate to="/moderation/reviews" replace />,
+          },
+          {
+            path: "reports",
+            element: <Navigate to="/moderation/reports" replace />,
+          },
           {
             path: "*",
             element: <NotFoundPage />,
