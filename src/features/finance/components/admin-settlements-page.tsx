@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 import {
+  ArrowDownToLine,
   BadgePercent,
   Banknote,
   CircleDollarSign,
@@ -127,7 +128,7 @@ export function AdminSettlementsPage() {
               title="Vendor wallet totals"
               description="Aggregated from active stores (first 100 in list)."
             >
-              <dl className="grid gap-4 px-4 py-4 sm:grid-cols-3 sm:px-5">
+              <dl className="grid gap-4 px-4 py-4 sm:grid-cols-2 sm:px-5">
                 <Metric
                   label="Pending settlement"
                   value={formatBdt(vendorTotals.pendingSettlement)}
@@ -135,6 +136,10 @@ export function AdminSettlementsPage() {
                 <Metric
                   label="Available balance"
                   value={formatBdt(vendorTotals.availableBalance)}
+                />
+                <Metric
+                  label="Withdrawn"
+                  value={formatBdt(vendorTotals.withdrawnBalance)}
                 />
                 <Metric
                   label="Active stores"
@@ -145,7 +150,7 @@ export function AdminSettlementsPage() {
 
             <FinanceSection
               title="Withdrawal pipeline"
-              description="Pending payout requests awaiting admin review."
+              description="Pending payout requests awaiting admin review. Withdrawn total includes requested through paid."
             >
               <dl className="grid gap-4 px-4 py-4 sm:grid-cols-2 sm:px-5">
                 <Metric
@@ -155,6 +160,14 @@ export function AdminSettlementsPage() {
                 <Metric
                   label="Pending amount"
                   value={formatBdt(pendingWithdrawalTotal)}
+                />
+                <Metric
+                  label="Already withdrawn"
+                  value={formatBdt(vendorTotals.withdrawnBalance)}
+                />
+                <Metric
+                  label="Still available"
+                  value={formatBdt(vendorTotals.availableBalance)}
                 />
               </dl>
             </FinanceSection>
@@ -213,6 +226,13 @@ export function AdminSettlementsPage() {
               label="Vendor available"
               value={formatBdt(vendorTotals.availableBalance)}
               detail="Ready for withdrawal"
+            />
+            <FinanceStatCard
+              icon={ArrowDownToLine}
+              tone="info"
+              label="Vendor withdrawn"
+              value={formatBdt(vendorTotals.withdrawnBalance)}
+              detail="Already removed from available"
             />
             <FinanceStatCard
               icon={Banknote}
