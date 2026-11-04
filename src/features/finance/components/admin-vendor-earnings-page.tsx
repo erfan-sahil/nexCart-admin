@@ -30,6 +30,7 @@ import {
 import { useDebouncedValue } from "@/hooks"
 import { ApiError } from "@/lib/api/errors"
 
+import { ReleaseSettlementDialog } from "./release-settlement-dialog"
 import { VendorEarningsDetailsDialog } from "./vendor-earnings-details-dialog"
 import {
   BalanceMixBar,
@@ -54,6 +55,9 @@ export function AdminVendorEarningsPage() {
   const [pageSize, setPageSize] = useState(20)
   const [search, setSearch] = useState("")
   const [selectedStore, setSelectedStore] = useState<VendorEarningsRow | null>(
+    null
+  )
+  const [releaseStore, setReleaseStore] = useState<VendorEarningsRow | null>(
     null
   )
   const debouncedSearch = useDebouncedValue(search.trim().toLowerCase(), 250)
@@ -97,7 +101,7 @@ export function AdminVendorEarningsPage() {
     <FinanceLayout>
       <FinancePageIntro
         title="Vendor earnings"
-        description="Pending settlement, withdrawable balance, and paid-out totals for every active store."
+        description="Pending settlement, withdrawable balance, and paid-out totals for every active store. Use Make eligible to release pending funds early while automatic settlement continues to run."
         aside={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" asChild>
@@ -214,6 +218,7 @@ export function AdminVendorEarningsPage() {
                     <TableHead className="text-right">Pending</TableHead>
                     <TableHead className="text-right">Available</TableHead>
                     <TableHead className="text-right">Withdrawn</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -259,6 +264,21 @@ export function AdminVendorEarningsPage() {
                       <TableCell className="text-right text-muted-foreground tabular-nums">
                         {formatBdt(row.withdrawnBalance)}
                       </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="cursor-pointer"
+                          disabled={row.pendingSettlement <= 0}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            setReleaseStore(row)
+                          }}
+                        >
+                          Make eligible
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -286,6 +306,22 @@ export function AdminVendorEarningsPage() {
           if (!open) {
             setSelectedStore(null)
           }
+        }}
+        onBalancesChanged={() => {
+          void query.refetch()
+        }}
+      />
+
+      <ReleaseSettlementDialog
+        store={releaseStore}
+        open={releaseStore !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setReleaseStore(null)
+          }
+        }}
+        onReleased={() => {
+          void query.refetch()
         }}
       />
     </FinanceLayout>

@@ -76,6 +76,34 @@ export async function setStoreCommission(
   }
 }
 
+export type ReleaseStoreSettlementResult = {
+  storeId: string
+  storeName: string
+  releasedCount: number
+  releasedAmount: number
+  skippedHeld: number
+  skippedPayment: number
+  skippedAlreadyReleased: number
+  pendingSettlement: number
+  availableBalance: number
+  force: boolean
+}
+
+export async function releaseStoreSettlement(
+  storeId: string,
+  body: { force?: boolean; note?: string } = {}
+): Promise<ReleaseStoreSettlementResult> {
+  try {
+    const { data } = await api.post<ApiSuccess<ReleaseStoreSettlementResult>>(
+      `/admin/commission/stores/${storeId}/release-settlement`,
+      body
+    )
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
 export async function listVendorEarnings(page = 1, limit = 20) {
   try {
     const { data } = await api.get<ApiSuccess<VendorEarningsRow[]>>(
