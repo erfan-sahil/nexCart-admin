@@ -15,6 +15,7 @@ import {
 import { AttributesPage } from "@/pages/catalog/attributes/page"
 import { CategoriesPage } from "@/pages/catalog/categories/page"
 import { ProductApprovalsPage } from "@/pages/catalog/product-approvals/page"
+import { ReviewsPage } from "@/pages/catalog/reviews/page"
 import { DisputesPage } from "@/pages/commerce/disputes/page"
 import { OrdersPage } from "@/pages/commerce/orders/page"
 import { AdminOrderDetailPage } from "@/pages/commerce/orders/detail/page"
@@ -48,6 +49,7 @@ const pages: Record<AdminPath, ComponentType> = {
   "/catalog/categories": CategoriesPage,
   "/catalog/attributes": AttributesPage,
   "/catalog/product-approvals": ProductApprovalsPage,
+  "/catalog/reviews": ReviewsPage,
   "/commerce/orders": OrdersPage,
   "/commerce/payments": PaymentsPage,
   "/commerce/returns": ReturnsPage,
