@@ -81,6 +81,7 @@ export type ReleaseStoreSettlementResult = {
   storeName: string
   releasedCount: number
   releasedAmount: number
+  requestedAmount: number | null
   skippedHeld: number
   skippedPayment: number
   skippedAlreadyReleased: number
@@ -91,7 +92,7 @@ export type ReleaseStoreSettlementResult = {
 
 export async function releaseStoreSettlement(
   storeId: string,
-  body: { force?: boolean; note?: string } = {}
+  body: { force?: boolean; amount?: number; note?: string } = {}
 ): Promise<ReleaseStoreSettlementResult> {
   try {
     const { data } = await api.post<ApiSuccess<ReleaseStoreSettlementResult>>(
