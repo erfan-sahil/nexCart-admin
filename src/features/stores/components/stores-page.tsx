@@ -21,7 +21,9 @@ import { ApiError } from "@/lib/api/errors"
 import { useAdminStoresQuery } from "../hooks"
 import { VISIBILITY_FILTER_LABEL } from "../labels"
 import type { AdminStoreSummary, StoreVisibilityFilter } from "../types"
+import { StoreDeleteDialog } from "./store-delete-dialog"
 import { StoreDetailDialog } from "./store-detail-dialog"
+import { StoreSuspensionDialog } from "./store-suspension-dialog"
 import { StoresTable } from "./stores-table"
 
 const VISIBILITY_FILTERS: StoreVisibilityFilter[] = ["all", "listed", "hidden"]
@@ -32,6 +34,10 @@ export function StoresPageContent() {
   const [search, setSearch] = useState("")
   const [visibility, setVisibility] = useState<StoreVisibilityFilter>("all")
   const [selected, setSelected] = useState<AdminStoreSummary | null>(null)
+  const [banTarget, setBanTarget] = useState<AdminStoreSummary | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AdminStoreSummary | null>(
+    null
+  )
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
 
   const params = useMemo(
@@ -161,6 +167,37 @@ export function StoresPageContent() {
         store={selected}
         open={Boolean(selected)}
         onClose={() => setSelected(null)}
+        onBan={() => {
+          if (selected) {
+            setBanTarget(selected)
+          }
+        }}
+        onDelete={() => {
+          if (selected) {
+            setDeleteTarget(selected)
+          }
+        }}
+      />
+
+      <StoreSuspensionDialog
+        store={banTarget}
+        open={Boolean(banTarget)}
+        onClose={() => setBanTarget(null)}
+        onSuccess={(updated) => {
+          setSelected((current) =>
+            current?.id === updated.id ? updated : current
+          )
+        }}
+      />
+
+      <StoreDeleteDialog
+        store={deleteTarget}
+        open={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onDeleted={() => {
+          setSelected(null)
+          setDeleteTarget(null)
+        }}
       />
     </div>
   )

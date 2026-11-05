@@ -62,3 +62,29 @@ export async function getAdminStore(
     throw toApiError(error)
   }
 }
+
+export async function setAdminStoreSuspension(
+  storeId: string,
+  suspended: boolean
+): Promise<AdminStoreDetail> {
+  try {
+    const { data } = await api.patch<ApiSuccess<AdminStoreDetail>>(
+      `/admin/stores/${storeId}/suspension`,
+      { suspended }
+    )
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}
+
+export async function deleteAdminStore(storeId: string) {
+  try {
+    const { data } = await api.delete<ApiSuccess<{ id: string }>>(
+      `/admin/stores/${storeId}`
+    )
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}

@@ -1,11 +1,13 @@
-import { Loader2 } from "lucide-react"
+import { Ban, CircleCheck, Loader2, Trash2 } from "lucide-react"
 import type { ReactNode } from "react"
 
 import { UniversalBadge, badgeColors } from "@/components/shared"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -31,6 +33,8 @@ type StoreDetailDialogProps = {
   store: AdminStoreSummary | null
   open: boolean
   onClose: () => void
+  onBan: () => void
+  onDelete: () => void
 }
 
 function formatAddress(address: {
@@ -57,6 +61,8 @@ export function StoreDetailDialog({
   store,
   open,
   onClose,
+  onBan,
+  onDelete,
 }: StoreDetailDialogProps) {
   const detailQuery = useAdminStoreQuery(store?.id ?? null, open)
   const detail = detailQuery.data
@@ -169,6 +175,33 @@ export function StoreDetailDialog({
               </>
             ) : null}
           </div>
+        ) : null}
+
+        {store && detail && !detailQuery.isLoading && !errorMessage ? (
+          <DialogFooter className="flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={onDelete}
+            >
+              <Trash2 />
+              Delete store
+            </Button>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Close
+              </Button>
+              <Button
+                type="button"
+                variant={store.isSuspended ? "default" : "destructive"}
+                onClick={onBan}
+              >
+                {store.isSuspended ? <CircleCheck /> : <Ban />}
+                {store.isSuspended ? "Lift ban" : "Ban store"}
+              </Button>
+            </div>
+          </DialogFooter>
         ) : null}
       </DialogContent>
     </Dialog>

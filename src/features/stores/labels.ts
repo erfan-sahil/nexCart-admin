@@ -10,7 +10,7 @@ export const VISIBILITY_FILTER_LABEL: Record<StoreVisibilityFilter, string> = {
 
 export const STORE_LISTING_STATUS_LABEL: Record<StoreListingStatus, string> = {
   listed: "Listed",
-  suspended: "Suspended",
+  suspended: "Banned",
   closed: "Closed",
 }
 

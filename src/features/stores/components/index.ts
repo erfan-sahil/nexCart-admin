@@ -1,3 +1,5 @@
+export { StoreDeleteDialog } from "./store-delete-dialog"
 export { StoreDetailDialog } from "./store-detail-dialog"
+export { StoreSuspensionDialog } from "./store-suspension-dialog"
 export { StoresPageContent } from "./stores-page"
 export { StoresTable } from "./stores-table"

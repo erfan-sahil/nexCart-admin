@@ -1,1 +1,6 @@
-export { useAdminStoreQuery, useAdminStoresQuery } from "./use-stores"
+export {
+  useAdminStoreQuery,
+  useAdminStoresQuery,
+  useDeleteAdminStoreMutation,
+  useSetAdminStoreSuspensionMutation,
+} from "./use-stores"
