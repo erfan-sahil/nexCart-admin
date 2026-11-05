@@ -37,14 +37,14 @@ import { HeroSectionPage } from "@/pages/site-content/hero/page"
 import { DeliveryChargePage } from "@/pages/site-settings/delivery-charge/page"
 import { SettingsPage } from "@/pages/settings/page"
 import { BuyersPage } from "@/pages/users/buyers/page"
-import { ShopsPage } from "@/pages/users/shops/page"
+import { StoresPage } from "@/pages/users/stores/page"
 import { VendorApplicationsPage } from "@/pages/users/vendor-applications/page"
 import { VendorsPage } from "@/pages/users/vendors/page"
 const pages: Record<AdminPath, ComponentType> = {
   "/": DashboardPage,
   "/users/buyers": BuyersPage,
   "/users/vendors": VendorsPage,
-  "/users/shops": ShopsPage,
+  "/users/stores": StoresPage,
   "/users/vendor-applications": VendorApplicationsPage,
   "/catalog/categories": CategoriesPage,
   "/catalog/attributes": AttributesPage,
@@ -134,6 +134,10 @@ export const router = createBrowserRouter([
           {
             path: "reports",
             element: <Navigate to="/moderation/reports" replace />,
+          },
+          {
+            path: "users/shops",
+            element: <Navigate to="/users/stores" replace />,
           },
           {
             path: "*",
