@@ -19,3 +19,8 @@ export {
   previewReturnRefund,
   resolveReturn,
 } from "./admin-returns.api"
+export {
+  dispatchVendorReturnShipment,
+  getAdminVendorReturnShipment,
+  listAdminVendorReturnShipments,
+} from "./admin-vendor-returns.api"

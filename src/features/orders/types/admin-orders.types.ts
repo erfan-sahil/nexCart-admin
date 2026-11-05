@@ -66,6 +66,43 @@ export type RejectReturn = {
   receivedByVendorAt: string | null
 }
 
+export type VendorOrderRejectionLineSummary = {
+  variantId: string
+  productId: string
+  productName: string
+  sku: string
+  orderedQty: number
+  acceptedQty: number
+  rejectedQty: number
+  unitPrice: number
+  disposition: string | null
+}
+
+export type VendorReturnShipmentLine = {
+  variantId: string
+  productId: string
+  productName: string
+  sku: string
+  quantity: number
+}
+
+export type VendorReturnShipment = {
+  id: string
+  returnRequestId: string
+  vendorOrderId: string
+  parentOrderId: string
+  storeId: string
+  vendorUserId: string
+  status: string
+  lines: VendorReturnShipmentLine[]
+  carrier: string
+  trackingNumber: string
+  dispatchedAt: string | null
+  receivedByVendorAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export type AdminVendorOrder = {
   id: string
   parentOrderId: string
@@ -78,6 +115,8 @@ export type AdminVendorOrder = {
   itemsSubtotal: number
   inboundBatches: InboundBatch[]
   rejectReturns: RejectReturn[]
+  vendorReturnShipments?: VendorReturnShipment[]
+  rejectionSummary?: VendorOrderRejectionLineSummary[]
   createdAt: string
   updatedAt: string
 }
@@ -284,6 +323,24 @@ export type ListAdminReturnsParams = {
 export type ListAdminReturnsResult = {
   items: AdminReturnListItem[]
   pagination: PaginationMeta
+}
+
+export type ListAdminVendorReturnShipmentsParams = {
+  page?: number
+  limit?: number
+  status?: string
+  storeId?: string
+  parentOrderId?: string
+}
+
+export type ListAdminVendorReturnShipmentsResult = {
+  items: VendorReturnShipment[]
+  pagination: PaginationMeta
+}
+
+export type DispatchVendorReturnShipmentPayload = {
+  carrier?: string
+  trackingNumber?: string
 }
 
 export type RefundPreview = {

@@ -125,7 +125,14 @@ export const VENDOR_ORDER_STATUS_LABEL: Record<string, string> = {
   delivered: "Delivered",
   delivery_failed: "Delivery failed",
   customer_rejected: "Customer rejected",
+  partially_rejected: "Partially rejected",
   cancelled: "Cancelled",
+}
+
+export const VENDOR_RETURN_SHIPMENT_STATUS_LABEL: Record<string, string> = {
+  pending_dispatch_to_vendor: "Pending dispatch",
+  in_transit_to_vendor: "In transit to vendor",
+  received_by_vendor: "Received by vendor",
 }
 
 export function orderStatusBadge(status: string): StatusBadgeMeta {
@@ -230,6 +237,7 @@ export function vendorOrderStatusBadge(status: string): BadgeColorCodes {
     case "delivery_failed":
     case "customer_rejected":
       return statusBadge(badgeColors.rejected)
+    case "partially_rejected":
     case "partially_accepted":
     case "inspecting":
       return statusBadge(badgeColors.under_review)
@@ -238,6 +246,24 @@ export function vendorOrderStatusBadge(status: string): BadgeColorCodes {
       return statusBadge(badgeColors.submitted)
     default:
       return statusBadge()
+  }
+}
+
+export function vendorReturnShipmentStatusBadge(
+  status: string
+): StatusBadgeMeta {
+  const name =
+    VENDOR_RETURN_SHIPMENT_STATUS_LABEL[status] ?? status.replaceAll("_", " ")
+
+  switch (status) {
+    case "received_by_vendor":
+      return { name, colors: badgeColors.active, icon: CheckCircle2 }
+    case "in_transit_to_vendor":
+      return { name, colors: badgeColors.submitted, icon: Truck }
+    case "pending_dispatch_to_vendor":
+      return { name, colors: badgeColors.under_review, icon: Package }
+    default:
+      return { name, colors: badgeColors.neutral }
   }
 }
 

@@ -9,11 +9,13 @@ import {
   adminOrderKeys,
   cancelAdminOrder,
   collectCod,
+  dispatchVendorReturnShipment,
   getAdminOrder,
   inspectReturn,
   listAdminOrders,
   listAdminReturns,
   listAdminVendorOrders,
+  listAdminVendorReturnShipments,
   markReturnReceived,
   markReturnReturning,
   previewReturnRefund,
@@ -26,10 +28,12 @@ import {
 import type {
   CodCollectionPayload,
   CodRemittancePayload,
+  DispatchVendorReturnShipmentPayload,
   InspectReturnLinePayload,
   ListAdminOrdersParams,
   ListAdminReturnsParams,
   ListAdminVendorOrdersParams,
+  ListAdminVendorReturnShipmentsParams,
   ResolveReturnPayload,
   UpdateAdminOrderStatusPayload,
   UpdateAdminVendorOrderStatusPayload,
@@ -200,4 +204,32 @@ export function useDeliveryReturnActions(orderId: string) {
   })
 
   return { returning, receive, inspect, resolve }
+}
+
+export function useAdminVendorReturnShipments(
+  params: ListAdminVendorReturnShipmentsParams
+) {
+  return useQuery({
+    queryKey: adminOrderKeys.vendorReturns(params),
+    queryFn: () => listAdminVendorReturnShipments(params),
+    placeholderData: keepPreviousData,
+    staleTime: 20_000,
+  })
+}
+
+export function useDispatchVendorReturn() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      shipmentId,
+      payload,
+    }: {
+      shipmentId: string
+      payload?: DispatchVendorReturnShipmentPayload
+    }) => dispatchVendorReturnShipment(shipmentId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: adminOrderKeys.all })
+    },
+  })
 }
