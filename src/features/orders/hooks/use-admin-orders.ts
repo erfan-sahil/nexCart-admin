@@ -10,18 +10,27 @@ import {
   cancelAdminOrder,
   collectCod,
   getAdminOrder,
+  inspectReturn,
   listAdminOrders,
+  listAdminReturns,
   listAdminVendorOrders,
+  markReturnReceived,
+  markReturnReturning,
+  previewReturnRefund,
   reconcileCod,
   remitCod,
+  resolveReturn,
   updateAdminOrderStatus,
   updateAdminVendorOrderStatus,
 } from "../services"
 import type {
   CodCollectionPayload,
   CodRemittancePayload,
+  InspectReturnLinePayload,
   ListAdminOrdersParams,
+  ListAdminReturnsParams,
   ListAdminVendorOrdersParams,
+  ResolveReturnPayload,
   UpdateAdminOrderStatusPayload,
   UpdateAdminVendorOrderStatusPayload,
 } from "../types/admin-orders.types"
@@ -128,4 +137,67 @@ export function useCodMutations(orderId: string) {
   })
 
   return { collect, remit, reconcile }
+}
+
+export function useAdminReturns(params: ListAdminReturnsParams) {
+  return useQuery({
+    queryKey: adminOrderKeys.returns(params),
+    queryFn: () => listAdminReturns(params),
+    placeholderData: keepPreviousData,
+    staleTime: 20_000,
+  })
+}
+
+export function useReturnRefundPreview(returnId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [...adminOrderKeys.returnDetail(returnId), "preview"],
+    queryFn: () => previewReturnRefund(returnId),
+    enabled: enabled && returnId.length > 0,
+  })
+}
+
+export function useDeliveryReturnActions(orderId: string) {
+  const invalidate = useInvalidateOrders()
+  const queryClient = useQueryClient()
+
+  const onSuccess = async () => {
+    await invalidate(orderId)
+    await queryClient.invalidateQueries({
+      queryKey: [...adminOrderKeys.all, "returns"],
+    })
+  }
+
+  const returning = useMutation({
+    mutationFn: markReturnReturning,
+    onSuccess,
+  })
+
+  const receive = useMutation({
+    mutationFn: markReturnReceived,
+    onSuccess,
+  })
+
+  const inspect = useMutation({
+    mutationFn: ({
+      returnId,
+      lines,
+    }: {
+      returnId: string
+      lines: InspectReturnLinePayload[]
+    }) => inspectReturn(returnId, lines),
+    onSuccess,
+  })
+
+  const resolve = useMutation({
+    mutationFn: ({
+      returnId,
+      payload,
+    }: {
+      returnId: string
+      payload: ResolveReturnPayload
+    }) => resolveReturn(returnId, payload),
+    onSuccess,
+  })
+
+  return { returning, receive, inspect, resolve }
 }

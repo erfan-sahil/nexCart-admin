@@ -109,6 +109,28 @@ export type AdminOrderTotals = {
   grandTotal: number
 }
 
+export type AdminDeliveryReturnLine = {
+  variantId: string
+  productName: string
+  sku: string
+  quantity: number
+  unitPrice: number
+  disposition: string
+}
+
+export type AdminDeliveryReturn = {
+  id: string
+  kind: "delivery_failed" | "customer_rejected" | string
+  status: string
+  reason: string
+  refundAmount: number | null
+  cashRefundAmount: number
+  balanceWaivedAmount: number
+  deliveryFeeRefund: number
+  lines: AdminDeliveryReturnLine[]
+  createdAt: string
+}
+
 export type AdminOrderDetail = AdminOrderListItem & {
   shipping: {
     recipientName: string
@@ -122,11 +144,14 @@ export type AdminOrderDetail = AdminOrderListItem & {
   }
   payment: {
     amountPaid: number
+    amountRefunded?: number
     balanceDue: number
+    refundableAmount?: number
     codCollectionStatus: string
   }
   totals: AdminOrderTotals
   shipment: AdminShipment | null
+  returns?: AdminDeliveryReturn[]
   vendorOrders: AdminVendorOrder[]
   activity: AdminOrderActivity[]
   canCancel: boolean
@@ -186,10 +211,88 @@ export type UpdateAdminVendorOrderStatusPayload = {
   adjustQuantities?: { variantId: string; targetQty: number }[]
 }
 
+export type DeliveryReturnLinePayload = {
+  variantId: string
+  quantity: number
+}
+
 export type UpdateAdminOrderStatusPayload = {
-  status: "packed" | "shipped" | "out_for_delivery" | "delivered" | "cancelled"
+  status:
+    | "packed"
+    | "shipped"
+    | "out_for_delivery"
+    | "delivered"
+    | "cancelled"
+    | "delivery_failed"
+    | "customer_rejected"
+    | "returning_to_warehouse"
+    | "returned_to_warehouse"
   carrier?: string
   trackingNumber?: string
+  reason?: string
+  returnId?: string
+  lines?: DeliveryReturnLinePayload[]
+}
+
+export type InspectReturnLinePayload = {
+  variantId: string
+  disposition: "sellable" | "damaged"
+}
+
+export type ResolveReturnPayload = {
+  action: "refund_without_restock" | "close_without_refund"
+  note?: string
+}
+
+export type AdminReturnListItem = {
+  id: string
+  parentOrderId: string
+  shipmentId: string | null
+  vendorOrderId: string | null
+  storeId: string | null
+  kind: string
+  status: string
+  reason: string
+  merchandiseRefund: number
+  couponShare: number
+  deliveryFeeRefund: number
+  cashRefundAmount: number
+  balanceWaivedAmount: number
+  refundAmount: number | null
+  processedAt: string | null
+  createdAt: string
+  updatedAt: string
+  lines?: Array<{
+    vendorOrderId: string
+    variantId: string
+    productName: string
+    sku: string
+    quantity: number
+    unitPrice: number
+    disposition: string
+  }>
+}
+
+export type ListAdminReturnsParams = {
+  page?: number
+  limit?: number
+  status?: string
+  kind?: string
+  parentOrderId?: string
+}
+
+export type ListAdminReturnsResult = {
+  items: AdminReturnListItem[]
+  pagination: PaginationMeta
+}
+
+export type RefundPreview = {
+  merchandiseRefund: number
+  couponShare: number
+  deliveryFeeRefund: number
+  cashRefundAmount: number
+  balanceWaivedAmount: number
+  refundAmount: number
 }
 
 export type CodCollectionPayload = {

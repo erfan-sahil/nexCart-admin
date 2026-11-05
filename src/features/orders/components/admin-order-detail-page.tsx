@@ -14,6 +14,7 @@ import {
   paymentStatusBadge,
 } from "../labels"
 import { CodActionsCard } from "./cod-actions-card"
+import { DeliveryReturnCard } from "./delivery-return-card"
 import { ParentOrderFulfillmentCard } from "./parent-order-fulfillment-card"
 import { VendorOrderFulfillmentCard } from "./vendor-order-fulfillment-card"
 
@@ -208,6 +209,17 @@ export function AdminOrderDetailPageContent() {
                 {formatMoney(order.currency, order.payment.amountPaid)}
               </dd>
             </div>
+            {(order.payment.amountRefunded ?? 0) > 0 ? (
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted-foreground">Refunded</dt>
+                <dd className="font-medium text-emerald-700 tabular-nums dark:text-emerald-400">
+                  {formatMoney(
+                    order.currency,
+                    order.payment.amountRefunded ?? 0
+                  )}
+                </dd>
+              </div>
+            ) : null}
             {order.payment.balanceDue > 0 ? (
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-muted-foreground">Balance due</dt>
@@ -252,6 +264,13 @@ export function AdminOrderDetailPageContent() {
             </p>
           </div>
           <ParentOrderFulfillmentCard order={order} />
+          {(order.returns ?? []).map((returnItem) => (
+            <DeliveryReturnCard
+              key={returnItem.id}
+              order={order}
+              returnItem={returnItem}
+            />
+          ))}
           <CodActionsCard order={order} />
 
           <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
