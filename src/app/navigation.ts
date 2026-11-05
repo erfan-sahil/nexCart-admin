@@ -82,8 +82,8 @@ export const NAV = defineNav([
       },
       {
         kind: "page",
-        label: "Shops",
-        path: "/users/shops",
+        label: "Stores",
+        path: "/users/stores",
         description: "Vendor storefronts shoppers can browse.",
         icon: Warehouse,
       },

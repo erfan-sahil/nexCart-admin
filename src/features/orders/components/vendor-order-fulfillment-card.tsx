@@ -25,6 +25,7 @@ import type {
   AdminVendorOrder,
 } from "../types/admin-orders.types"
 import { InspectVendorOrderDialog } from "./inspect-vendor-order-dialog"
+import { VendorReturnShipmentStepper } from "./vendor-return-shipment-status"
 
 type VendorOrderFulfillmentCardProps = {
   order: AdminOrderDetail
@@ -106,29 +107,64 @@ export function VendorOrderFulfillmentCard({
               <th className="px-3 py-2 text-right font-medium tabular-nums">
                 Target
               </th>
-              <th className="px-4 py-2 text-right font-medium tabular-nums sm:px-5">
+              <th className="px-3 py-2 text-right font-medium tabular-nums">
                 Accepted
               </th>
+              {(vendorOrder.rejectionSummary?.some(
+                (row) => row.rejectedQty > 0
+              ) ??
+                false) && (
+                <th className="px-4 py-2 text-right font-medium tabular-nums sm:px-5">
+                  Customer rejected
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {vendorOrder.items.map((line) => (
-              <tr key={line.variantId}>
-                <td className="px-4 py-2.5 sm:px-5">
-                  <p className="font-medium">{line.productName}</p>
-                  <p className="text-xs text-muted-foreground">{line.sku}</p>
-                </td>
-                <td className="px-3 py-2.5 text-right text-muted-foreground tabular-nums">
-                  {line.expectedQty}
-                </td>
-                <td className="px-3 py-2.5 text-right tabular-nums">
-                  {line.targetQty}
-                </td>
-                <td className="px-4 py-2.5 text-right font-medium tabular-nums sm:px-5">
-                  {line.acceptedQtyCumulative}
-                </td>
-              </tr>
-            ))}
+            {vendorOrder.items.map((line) => {
+              const rejection = vendorOrder.rejectionSummary?.find(
+                (row) => row.variantId === line.variantId
+              )
+              const showRejectedColumn =
+                vendorOrder.rejectionSummary?.some(
+                  (row) => row.rejectedQty > 0
+                ) ?? false
+
+              return (
+                <tr key={line.variantId}>
+                  <td className="px-4 py-2.5 sm:px-5">
+                    <p className="font-medium">{line.productName}</p>
+                    <p className="text-xs text-muted-foreground">{line.sku}</p>
+                  </td>
+                  <td className="px-3 py-2.5 text-right text-muted-foreground tabular-nums">
+                    {line.expectedQty}
+                  </td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">
+                    {line.targetQty}
+                  </td>
+                  <td className="px-3 py-2.5 text-right font-medium tabular-nums">
+                    {rejection
+                      ? rejection.acceptedQty
+                      : line.acceptedQtyCumulative}
+                  </td>
+                  {showRejectedColumn ? (
+                    <td className="px-4 py-2.5 text-right tabular-nums sm:px-5">
+                      {rejection && rejection.rejectedQty > 0 ? (
+                        <span>
+                          {rejection.rejectedQty}
+                          {rejection.disposition &&
+                          rejection.disposition !== "pending"
+                            ? ` · ${rejection.disposition}`
+                            : ""}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">0</span>
+                      )}
+                    </td>
+                  ) : null}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
@@ -179,6 +215,31 @@ export function VendorOrderFulfillmentCard({
                     Mark in transit to vendor
                   </Button>
                 ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {(vendorOrder.vendorReturnShipments?.length ?? 0) > 0 ? (
+        <div className="border-t border-border px-4 py-3 sm:px-5">
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+            Return to vendor
+          </p>
+          <ul className="mt-2 space-y-3">
+            {vendorOrder.vendorReturnShipments?.map((shipment) => (
+              <li
+                key={shipment.id}
+                className="rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2"
+              >
+                <VendorReturnShipmentStepper shipment={shipment} compact />
+                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                  {shipment.lines.map((line) => (
+                    <li key={`${shipment.id}-${line.variantId}`}>
+                      {line.productName} · {line.sku} · qty {line.quantity}
+                    </li>
+                  ))}
+                </ul>
               </li>
             ))}
           </ul>
@@ -250,7 +311,10 @@ export function VendorOrderFulfillmentCard({
           </span>
         ) : null}
         {vendorOrder.status !== "cancelled" &&
-        vendorOrder.status !== "delivered" ? (
+        vendorOrder.status !== "delivered" &&
+        vendorOrder.status !== "customer_rejected" &&
+        vendorOrder.status !== "partially_rejected" &&
+        vendorOrder.status !== "delivery_failed" ? (
           <Button
             type="button"
             size="sm"

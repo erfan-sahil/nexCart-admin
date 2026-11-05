@@ -3,6 +3,10 @@ import { Loader2 } from "lucide-react"
 import { Link, useNavigate } from "react-router"
 
 import { UniversalBadge } from "@/components/shared"
+import {
+  dataTableTabsList,
+  dataTableTabTrigger,
+} from "@/components/shared/data-table-section"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -19,11 +23,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ApiError } from "@/lib/api/errors"
 import { formatDateTime } from "@/lib/format"
 
 import { useAdminReturns } from "../hooks"
 import { RETURN_KIND_LABEL, formatMoney, returnStatusBadge } from "../labels"
+import { VendorReturnShipmentsPanel } from "./vendor-return-shipments-panel"
 
 const STATUS_FILTERS = [
   { value: "all", label: "All statuses" },
@@ -41,7 +47,7 @@ const KIND_FILTERS = [
   { value: "customer_rejected", label: "Customer rejected" },
 ] as const
 
-export function AdminReturnsPageContent() {
+function DeliveryReturnsPanel() {
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState("all")
@@ -69,17 +75,7 @@ export function AdminReturnsPageContent() {
         : null
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-6">
-      <header className="space-y-1">
-        <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-          Returns
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Delivery failures and in-delivery rejections awaiting warehouse
-          handling.
-        </p>
-      </header>
-
+    <div className="flex w-full min-w-0 flex-col gap-4">
       <div className="flex flex-wrap gap-3">
         <Select
           value={status}
@@ -221,6 +217,41 @@ export function AdminReturnsPageContent() {
           </div>
         </div>
       ) : null}
+    </div>
+  )
+}
+
+export function AdminReturnsPageContent() {
+  const [tab, setTab] = useState("delivery")
+
+  return (
+    <div className="flex w-full min-w-0 flex-col gap-6">
+      <header className="space-y-1">
+        <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+          Returns
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Delivery returns and sellable products being shipped back to vendors.
+        </p>
+      </header>
+
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList className={dataTableTabsList}>
+          <TabsTrigger value="delivery" className={dataTableTabTrigger}>
+            Delivery returns
+          </TabsTrigger>
+          <TabsTrigger value="vendor" className={dataTableTabTrigger}>
+            Return to vendor
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="delivery" className="mt-4">
+          <DeliveryReturnsPanel />
+        </TabsContent>
+        <TabsContent value="vendor" className="mt-4">
+          <VendorReturnShipmentsPanel />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

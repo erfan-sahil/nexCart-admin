@@ -18,6 +18,7 @@ import type {
   AdminOrderDetail,
 } from "../types/admin-orders.types"
 import { InspectReturnDialog } from "./inspect-return-dialog"
+import { VendorReturnShipmentStepper } from "./vendor-return-shipment-status"
 
 type DeliveryReturnCardProps = {
   order: AdminOrderDetail
@@ -39,6 +40,12 @@ export function DeliveryReturnCard({
     actions.receive.isPending ||
     actions.inspect.isPending ||
     actions.resolve.isPending
+
+  const relatedShipments = order.vendorOrders.flatMap((vendorOrder) =>
+    (vendorOrder.vendorReturnShipments ?? []).filter(
+      (shipment) => shipment.returnRequestId === returnItem.id
+    )
+  )
 
   const run = async (fn: () => Promise<unknown>) => {
     setError(null)
@@ -221,6 +228,27 @@ export function DeliveryReturnCard({
             </>
           ) : null}
         </div>
+
+        {relatedShipments.length > 0 ? (
+          <div className="space-y-3 rounded-lg border border-border bg-muted/20 px-3 py-3">
+            <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+              Return to vendor progress
+            </p>
+            {relatedShipments.map((shipment) => {
+              const storeName =
+                order.vendorOrders.find(
+                  (vendorOrder) => vendorOrder.id === shipment.vendorOrderId
+                )?.storeName ?? "Vendor"
+
+              return (
+                <div key={shipment.id} className="space-y-1.5">
+                  <p className="text-sm font-medium">{storeName}</p>
+                  <VendorReturnShipmentStepper shipment={shipment} compact />
+                </div>
+              )
+            })}
+          </div>
+        ) : null}
 
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
       </div>
