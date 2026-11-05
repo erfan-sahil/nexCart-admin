@@ -85,8 +85,7 @@ export function AdminVendorEarningsPage() {
   }, [debouncedSearch, items])
 
   const totals = sumVendorEarnings(items)
-  const totalBalance =
-    totals.pendingSettlement + totals.availableBalance + totals.withdrawnBalance
+  const totalBalance = totals.totalBalance
 
   const errorMessage =
     query.error instanceof ApiError
@@ -144,7 +143,7 @@ export function AdminVendorEarningsPage() {
             tone="info"
             label="Withdrawn"
             value={formatBdt(totals.withdrawnBalance)}
-            detail="Historical paid-out total when tracked"
+            detail="Already removed from available (requested or paid)"
           />
         </FinanceStatGrid>
       )}
@@ -218,6 +217,7 @@ export function AdminVendorEarningsPage() {
                     <TableHead className="text-right">Pending</TableHead>
                     <TableHead className="text-right">Available</TableHead>
                     <TableHead className="text-right">Withdrawn</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -253,6 +253,7 @@ export function AdminVendorEarningsPage() {
                         <BalanceMixBar
                           pending={row.pendingSettlement}
                           available={row.availableBalance}
+                          withdrawn={row.withdrawnBalance}
                         />
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
@@ -263,6 +264,9 @@ export function AdminVendorEarningsPage() {
                       </TableCell>
                       <TableCell className="text-right text-muted-foreground tabular-nums">
                         {formatBdt(row.withdrawnBalance)}
+                      </TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">
+                        {formatBdt(row.totalBalance)}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button

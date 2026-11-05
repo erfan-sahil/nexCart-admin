@@ -118,8 +118,7 @@ export function VendorEarningsDetailsDialog({
     return null
   }
 
-  const total =
-    store.pendingSettlement + store.availableBalance + store.withdrawnBalance
+  const total = store.totalBalance
   const liveBalance = store.pendingSettlement + store.availableBalance
   const canMakeEligible = store.pendingSettlement > 0
 
@@ -189,6 +188,7 @@ export function VendorEarningsDetailsDialog({
                     <BalanceMixBar
                       pending={store.pendingSettlement}
                       available={store.availableBalance}
+                      withdrawn={store.withdrawnBalance}
                     />
                   </div>
                   <div className="mt-2.5 flex flex-wrap gap-3 text-xs text-muted-foreground">
@@ -197,8 +197,12 @@ export function VendorEarningsDetailsDialog({
                       Pending {formatBdt(store.pendingSettlement)}
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="size-2 rounded-full bg-emerald-500/50" />
+                      <span className="size-2 rounded-full bg-emerald-500/80" />
                       Available {formatBdt(store.availableBalance)}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="size-2 rounded-full bg-sky-500/70" />
+                      Withdrawn {formatBdt(store.withdrawnBalance)}
                     </span>
                   </div>
                 </div>

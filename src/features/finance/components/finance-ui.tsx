@@ -464,11 +464,13 @@ export function StoreAvatar({ name }: { name: string }) {
 export function BalanceMixBar({
   pending,
   available,
+  withdrawn = 0,
 }: {
   pending: number
   available: number
+  withdrawn?: number
 }) {
-  const total = pending + available
+  const total = pending + available + withdrawn
 
   if (total <= 0) {
     return (
@@ -476,17 +478,33 @@ export function BalanceMixBar({
     )
   }
 
-  const pendingShare = Math.round((pending / total) * 100)
+  const pendingShare = (pending / total) * 100
+  const availableShare = (available / total) * 100
+  const withdrawnShare = (withdrawn / total) * 100
 
   return (
     <div
-      className="flex h-1.5 w-full max-w-[8rem] overflow-hidden rounded-full bg-emerald-500/20"
-      title={`${pendingShare}% pending · ${100 - pendingShare}% available`}
+      className="flex h-1.5 w-full max-w-[8rem] overflow-hidden rounded-full bg-muted"
+      title={`${Math.round(pendingShare)}% pending · ${Math.round(availableShare)}% available · ${Math.round(withdrawnShare)}% withdrawn`}
     >
-      <div
-        className="h-full rounded-full bg-amber-500/80"
-        style={{ width: `${pendingShare}%` }}
-      />
+      {pendingShare > 0 ? (
+        <div
+          className="h-full bg-amber-500/80"
+          style={{ width: `${pendingShare}%` }}
+        />
+      ) : null}
+      {availableShare > 0 ? (
+        <div
+          className="h-full bg-emerald-500/80"
+          style={{ width: `${availableShare}%` }}
+        />
+      ) : null}
+      {withdrawnShare > 0 ? (
+        <div
+          className="h-full bg-sky-500/70"
+          style={{ width: `${withdrawnShare}%` }}
+        />
+      ) : null}
     </div>
   )
 }

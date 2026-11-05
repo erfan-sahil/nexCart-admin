@@ -90,9 +90,17 @@ export function AdminWithdrawalsPage() {
       }
     }) => reviewWithdrawal(payload.withdrawalId, payload.body),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["admin", "withdrawals"],
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["admin", "withdrawals"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["admin", "vendor-earnings"],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["admin", "finance"],
+        }),
+      ])
     },
   })
 

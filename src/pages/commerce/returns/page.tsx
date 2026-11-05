@@ -1,5 +1,5 @@
-import { PagePlaceholder } from "@/components/shared"
+import { AdminReturnsPageContent } from "@/features/orders/components/admin-returns-page"
 
 export function ReturnsPage() {
-  return <PagePlaceholder />
+  return <AdminReturnsPageContent />
 }

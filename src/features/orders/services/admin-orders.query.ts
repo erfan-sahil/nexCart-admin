@@ -1,5 +1,6 @@
 import type {
   ListAdminOrdersParams,
+  ListAdminReturnsParams,
   ListAdminVendorOrdersParams,
 } from "../types/admin-orders.types"
 
@@ -10,4 +11,7 @@ export const adminOrderKeys = {
   detail: (id: string) => [...adminOrderKeys.all, "detail", id] as const,
   vendorList: (params: ListAdminVendorOrdersParams) =>
     [...adminOrderKeys.all, "vendor-list", params] as const,
+  returns: (params: ListAdminReturnsParams) =>
+    [...adminOrderKeys.all, "returns", params] as const,
+  returnDetail: (id: string) => [...adminOrderKeys.all, "return", id] as const,
 }

@@ -18,6 +18,8 @@ export type VendorEarningsRow = {
   pendingSettlement: number
   availableBalance: number
   withdrawnBalance: number
+  /** pending + available + withdrawn, computed by the API */
+  totalBalance: number
 }
 
 export type WithdrawalRow = {

@@ -10,3 +10,12 @@ export {
   updateAdminOrderStatus,
   updateAdminVendorOrderStatus,
 } from "./admin-orders.api"
+export {
+  getAdminReturn,
+  inspectReturn,
+  listAdminReturns,
+  markReturnReceived,
+  markReturnReturning,
+  previewReturnRefund,
+  resolveReturn,
+} from "./admin-returns.api"

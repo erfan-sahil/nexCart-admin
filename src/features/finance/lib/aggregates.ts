@@ -7,6 +7,7 @@ export type VendorEarningsTotals = {
   pendingSettlement: number
   availableBalance: number
   withdrawnBalance: number
+  totalBalance: number
   storeCount: number
 }
 
@@ -18,12 +19,14 @@ export function sumVendorEarnings(
       pendingSettlement: acc.pendingSettlement + row.pendingSettlement,
       availableBalance: acc.availableBalance + row.availableBalance,
       withdrawnBalance: acc.withdrawnBalance + row.withdrawnBalance,
+      totalBalance: acc.totalBalance + row.totalBalance,
       storeCount: acc.storeCount + 1,
     }),
     {
       pendingSettlement: 0,
       availableBalance: 0,
       withdrawnBalance: 0,
+      totalBalance: 0,
       storeCount: 0,
     }
   )
