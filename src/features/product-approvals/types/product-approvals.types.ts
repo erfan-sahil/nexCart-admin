@@ -84,6 +84,7 @@ export type Product = {
   slug: string
   shortDescription: string
   description: string
+  features: string[]
   images: ProductImage[]
   thumbnail: ProductImage | null
   attributes: ProductAttribute[]
