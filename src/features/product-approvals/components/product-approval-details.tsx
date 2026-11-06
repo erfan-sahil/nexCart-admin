@@ -130,15 +130,24 @@ export function ProductApprovalDetails({ product }: { product: Product }) {
       ) : null}
 
       <section className="flex flex-col gap-1.5">
-        <SectionTitle>Description</SectionTitle>
-        {product.shortDescription ? (
-          <p className="text-sm font-medium text-foreground">
-            {product.shortDescription}
-          </p>
-        ) : null}
-        <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
-          {product.description || "No description yet."}
+        <SectionTitle>Summary</SectionTitle>
+        <p className="text-sm leading-relaxed text-foreground">
+          {product.shortDescription || "No summary yet."}
         </p>
+      </section>
+
+      <section className="flex flex-col gap-1.5">
+        <SectionTitle>Specifications</SectionTitle>
+        <FeatureList
+          features={
+            (product.features ?? []).length > 0
+              ? product.features
+              : product.description
+                  .split("\n")
+                  .map((line) => line.trim())
+                  .filter(Boolean)
+          }
+        />
       </section>
 
       <section className="flex flex-col gap-1.5">
@@ -369,6 +378,27 @@ function Stat({
         <dd className="truncate text-xs text-muted-foreground">{detail}</dd>
       ) : null}
     </div>
+  )
+}
+
+function FeatureList({ features }: { features: string[] }) {
+  if (features.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">No specifications yet.</p>
+    )
+  }
+
+  return (
+    <ul className="overflow-hidden rounded-lg border border-border">
+      {features.map((feature, index) => (
+        <li
+          key={`${index}-${feature}`}
+          className="border-b border-border px-3 py-2 text-sm last:border-b-0"
+        >
+          {feature}
+        </li>
+      ))}
+    </ul>
   )
 }
 
