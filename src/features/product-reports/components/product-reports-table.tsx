@@ -1,7 +1,21 @@
-import { ChevronLeft, ChevronRight, Eye, Loader2 } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Loader2,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react"
 
 import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Table,
   TableBody,
@@ -32,6 +46,7 @@ type ProductReportsTableProps = {
   onPageChange: (page: number) => void
   onRetry: () => void
   onOpen: (report: ProductReport) => void
+  onDelete: (report: ProductReport) => void
 }
 
 export function ProductReportsTable({
@@ -47,6 +62,7 @@ export function ProductReportsTable({
   onPageChange,
   onRetry,
   onOpen,
+  onDelete,
 }: ProductReportsTableProps) {
   const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1
   const rangeEnd = Math.min(page * pageSize, total)
@@ -61,7 +77,7 @@ export function ProductReportsTable({
             <TableHead>Store</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Date</TableHead>
-            <TableHead className="w-14 text-right">
+            <TableHead className="w-16 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
           </TableRow>
@@ -149,15 +165,41 @@ export function ProductReportsTable({
                   className="px-3 py-2.5 text-right last:pr-4"
                   onClick={(event) => event.stopPropagation()}
                 >
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={`View report for ${report.product.name}`}
-                    onClick={() => onOpen(report)}
-                  >
-                    <Eye className="size-4" />
-                  </Button>
+                  <div className="flex justify-end">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          className="cursor-pointer"
+                          aria-label={`Actions for report on ${report.product.name}`}
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            window.setTimeout(() => onOpen(report), 0)
+                          }}
+                        >
+                          <Eye className="size-3.5" />
+                          Details
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onSelect={() => {
+                            window.setTimeout(() => onDelete(report), 0)
+                          }}
+                        >
+                          <Trash2 className="size-3.5" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

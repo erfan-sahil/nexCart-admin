@@ -4,10 +4,19 @@ import {
   Eye,
   Loader2,
   MessageSquare,
+  MoreHorizontal,
+  Trash2,
 } from "lucide-react"
 
 import { UniversalBadge, badgeColors } from "@/components/shared"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Table,
   TableBody,
@@ -34,6 +43,7 @@ type ReviewsTableProps = {
   onPageChange: (page: number) => void
   onRetry: () => void
   onOpen: (review: ManagementReview) => void
+  onDelete: (review: ManagementReview) => void
 }
 
 export function ReviewsTable({
@@ -49,6 +59,7 @@ export function ReviewsTable({
   onPageChange,
   onRetry,
   onOpen,
+  onDelete,
 }: ReviewsTableProps) {
   const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1
   const rangeEnd = Math.min(page * pageSize, total)
@@ -63,7 +74,7 @@ export function ReviewsTable({
             <TableHead>Store</TableHead>
             <TableHead>Replies</TableHead>
             <TableHead>Date</TableHead>
-            <TableHead className="w-14 text-right">
+            <TableHead className="w-16 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
           </TableRow>
@@ -160,15 +171,41 @@ export function ReviewsTable({
                   className="px-3 py-2.5 text-right last:pr-4"
                   onClick={(event) => event.stopPropagation()}
                 >
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={`View review by ${review.author.displayName}`}
-                    onClick={() => onOpen(review)}
-                  >
-                    <Eye className="size-4" />
-                  </Button>
+                  <div className="flex justify-end">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          className="cursor-pointer"
+                          aria-label={`Actions for review by ${review.author.displayName}`}
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            window.setTimeout(() => onOpen(review), 0)
+                          }}
+                        >
+                          <Eye className="size-3.5" />
+                          Details
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onSelect={() => {
+                            window.setTimeout(() => onDelete(review), 0)
+                          }}
+                        >
+                          <Trash2 className="size-3.5" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

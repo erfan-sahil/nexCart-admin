@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query"
 
 import {
+  deleteProductReport,
   listProductReports,
   productReportKeys,
   updateProductReportStatus,
@@ -34,6 +35,19 @@ export function useUpdateProductReportStatusMutation() {
       reportId: string
       payload: UpdateProductReportStatusPayload
     }) => updateProductReportStatus(reportId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: productReportKeys.lists(),
+      })
+    },
+  })
+}
+
+export function useDeleteProductReportMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (reportId: string) => deleteProductReport(reportId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: productReportKeys.lists(),

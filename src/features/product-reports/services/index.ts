@@ -1,4 +1,5 @@
 export {
+  deleteProductReport,
   listProductReports,
   updateProductReportStatus,
 } from "./product-reports.api"

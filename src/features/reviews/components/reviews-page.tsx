@@ -18,9 +18,10 @@ import {
 import { useDebouncedValue } from "@/hooks"
 import { ApiError } from "@/lib/api/errors"
 
-import { useAdminReviewsQuery, useDeleteAdminReviewMutation } from "../hooks"
+import { useAdminReviewsQuery } from "../hooks"
 import { RATING_FILTER_LABEL } from "../labels"
 import type { ManagementReview, RatingFilter } from "../types"
+import { ReviewDeleteDialog } from "./review-delete-dialog"
 import { ReviewDetailDialog } from "./review-detail-dialog"
 import { ReviewsTable } from "./reviews-table"
 
@@ -31,8 +32,8 @@ export function ReviewsPageContent() {
   const [pageSize] = useState(20)
   const [search, setSearch] = useState("")
   const [ratingFilter, setRatingFilter] = useState<RatingFilter>("all")
-  const [selected, setSelected] = useState<ManagementReview | null>(null)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [viewing, setViewing] = useState<ManagementReview | null>(null)
+  const [deleting, setDeleting] = useState<ManagementReview | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
 
   const params = useMemo(
@@ -46,7 +47,6 @@ export function ReviewsPageContent() {
   )
 
   const reviewsQuery = useAdminReviewsQuery(params)
-  const deleteReview = useDeleteAdminReviewMutation()
   const items = reviewsQuery.data?.items ?? []
   const pagination = reviewsQuery.data?.pagination
   const errorMessage =
@@ -57,27 +57,12 @@ export function ReviewsPageContent() {
         : null
 
   const handleOpen = useCallback((review: ManagementReview) => {
-    setDeleteError(null)
-    setSelected(review)
+    setViewing(review)
   }, [])
 
-  const handleDelete = useCallback(
-    async (review: ManagementReview) => {
-      setDeleteError(null)
-
-      try {
-        await deleteReview.mutateAsync(review.id)
-        setSelected(null)
-      } catch (error) {
-        setDeleteError(
-          error instanceof ApiError
-            ? error.message
-            : "Could not delete this review."
-        )
-      }
-    },
-    [deleteReview]
-  )
+  const handleDelete = useCallback((review: ManagementReview) => {
+    setDeleting(review)
+  }, [])
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
@@ -154,12 +139,6 @@ export function ReviewsPageContent() {
           ) : null}
         </div>
 
-        {deleteError ? (
-          <p className="border-b border-border px-4 py-2 text-sm text-destructive sm:px-5">
-            {deleteError}
-          </p>
-        ) : null}
-
         <ReviewsTable
           items={items}
           isLoading={reviewsQuery.isLoading}
@@ -177,16 +156,23 @@ export function ReviewsPageContent() {
           onPageChange={setPage}
           onRetry={() => void reviewsQuery.refetch()}
           onOpen={handleOpen}
+          onDelete={handleDelete}
         />
       </section>
 
       <ReviewDetailDialog
-        review={selected}
-        open={Boolean(selected)}
-        deleting={deleteReview.isPending}
-        onClose={() => setSelected(null)}
-        onDelete={(review) => {
-          void handleDelete(review)
+        review={viewing}
+        open={Boolean(viewing)}
+        onClose={() => setViewing(null)}
+      />
+      <ReviewDeleteDialog
+        review={deleting}
+        open={Boolean(deleting)}
+        onClose={() => setDeleting(null)}
+        onDeleted={(reviewId) => {
+          if (viewing?.id === reviewId) {
+            setViewing(null)
+          }
         }}
       />
     </div>
