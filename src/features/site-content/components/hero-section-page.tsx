@@ -11,7 +11,11 @@ import {
   Trash2,
 } from "lucide-react"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -289,6 +293,7 @@ export function HeroSectionPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+      <AdminPageIntro />
       {listError ? (
         <p className="text-sm text-destructive" role="alert">
           {listError}

@@ -13,7 +13,6 @@ import {
   PackageSearch,
   PanelsTopLeft,
   Receipt,
-  Scale,
   Settings,
   ShieldAlert,
   ShoppingBag,
@@ -171,13 +170,6 @@ export const NAV = defineNav([
         description: "Return requests and refund decisions.",
         icon: Undo2,
       },
-      {
-        kind: "page",
-        label: "Disputes",
-        path: "/commerce/disputes",
-        description: "Buyer and vendor disputes that need a ruling.",
-        icon: Scale,
-      },
     ],
   },
   {
@@ -308,6 +300,7 @@ export type AdminPath = ExtractPaths<typeof NAV>
 export type PageHandle = {
   title: string
   description: string
+  intro?: string
 }
 
 export function isNavGroup(

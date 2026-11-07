@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useState } from "react"
 import { Loader2, Search } from "lucide-react"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   InputGroup,
@@ -53,7 +57,7 @@ export function UsersPage({
   const [deleting, setDeleting] = useState<AdminUser | null>(null)
   const [statusUser, setStatusUser] = useState<AdminUser | null>(null)
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
-  const title = role === "customer" ? "Buyers" : "Vendors"
+  const listTitle = role === "customer" ? "Buyers" : "Vendors"
 
   const params = useMemo(
     () => ({
@@ -100,6 +104,7 @@ export function UsersPage({
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+      <AdminPageIntro />
       <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
         <FieldGroup className="gap-4 sm:flex-row sm:items-end">
           <Field className="min-w-0 flex-1">
@@ -147,7 +152,7 @@ export function UsersPage({
       <section className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
         <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2.5">
-            <h2 className="text-sm font-semibold">{title}</h2>
+            <h2 className="text-sm font-semibold">{listTitle}</h2>
             <UniversalBadge
               name={pagination ? String(pagination.total) : "—"}
               colors={badgeColors.neutral}

@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -100,12 +101,15 @@ export function CustomerRejectDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="shrink-0">
           <DialogTitle>Customer rejected delivery</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody
+          scrollClassName="min-h-0 flex-1"
+          className="space-y-4 px-0 py-0"
+        >
           <p className="text-sm text-muted-foreground">
             Select only the products the customer refused. Accepted items stay
             as a completed purchase.
@@ -189,9 +193,9 @@ export function CustomerRejectDialog({
           </p>
 
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        </div>
+        </DialogBody>
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>

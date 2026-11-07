@@ -4,13 +4,13 @@ import { Loader2, Pencil, Plus, Trash2, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { ApiError } from "@/lib/api/errors"
 
 import { formatDealDate } from "../datetime"
@@ -128,9 +128,8 @@ function FlashDealManageContent({
                   ) : null}
                 </div>
 
-                <ScrollArea
-                  type="auto"
-                  className="min-h-0 flex-1 overflow-hidden"
+                <DialogBody
+                  scrollClassName="min-h-0 flex-1 overflow-hidden"
                   viewportClassName="h-auto max-h-[min(28rem,calc(100dvh-18rem))]"
                 >
                   {(campaign?.items.length ?? 0) === 0 ? (
@@ -195,7 +194,7 @@ function FlashDealManageContent({
                       ))}
                     </ul>
                   )}
-                </ScrollArea>
+                </DialogBody>
               </>
             )}
           </div>

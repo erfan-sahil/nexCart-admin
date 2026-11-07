@@ -8,7 +8,11 @@ import {
 } from "lucide-react"
 import { Link } from "react-router"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -69,6 +73,7 @@ export function DashboardHome() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+      <AdminPageIntro />
       <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           Marketplace snapshot for{" "}

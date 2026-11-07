@@ -1,6 +1,10 @@
 import { ArrowDown, ArrowUp, Loader2 } from "lucide-react"
 
-import { UniversalBadge, badgeColors } from "@/components/shared"
+import {
+  AdminPageIntro,
+  UniversalBadge,
+  badgeColors,
+} from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { ApiError } from "@/lib/api/errors"
@@ -39,15 +43,7 @@ export function FeaturedCategoriesPageContent() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Featured categories
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Choose up to {MAX_FEATURED} root categories for the storefront
-          homepage strip.
-        </p>
-      </div>
+      <AdminPageIntro />
 
       {loading ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">

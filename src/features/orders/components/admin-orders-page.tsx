@@ -2,7 +2,11 @@ import { useMemo, useState } from "react"
 import { Loader2, Search } from "lucide-react"
 import { useNavigate } from "react-router"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import {
   dataTableTabsList,
   dataTableTabTrigger,
@@ -26,6 +30,7 @@ import { ApiError } from "@/lib/api/errors"
 import { useAdminOrders } from "../hooks"
 import { FULFILLMENT_STATUS_LABEL } from "../labels"
 import type { AdminOrderListItem } from "../types/admin-orders.types"
+import { AdminOrderDetailsDialog } from "./admin-order-details-dialog"
 import { AdminOrdersTable } from "./admin-orders-table"
 
 const FULFILLMENT_TABS = [
@@ -50,6 +55,7 @@ const PAYMENT_FILTERS = [
 
 export function AdminOrdersPageContent() {
   const navigate = useNavigate()
+  const [viewing, setViewing] = useState<AdminOrderListItem | null>(null)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [search, setSearch] = useState("")
@@ -88,28 +94,24 @@ export function AdminOrdersPageContent() {
 
   return (
     <div className="flex w-full min-w-0 flex-col gap-4">
-      <header className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
-            Orders
-          </h1>
-          <UniversalBadge
-            name={pagination ? String(pagination.total) : "—"}
-            colors={badgeColors.neutral}
-            showDot={false}
-            className="normal-case tabular-nums"
-          />
-          {listQuery.isFetching && !listQuery.isLoading ? (
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Loader2 className="size-3.5 animate-spin" />
-              Refreshing
-            </span>
-          ) : null}
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Find orders, check payment, and open a record to fulfill.
-        </p>
-      </header>
+      <AdminPageIntro
+        trailing={
+          <>
+            <UniversalBadge
+              name={pagination ? String(pagination.total) : "—"}
+              colors={badgeColors.neutral}
+              showDot={false}
+              className="normal-case tabular-nums"
+            />
+            {listQuery.isFetching && !listQuery.isLoading ? (
+              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 animate-spin" />
+                Refreshing
+              </span>
+            ) : null}
+          </>
+        }
+      />
 
       <section className="min-w-0 overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
         <Tabs
@@ -190,11 +192,22 @@ export function AdminOrdersPageContent() {
               onPageChange={setPage}
               onPageSizeChange={setPageSize}
               onRetry={() => void listQuery.refetch()}
-              onOpen={openOrder}
+              onDetails={setViewing}
+              onUpdate={openOrder}
             />
           </TabsContent>
         </Tabs>
       </section>
+
+      <AdminOrderDetailsDialog
+        order={viewing}
+        open={Boolean(viewing)}
+        onClose={() => setViewing(null)}
+        onUpdate={(order) => {
+          setViewing(null)
+          openOrder(order)
+        }}
+      />
     </div>
   )
 }

@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useState } from "react"
 import { Loader2 } from "lucide-react"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   Select,
@@ -19,6 +23,7 @@ import {
 import { STATUS_FILTER_LABEL } from "../labels"
 import type { ProductReport, StatusFilter } from "../types"
 import { ProductReportsTable } from "./product-reports-table"
+import { ReportDeleteDialog } from "./report-delete-dialog"
 import { ReportDetailDialog } from "./report-detail-dialog"
 
 const STATUS_FILTERS: StatusFilter[] = ["all", "open", "reviewed", "dismissed"]
@@ -27,7 +32,8 @@ export function ProductReportsPageContent() {
   const [page, setPage] = useState(1)
   const [pageSize] = useState(20)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("open")
-  const [selected, setSelected] = useState<ProductReport | null>(null)
+  const [viewing, setViewing] = useState<ProductReport | null>(null)
+  const [deleting, setDeleting] = useState<ProductReport | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
 
   const params = useMemo(
@@ -52,7 +58,11 @@ export function ProductReportsPageContent() {
 
   const handleOpen = useCallback((report: ProductReport) => {
     setActionError(null)
-    setSelected(report)
+    setViewing(report)
+  }, [])
+
+  const handleDelete = useCallback((report: ProductReport) => {
+    setDeleting(report)
   }, [])
 
   const handleStatusUpdate = useCallback(
@@ -64,7 +74,7 @@ export function ProductReportsPageContent() {
           reportId: report.id,
           payload: { status },
         })
-        setSelected(updated)
+        setViewing(updated)
       } catch (error) {
         setActionError(
           error instanceof ApiError
@@ -78,15 +88,7 @@ export function ProductReportsPageContent() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          Reports
-        </h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Buyer complaints about product listings. Open a row to review details
-          and mark the report as handled.
-        </p>
-      </div>
+      <AdminPageIntro />
 
       <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
         <FieldGroup className="gap-4 sm:flex-row sm:items-end">
@@ -133,12 +135,6 @@ export function ProductReportsPageContent() {
           ) : null}
         </div>
 
-        {actionError ? (
-          <p className="border-b border-border px-4 py-2 text-sm text-destructive sm:px-5">
-            {actionError}
-          </p>
-        ) : null}
-
         <ProductReportsTable
           items={items}
           isLoading={reportsQuery.isLoading}
@@ -156,19 +152,34 @@ export function ProductReportsPageContent() {
           onPageChange={setPage}
           onRetry={() => void reportsQuery.refetch()}
           onOpen={handleOpen}
+          onDelete={handleDelete}
         />
       </section>
 
       <ReportDetailDialog
-        report={selected}
-        open={Boolean(selected)}
+        report={viewing}
+        open={Boolean(viewing)}
         updating={updateStatus.isPending}
-        onClose={() => setSelected(null)}
+        actionError={actionError}
+        onClose={() => {
+          setViewing(null)
+          setActionError(null)
+        }}
         onMarkReviewed={(report) => {
           void handleStatusUpdate(report, "reviewed")
         }}
         onDismiss={(report) => {
           void handleStatusUpdate(report, "dismissed")
+        }}
+      />
+      <ReportDeleteDialog
+        report={deleting}
+        open={Boolean(deleting)}
+        onClose={() => setDeleting(null)}
+        onDeleted={(reportId) => {
+          if (viewing?.id === reportId) {
+            setViewing(null)
+          }
         }}
       />
     </div>

@@ -4,7 +4,13 @@ import {
   useLegacyTable,
   type LegacyColumnDef,
 } from "@tanstack/react-table/legacy"
-import { ChevronLeft, ChevronRight, Eye } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  MoreHorizontal,
+  Pencil,
+} from "lucide-react"
 
 import { UniversalBadge } from "@/components/shared"
 import {
@@ -12,6 +18,12 @@ import {
   dataTableHeadCell,
 } from "@/components/shared/data-table-section"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Pagination,
   PaginationContent,
@@ -59,7 +71,8 @@ type AdminOrdersTableProps = {
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
   onRetry: () => void
-  onOpen: (order: AdminOrderListItem) => void
+  onDetails: (order: AdminOrderListItem) => void
+  onUpdate: (order: AdminOrderListItem) => void
 }
 
 function pageItems(current: number, total: number) {
@@ -100,7 +113,8 @@ export function AdminOrdersTable({
   onPageChange,
   onPageSizeChange,
   onRetry,
-  onOpen,
+  onDetails,
+  onUpdate,
 }: AdminOrdersTableProps) {
   const columns = useMemo<LegacyColumnDef<AdminOrderListItem>[]>(
     () => [
@@ -191,25 +205,45 @@ export function AdminOrdersTable({
 
           return (
             <div className="flex justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                aria-label={`Open ${order.orderNumber}`}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onOpen(order)
-                }}
-              >
-                <Eye />
-                Open
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="cursor-pointer"
+                    aria-label={`Actions for ${order.orderNumber}`}
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-44">
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onSelect={() => {
+                      window.setTimeout(() => onDetails(order), 0)
+                    }}
+                  >
+                    <Eye className="size-3.5" />
+                    Details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onSelect={() => {
+                      window.setTimeout(() => onUpdate(order), 0)
+                    }}
+                  >
+                    <Pencil className="size-3.5" />
+                    Update
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )
         },
       },
     ],
-    [onOpen]
+    [onDetails, onUpdate]
   )
 
   const paginationState = useMemo<PaginationState>(
@@ -247,9 +281,9 @@ export function AdminOrdersTable({
   return (
     <div>
       <Table>
-        <TableHeader className="bg-muted/40">
+        <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="hover:bg-transparent">
+            <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id} className={dataTableHeadCell}>
                   {header.isPlaceholder
@@ -273,7 +307,7 @@ export function AdminOrdersTable({
               </TableRow>
             ))
           ) : errorMessage ? (
-            <TableRow className="hover:bg-transparent">
+            <TableRow>
               <TableCell colSpan={columns.length} className="px-5 py-16">
                 <div className="flex flex-col items-center text-center">
                   <p className="text-sm font-medium text-destructive">
@@ -291,7 +325,7 @@ export function AdminOrdersTable({
               </TableCell>
             </TableRow>
           ) : items.length === 0 ? (
-            <TableRow className="hover:bg-transparent">
+            <TableRow>
               <TableCell colSpan={columns.length} className="px-5 py-16">
                 <div className="mx-auto max-w-md text-center">
                   <p className="text-sm font-medium">No orders found</p>
@@ -306,7 +340,7 @@ export function AdminOrdersTable({
               <TableRow
                 key={row.id}
                 className="cursor-pointer hover:bg-brand-soft/50"
-                onClick={() => onOpen(row.original)}
+                onClick={() => onDetails(row.original)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
@@ -314,7 +348,7 @@ export function AdminOrdersTable({
                     className={cn(
                       dataTableBodyCell,
                       cell.column.id === "grandTotal" && "text-right",
-                      cell.column.id === "actions" && "w-28"
+                      cell.column.id === "actions" && "w-12"
                     )}
                     onClick={
                       cell.column.id === "actions"

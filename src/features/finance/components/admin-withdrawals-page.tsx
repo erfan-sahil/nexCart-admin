@@ -29,7 +29,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ApiError } from "@/lib/api/errors"
 
@@ -53,6 +52,10 @@ import {
   PayoutMethodBadge,
   WithdrawalStatusBadge,
 } from "./finance-ui"
+import {
+  WithdrawalApproveDialog,
+  WithdrawalRejectDialog,
+} from "./withdrawal-confirm-dialogs"
 import { sumWithdrawalAmount } from "../lib/aggregates"
 import {
   formatBdt,
@@ -108,9 +111,8 @@ export function AdminWithdrawalsPage() {
   const [payoutReference, setPayoutReference] = useState("")
   const [paidError, setPaidError] = useState<string | null>(null)
 
+  const [approveTarget, setApproveTarget] = useState<WithdrawalRow | null>(null)
   const [rejectTarget, setRejectTarget] = useState<WithdrawalRow | null>(null)
-  const [rejectNote, setRejectNote] = useState("")
-  const [rejectError, setRejectError] = useState<string | null>(null)
 
   const items = useMemo(() => query.data?.items ?? [], [query.data?.items])
   const pagination = query.data?.pagination
@@ -171,8 +173,8 @@ export function AdminWithdrawalsPage() {
       <>
         <div className="overflow-x-auto">
           <Table className="text-sm">
-            <TableHeader className="bg-muted/50">
-              <TableRow className="hover:bg-transparent">
+            <TableHeader>
+              <TableRow>
                 <TableHead className={dataTableHeadCell}>Requested</TableHead>
                 <TableHead className={dataTableHeadCell}>Store</TableHead>
                 <TableHead className={dataTableHeadCell}>Payout</TableHead>
@@ -233,23 +235,14 @@ export function AdminWithdrawalsPage() {
                     <WithdrawalActions
                       row={row}
                       busy={review.isPending}
-                      onApprove={() =>
-                        review.mutate({
-                          withdrawalId: row.id,
-                          body: { action: "approve" },
-                        })
-                      }
+                      onApprove={() => setApproveTarget(row)}
                       onProcessing={() =>
                         review.mutate({
                           withdrawalId: row.id,
                           body: { action: "processing" },
                         })
                       }
-                      onReject={() => {
-                        setRejectTarget(row)
-                        setRejectNote("")
-                        setRejectError(null)
-                      }}
+                      onReject={() => setRejectTarget(row)}
                       onPaid={() => {
                         setPaidTarget(row)
                         setPayoutReference("")
@@ -375,6 +368,46 @@ export function AdminWithdrawalsPage() {
         </Tabs>
       </section>
 
+      <WithdrawalApproveDialog
+        withdrawal={approveTarget}
+        open={approveTarget !== null}
+        onClose={() => setApproveTarget(null)}
+        isPending={review.isPending}
+        onConfirm={async (reviewNote) => {
+          if (!approveTarget) {
+            return
+          }
+
+          await review.mutateAsync({
+            withdrawalId: approveTarget.id,
+            body: {
+              action: "approve",
+              reviewNote,
+            },
+          })
+        }}
+      />
+
+      <WithdrawalRejectDialog
+        withdrawal={rejectTarget}
+        open={rejectTarget !== null}
+        onClose={() => setRejectTarget(null)}
+        isPending={review.isPending}
+        onConfirm={async (reviewNote) => {
+          if (!rejectTarget) {
+            return
+          }
+
+          await review.mutateAsync({
+            withdrawalId: rejectTarget.id,
+            body: {
+              action: "reject",
+              reviewNote,
+            },
+          })
+        }}
+      />
+
       <Dialog
         open={paidTarget !== null}
         onOpenChange={(open) => {
@@ -385,7 +418,7 @@ export function AdminWithdrawalsPage() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Mark as paid</DialogTitle>
             <DialogDescription>
@@ -451,81 +484,6 @@ export function AdminWithdrawalsPage() {
               ) : (
                 "Confirm paid"
               )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={rejectTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setRejectTarget(null)
-            setRejectNote("")
-            setRejectError(null)
-          }
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reject withdrawal</DialogTitle>
-            <DialogDescription>
-              Funds return to the vendor available balance. Add an optional note
-              they can see in the record.
-            </DialogDescription>
-          </DialogHeader>
-          <Field>
-            <FieldLabel htmlFor="rejectNote">Review note</FieldLabel>
-            <Textarea
-              id="rejectNote"
-              value={rejectNote}
-              onChange={(e) => setRejectNote(e.target.value)}
-              placeholder="Reason for rejection (optional)"
-              rows={3}
-            />
-          </Field>
-          {rejectError ? (
-            <p className="text-sm text-destructive">{rejectError}</p>
-          ) : null}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setRejectTarget(null)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={review.isPending}
-              onClick={async () => {
-                if (!rejectTarget) {
-                  return
-                }
-
-                setRejectError(null)
-
-                try {
-                  await review.mutateAsync({
-                    withdrawalId: rejectTarget.id,
-                    body: {
-                      action: "reject",
-                      reviewNote: rejectNote.trim() || "Rejected by admin",
-                    },
-                  })
-                  setRejectTarget(null)
-                  setRejectNote("")
-                } catch (err) {
-                  setRejectError(
-                    err instanceof ApiError
-                      ? err.message
-                      : "Could not reject withdrawal."
-                  )
-                }
-              }}
-            >
-              Reject request
             </Button>
           </DialogFooter>
         </DialogContent>

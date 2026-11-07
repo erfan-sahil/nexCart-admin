@@ -6,6 +6,7 @@ import { XIcon } from "lucide-react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 function Dialog({
   ...props
@@ -47,13 +48,19 @@ function DialogOverlay({
   )
 }
 
+/** Full-height modal shell (header / scroll body / footer). */
+const dialogShellClassName =
+  "flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0"
+
 function DialogContent({
   className,
   children,
   showCloseButton = true,
+  shell = false,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  shell?: boolean
 }) {
   return (
     <DialogPortal>
@@ -61,7 +68,10 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "pointer-events-auto fixed top-1/2 left-1/2 z-[60] grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "pointer-events-auto fixed top-1/2 left-1/2 z-[60] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl bg-popover text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          shell
+            ? dialogShellClassName
+            : "flex max-h-[calc(100dvh-2rem)] flex-col gap-4 overflow-hidden p-4 sm:max-w-sm",
           className
         )}
         {...props}
@@ -71,7 +81,7 @@ function DialogContent({
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
               variant="ghost"
-              className="absolute top-3 right-3 cursor-pointer"
+              className="absolute top-3 right-3 z-10 cursor-pointer"
               size="icon-sm"
             >
               <XIcon />
@@ -150,8 +160,49 @@ function DialogDescription({
   )
 }
 
+type DialogBodyProps = React.ComponentProps<"div"> & {
+  scroll?: boolean
+  scrollClassName?: string
+  viewportClassName?: string
+}
+
+function DialogBody({
+  className,
+  children,
+  scroll = true,
+  scrollClassName,
+  viewportClassName,
+  ...props
+}: DialogBodyProps) {
+  if (!scroll) {
+    return (
+      <div
+        data-slot="dialog-body"
+        className={cn("min-h-0 flex-1", className)}
+        {...props}
+      >
+        {children}
+      </div>
+    )
+  }
+
+  return (
+    <ScrollArea
+      type="auto"
+      data-slot="dialog-body"
+      className={cn("min-h-0 flex-1 overflow-hidden", scrollClassName)}
+      viewportClassName={viewportClassName}
+    >
+      <div className={cn("min-w-0 px-5 py-5", className)} {...props}>
+        {children}
+      </div>
+    </ScrollArea>
+  )
+}
+
 export {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -161,4 +212,5 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
+  dialogShellClassName,
 }

@@ -4,10 +4,19 @@ import {
   Eye,
   Loader2,
   MessageSquare,
+  MoreHorizontal,
+  Trash2,
 } from "lucide-react"
 
 import { UniversalBadge, badgeColors } from "@/components/shared"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Table,
   TableBody,
@@ -34,6 +43,7 @@ type ReviewsTableProps = {
   onPageChange: (page: number) => void
   onRetry: () => void
   onOpen: (review: ManagementReview) => void
+  onDelete: (review: ManagementReview) => void
 }
 
 export function ReviewsTable({
@@ -49,6 +59,7 @@ export function ReviewsTable({
   onPageChange,
   onRetry,
   onOpen,
+  onDelete,
 }: ReviewsTableProps) {
   const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1
   const rangeEnd = Math.min(page * pageSize, total)
@@ -56,14 +67,15 @@ export function ReviewsTable({
   return (
     <div>
       <Table>
-        <TableHeader className="bg-muted/50">
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="h-10 px-3 first:pl-4">Review</TableHead>
-            <TableHead className="h-10 px-3">Product</TableHead>
-            <TableHead className="h-10 px-3">Store</TableHead>
-            <TableHead className="h-10 px-3">Replies</TableHead>
-            <TableHead className="h-10 px-3">Date</TableHead>
-            <TableHead className="h-10 w-14 px-3 text-right last:pr-4">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Rating</TableHead>
+            <TableHead>Reviewer</TableHead>
+            <TableHead>Product</TableHead>
+            <TableHead>Store</TableHead>
+            <TableHead>Replies</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead className="w-16 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
           </TableRow>
@@ -72,14 +84,14 @@ export function ReviewsTable({
           {isLoading ? (
             Array.from({ length: 6 }, (_, index) => (
               <TableRow key={index} className="hover:bg-transparent">
-                <TableCell colSpan={6} className="px-4 py-3">
+                <TableCell colSpan={7} className="px-4 py-3">
                   <div className="h-10 animate-pulse rounded-md bg-muted" />
                 </TableCell>
               </TableRow>
             ))
           ) : errorMessage ? (
-            <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={6} className="px-5 py-16">
+            <TableRow>
+              <TableCell colSpan={7} className="px-5 py-16">
                 <div className="flex flex-col items-center text-center">
                   <p className="text-sm font-medium text-destructive">
                     {errorMessage}
@@ -96,8 +108,8 @@ export function ReviewsTable({
               </TableCell>
             </TableRow>
           ) : items.length === 0 ? (
-            <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={6} className="px-5 py-16">
+            <TableRow>
+              <TableCell colSpan={7} className="px-5 py-16">
                 <div className="mx-auto max-w-md text-center">
                   <p className="text-sm font-medium">No reviews found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -113,16 +125,13 @@ export function ReviewsTable({
                 className="cursor-pointer hover:bg-brand-soft/60"
                 onClick={() => onOpen(review)}
               >
-                <TableCell className="max-w-72 px-3 py-2.5 first:pl-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <ReviewStars rating={review.rating} />
-                      <span className="truncate text-xs text-muted-foreground">
-                        {review.author.displayName}
-                      </span>
-                    </div>
-                    <p className="line-clamp-2 text-sm">{review.body}</p>
-                  </div>
+                <TableCell className="px-3 py-2.5 first:pl-4">
+                  <ReviewStars rating={review.rating} />
+                </TableCell>
+                <TableCell className="max-w-40 px-3 py-2.5">
+                  <p className="truncate text-sm font-medium">
+                    {review.author.displayName}
+                  </p>
                 </TableCell>
                 <TableCell className="max-w-44 px-3 py-2.5">
                   <p className="truncate text-sm font-medium">
@@ -160,15 +169,41 @@ export function ReviewsTable({
                   className="px-3 py-2.5 text-right last:pr-4"
                   onClick={(event) => event.stopPropagation()}
                 >
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={`View review by ${review.author.displayName}`}
-                    onClick={() => onOpen(review)}
-                  >
-                    <Eye className="size-4" />
-                  </Button>
+                  <div className="flex justify-end">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          className="cursor-pointer"
+                          aria-label={`Actions for review by ${review.author.displayName}`}
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            window.setTimeout(() => onOpen(review), 0)
+                          }}
+                        >
+                          <Eye className="size-3.5" />
+                          Details
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onSelect={() => {
+                            window.setTimeout(() => onDelete(review), 0)
+                          }}
+                        >
+                          <Trash2 className="size-3.5" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

@@ -76,12 +76,12 @@ export function FlashDealsTable({
     <div className="overflow-hidden rounded-xl border bg-card">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="h-9 px-3">Deal</TableHead>
-            <TableHead className="h-9 px-3">Activity</TableHead>
-            <TableHead className="h-9 px-3">Times</TableHead>
-            <TableHead className="h-9 px-3">Products</TableHead>
-            <TableHead className="h-9 w-14 px-3 text-right">Actions</TableHead>
+          <TableRow>
+            <TableHead>Deal</TableHead>
+            <TableHead>Activity</TableHead>
+            <TableHead>Times</TableHead>
+            <TableHead>Products</TableHead>
+            <TableHead className="w-14 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

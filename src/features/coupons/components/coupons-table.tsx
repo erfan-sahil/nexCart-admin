@@ -1,4 +1,11 @@
-import { Loader2, MoreHorizontal, Pencil, Power, PowerOff } from "lucide-react"
+import {
+  Eye,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Power,
+  PowerOff,
+} from "lucide-react"
 
 import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
@@ -32,6 +39,7 @@ type CouponsTableProps = {
   isLoading: boolean
   isToggling: boolean
   emptyMessage: string
+  onView: (coupon: Coupon) => void
   onEdit: (coupon: Coupon) => void
   onToggleEnabled: (coupon: Coupon, isEnabled: boolean) => void
 }
@@ -41,6 +49,7 @@ export function CouponsTable({
   isLoading,
   isToggling,
   emptyMessage,
+  onView,
   onEdit,
   onToggleEnabled,
 }: CouponsTableProps) {
@@ -65,13 +74,13 @@ export function CouponsTable({
     <div className="overflow-hidden rounded-xl border bg-card">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="h-9 px-3">Code</TableHead>
-            <TableHead className="h-9 px-3">Discount</TableHead>
-            <TableHead className="h-9 px-3">Window</TableHead>
-            <TableHead className="h-9 px-3">Usage</TableHead>
-            <TableHead className="h-9 px-3">Status</TableHead>
-            <TableHead className="h-9 w-14 px-3 text-right">Actions</TableHead>
+          <TableRow>
+            <TableHead>Code</TableHead>
+            <TableHead>Discount</TableHead>
+            <TableHead>Window</TableHead>
+            <TableHead>Usage</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="w-14 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -79,7 +88,11 @@ export function CouponsTable({
             const lifecycle = getCouponLifecycle(coupon)
 
             return (
-              <TableRow key={coupon.id}>
+              <TableRow
+                key={coupon.id}
+                className="cursor-pointer"
+                onClick={() => onView(coupon)}
+              >
                 <TableCell className="max-w-48 px-3 py-1.5 align-middle">
                   <p className="truncate font-mono text-sm font-medium">
                     {coupon.code}
@@ -130,7 +143,10 @@ export function CouponsTable({
                   </div>
                 </TableCell>
 
-                <TableCell className="px-3 py-1.5 text-right align-middle">
+                <TableCell
+                  className="px-3 py-1.5 text-right align-middle"
+                  onClick={(event) => event.stopPropagation()}
+                >
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -147,7 +163,18 @@ export function CouponsTable({
                     <DropdownMenuContent align="end" className="min-w-44">
                       <DropdownMenuItem
                         className="cursor-pointer"
-                        onClick={() => onEdit(coupon)}
+                        onSelect={() => {
+                          window.setTimeout(() => onView(coupon), 0)
+                        }}
+                      >
+                        <Eye className="size-3.5" />
+                        Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onSelect={() => {
+                          window.setTimeout(() => onEdit(coupon), 0)
+                        }}
                       >
                         <Pencil className="size-3.5" />
                         Edit
@@ -155,7 +182,7 @@ export function CouponsTable({
                       <DropdownMenuItem
                         className="cursor-pointer"
                         disabled={isToggling}
-                        onClick={() =>
+                        onSelect={() =>
                           onToggleEnabled(coupon, !coupon.isEnabled)
                         }
                       >

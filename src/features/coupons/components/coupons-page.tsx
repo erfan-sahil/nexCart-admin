@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { Loader2, Plus, Search, Ticket } from "lucide-react"
 
+import { AdminPageIntro } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
@@ -20,6 +21,7 @@ import {
 import { ApiError } from "@/lib/api/errors"
 import { useDebouncedValue } from "@/hooks"
 
+import { CouponDetailsDialog } from "./coupon-details-dialog"
 import { CouponFormDialog } from "./coupon-form-dialog"
 import { CouponsTable } from "./coupons-table"
 import { useCouponsQuery, useSetCouponEnabledMutation } from "../hooks"
@@ -33,6 +35,7 @@ export function CouponsPageContent() {
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
   const [creating, setCreating] = useState(false)
+  const [viewing, setViewing] = useState<Coupon | null>(null)
   const [editing, setEditing] = useState<Coupon | null>(null)
   const [toggleError, setToggleError] = useState<string | null>(null)
 
@@ -70,15 +73,7 @@ export function CouponsPageContent() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
-            Coupons
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Create discount codes customers can apply at checkout. Usage limits
-            and active windows are enforced on the server.
-          </p>
-        </div>
+        <AdminPageIntro />
         <Button type="button" onClick={() => setCreating(true)}>
           <Plus className="size-4" />
           New coupon
@@ -137,6 +132,7 @@ export function CouponsPageContent() {
         isLoading={couponsQuery.isLoading}
         isToggling={setEnabled.isPending}
         emptyMessage={emptyMessage}
+        onView={setViewing}
         onEdit={setEditing}
         onToggleEnabled={onToggleEnabled}
       />
@@ -147,6 +143,21 @@ export function CouponsPageContent() {
           Refreshing…
         </p>
       ) : null}
+
+      <CouponDetailsDialog
+        coupon={viewing}
+        open={Boolean(viewing)}
+        onClose={() => setViewing(null)}
+        onEdit={() => {
+          if (!viewing) {
+            return
+          }
+
+          const coupon = viewing
+          setViewing(null)
+          setEditing(coupon)
+        }}
+      />
 
       <CouponFormDialog
         open={creating}

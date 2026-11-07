@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -21,7 +22,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import { Textarea } from "@/components/ui/textarea"
 import { useAttributesQuery } from "@/features/attributes/hooks"
@@ -447,9 +447,8 @@ function CategoryForm({
               {formError}
             </p>
           ) : null}
-          <ScrollArea
-            type="auto"
-            className="min-h-0 flex-1 overflow-hidden"
+          <DialogBody
+            scrollClassName="min-h-0 flex-1 overflow-hidden"
             viewportClassName="h-auto max-h-[min(32rem,calc(100dvh-16rem))]"
           >
             <FieldGroup className="gap-4 px-6 py-5">
@@ -634,7 +633,7 @@ function CategoryForm({
                 </FieldContent>
               </Field>
             </FieldGroup>
-          </ScrollArea>
+          </DialogBody>
 
           <DialogFooter className="relative z-10 shrink-0 border-t border-border bg-card px-6 py-4">
             <Button

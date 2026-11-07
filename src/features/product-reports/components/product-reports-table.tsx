@@ -1,7 +1,21 @@
-import { ChevronLeft, ChevronRight, Eye, Loader2 } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Loader2,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react"
 
 import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Table,
   TableBody,
@@ -32,6 +46,7 @@ type ProductReportsTableProps = {
   onPageChange: (page: number) => void
   onRetry: () => void
   onOpen: (report: ProductReport) => void
+  onDelete: (report: ProductReport) => void
 }
 
 export function ProductReportsTable({
@@ -47,6 +62,7 @@ export function ProductReportsTable({
   onPageChange,
   onRetry,
   onOpen,
+  onDelete,
 }: ProductReportsTableProps) {
   const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1
   const rangeEnd = Math.min(page * pageSize, total)
@@ -54,14 +70,15 @@ export function ProductReportsTable({
   return (
     <div>
       <Table>
-        <TableHeader className="bg-muted/50">
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="h-10 px-3 first:pl-4">Report</TableHead>
-            <TableHead className="h-10 px-3">Product</TableHead>
-            <TableHead className="h-10 px-3">Store</TableHead>
-            <TableHead className="h-10 px-3">Status</TableHead>
-            <TableHead className="h-10 px-3">Date</TableHead>
-            <TableHead className="h-10 w-14 px-3 text-right last:pr-4">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Reason</TableHead>
+            <TableHead>Reporter</TableHead>
+            <TableHead>Product</TableHead>
+            <TableHead>Store</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead className="w-16 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
           </TableRow>
@@ -70,14 +87,14 @@ export function ProductReportsTable({
           {isLoading ? (
             Array.from({ length: 6 }, (_, index) => (
               <TableRow key={index} className="hover:bg-transparent">
-                <TableCell colSpan={6} className="px-4 py-3">
+                <TableCell colSpan={7} className="px-4 py-3">
                   <div className="h-10 animate-pulse rounded-md bg-muted" />
                 </TableCell>
               </TableRow>
             ))
           ) : errorMessage ? (
-            <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={6} className="px-5 py-16">
+            <TableRow>
+              <TableCell colSpan={7} className="px-5 py-16">
                 <div className="flex flex-col items-center text-center">
                   <p className="text-sm font-medium text-destructive">
                     {errorMessage}
@@ -94,8 +111,8 @@ export function ProductReportsTable({
               </TableCell>
             </TableRow>
           ) : items.length === 0 ? (
-            <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={6} className="px-5 py-16">
+            <TableRow>
+              <TableCell colSpan={7} className="px-5 py-16">
                 <div className="mx-auto max-w-md text-center">
                   <p className="text-sm font-medium">No reports found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -111,15 +128,14 @@ export function ProductReportsTable({
                 className="cursor-pointer hover:bg-brand-soft/60"
                 onClick={() => onOpen(report)}
               >
-                <TableCell className="max-w-72 px-3 py-2.5 first:pl-4">
-                  <p className="text-sm font-medium">
+                <TableCell className="max-w-44 px-3 py-2.5 first:pl-4">
+                  <p className="truncate text-sm font-medium">
                     {PRODUCT_REPORT_TYPE_LABEL[report.type]}
                   </p>
-                  <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
-                    {report.message}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    by {report.reporter.displayName}
+                </TableCell>
+                <TableCell className="max-w-40 px-3 py-2.5">
+                  <p className="truncate text-sm font-medium">
+                    {report.reporter.displayName}
                   </p>
                 </TableCell>
                 <TableCell className="max-w-44 px-3 py-2.5">
@@ -149,15 +165,41 @@ export function ProductReportsTable({
                   className="px-3 py-2.5 text-right last:pr-4"
                   onClick={(event) => event.stopPropagation()}
                 >
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={`View report for ${report.product.name}`}
-                    onClick={() => onOpen(report)}
-                  >
-                    <Eye className="size-4" />
-                  </Button>
+                  <div className="flex justify-end">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          className="cursor-pointer"
+                          aria-label={`Actions for report on ${report.product.name}`}
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            window.setTimeout(() => onOpen(report), 0)
+                          }}
+                        >
+                          <Eye className="size-3.5" />
+                          Details
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onSelect={() => {
+                            window.setTimeout(() => onDelete(report), 0)
+                          }}
+                        >
+                          <Trash2 className="size-3.5" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

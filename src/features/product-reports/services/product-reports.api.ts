@@ -64,3 +64,14 @@ export async function updateProductReportStatus(
     throw toApiError(error)
   }
 }
+
+export async function deleteProductReport(reportId: string) {
+  try {
+    const { data } = await api.delete<ApiSuccess<{ id: string }>>(
+      `/product-reports/${reportId}`
+    )
+    return data.data
+  } catch (error) {
+    throw toApiError(error)
+  }
+}

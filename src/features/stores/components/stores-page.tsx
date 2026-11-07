@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useState } from "react"
 import { Loader2, Search } from "lucide-react"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   InputGroup,
@@ -65,17 +69,17 @@ export function StoresPageContent() {
     setSelected(store)
   }, [])
 
+  const handleBan = useCallback((store: AdminStoreSummary) => {
+    setBanTarget(store)
+  }, [])
+
+  const handleDelete = useCallback((store: AdminStoreSummary) => {
+    setDeleteTarget(store)
+  }, [])
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          Stores
-        </h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Vendor storefronts on the marketplace. Open a row to inspect contact
-          details, categories, and listing status.
-        </p>
-      </div>
+      <AdminPageIntro />
 
       <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
         <FieldGroup className="gap-4 sm:flex-row sm:items-end">
@@ -160,6 +164,8 @@ export function StoresPageContent() {
           onPageChange={setPage}
           onRetry={() => void storesQuery.refetch()}
           onOpen={handleOpen}
+          onBan={handleBan}
+          onDelete={handleDelete}
         />
       </section>
 
@@ -167,16 +173,6 @@ export function StoresPageContent() {
         store={selected}
         open={Boolean(selected)}
         onClose={() => setSelected(null)}
-        onBan={() => {
-          if (selected) {
-            setBanTarget(selected)
-          }
-        }}
-        onDelete={() => {
-          if (selected) {
-            setDeleteTarget(selected)
-          }
-        }}
       />
 
       <StoreSuspensionDialog

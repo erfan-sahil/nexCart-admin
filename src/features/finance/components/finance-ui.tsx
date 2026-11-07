@@ -2,7 +2,11 @@ import { ChevronLeft, ChevronRight, type LucideIcon } from "lucide-react"
 import type { ReactNode } from "react"
 import { Link } from "react-router"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import {
   Pagination,
@@ -77,19 +81,10 @@ export function FinancePageIntro({
   aside,
 }: FinancePageIntroProps) {
   return (
-    <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="font-display text-xl font-semibold tracking-tight">
-            {title}
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            {description}
-          </p>
-        </div>
-        {aside ? <div className="shrink-0">{aside}</div> : null}
-      </div>
-    </section>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <AdminPageIntro title={title} description={description} />
+      {aside ? <div className="shrink-0">{aside}</div> : null}
+    </div>
   )
 }
 

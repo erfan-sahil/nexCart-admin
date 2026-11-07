@@ -1,13 +1,16 @@
 import { useMemo, useState } from "react"
 import { Loader2 } from "lucide-react"
-import { Link, useNavigate } from "react-router"
+import { useNavigate } from "react-router"
 
-import { UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import {
   dataTableTabsList,
   dataTableTabTrigger,
 } from "@/components/shared/data-table-section"
-import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -15,20 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ApiError } from "@/lib/api/errors"
-import { formatDateTime } from "@/lib/format"
 
 import { useAdminReturns } from "../hooks"
-import { RETURN_KIND_LABEL, formatMoney, returnStatusBadge } from "../labels"
+import type { AdminReturnListItem } from "../types/admin-orders.types"
+import { AdminDeliveryReturnsTable } from "./admin-delivery-returns-table"
+import { AdminOrderDetailsDialog } from "./admin-order-details-dialog"
 import { VendorReturnShipmentsPanel } from "./vendor-return-shipments-panel"
 
 const STATUS_FILTERS = [
@@ -47,20 +43,31 @@ const KIND_FILTERS = [
   { value: "customer_rejected", label: "Customer rejected" },
 ] as const
 
-function DeliveryReturnsPanel() {
+const VENDOR_STATUS_FILTERS = [
+  { value: "all", label: "All statuses" },
+  { value: "pending_dispatch_to_vendor", label: "Pending dispatch" },
+  { value: "in_transit_to_vendor", label: "In transit" },
+  { value: "received_by_vendor", label: "Received by vendor" },
+] as const
+
+export function AdminReturnsPageContent() {
   const navigate = useNavigate()
+  const [tab, setTab] = useState("delivery")
+  const [detailsOrderId, setDetailsOrderId] = useState<string | null>(null)
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [status, setStatus] = useState("all")
   const [kind, setKind] = useState("all")
+  const [vendorStatus, setVendorStatus] = useState("all")
 
   const params = useMemo(
     () => ({
       page,
-      limit: 20,
+      limit: pageSize,
       ...(status !== "all" ? { status } : {}),
       ...(kind !== "all" ? { kind } : {}),
     }),
-    [page, status, kind]
+    [page, pageSize, status, kind]
   )
 
   const listQuery = useAdminReturns(params)
@@ -74,184 +81,158 @@ function DeliveryReturnsPanel() {
         ? "Could not load returns."
         : null
 
+  const openOrder = (returnItem: AdminReturnListItem) => {
+    navigate(`/commerce/orders/${returnItem.parentOrderId}`)
+  }
+
+  const showOrderDetails = (returnItem: AdminReturnListItem) => {
+    setDetailsOrderId(returnItem.parentOrderId)
+  }
+
   return (
     <div className="flex w-full min-w-0 flex-col gap-4">
-      <div className="flex flex-wrap gap-3">
-        <Select
-          value={status}
+      <AdminPageIntro
+        trailing={
+          tab === "delivery" ? (
+            <>
+              <UniversalBadge
+                name={pagination ? String(pagination.total) : "—"}
+                colors={badgeColors.neutral}
+                showDot={false}
+                className="normal-case tabular-nums"
+              />
+              {listQuery.isFetching && !listQuery.isLoading ? (
+                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Loader2 className="size-3.5 animate-spin" />
+                  Refreshing
+                </span>
+              ) : null}
+            </>
+          ) : null
+        }
+      />
+
+      <section className="min-w-0 overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+        <Tabs
+          value={tab}
           onValueChange={(value) => {
-            setStatus(value)
+            setTab(value)
             setPage(1)
           }}
+          className="gap-0"
         >
-          <SelectTrigger className="w-56">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            {STATUS_FILTERS.map((filter) => (
-              <SelectItem key={filter.value} value={filter.value}>
-                {filter.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0 overflow-x-auto">
+              <TabsList className={dataTableTabsList}>
+                <TabsTrigger value="delivery" className={dataTableTabTrigger}>
+                  Delivery returns
+                </TabsTrigger>
+                <TabsTrigger value="vendor" className={dataTableTabTrigger}>
+                  Return to vendor
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-        <Select
-          value={kind}
-          onValueChange={(value) => {
-            setKind(value)
-            setPage(1)
-          }}
-        >
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Kind" />
-          </SelectTrigger>
-          <SelectContent>
-            {KIND_FILTERS.map((filter) => (
-              <SelectItem key={filter.value} value={filter.value}>
-                {filter.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-        {listQuery.isLoading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="size-7 animate-spin text-muted-foreground" />
-          </div>
-        ) : errorMessage ? (
-          <p className="px-4 py-12 text-center text-sm text-destructive">
-            {errorMessage}
-          </p>
-        ) : items.length === 0 ? (
-          <p className="px-4 py-12 text-center text-sm text-muted-foreground">
-            No delivery returns yet.
-          </p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Created</TableHead>
-                <TableHead>Kind</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead className="text-right">Cash refund</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((row) => {
-                const badge = returnStatusBadge(row.status)
-
-                return (
-                  <TableRow
-                    key={row.id}
-                    className="cursor-pointer"
-                    onClick={() =>
-                      void navigate(`/commerce/orders/${row.parentOrderId}`)
-                    }
+            <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-auto lg:shrink-0">
+              {tab === "delivery" ? (
+                <>
+                  <Select
+                    value={status}
+                    onValueChange={(value) => {
+                      setStatus(value)
+                      setPage(1)
+                    }}
                   >
-                    <TableCell className="text-sm whitespace-nowrap">
-                      {formatDateTime(row.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {RETURN_KIND_LABEL[row.kind] ?? row.kind}
-                    </TableCell>
-                    <TableCell>
-                      <UniversalBadge
-                        name={badge.name}
-                        colors={badge.colors}
-                        icon={badge.icon}
-                      />
-                    </TableCell>
-                    <TableCell className="max-w-[16rem] truncate text-sm text-muted-foreground">
-                      {row.reason}
-                    </TableCell>
-                    <TableCell className="text-right text-sm tabular-nums">
-                      {formatMoney("BDT", row.cashRefundAmount)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button type="button" variant="ghost" size="sm" asChild>
-                        <Link
-                          to={`/commerce/orders/${row.parentOrderId}`}
-                          onClick={(event) => event.stopPropagation()}
-                        >
-                          Open order
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        )}
+                    <SelectTrigger
+                      className="h-9! w-full bg-background sm:w-56"
+                      aria-label="Return status"
+                    >
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent align="end">
+                      {STATUS_FILTERS.map((filter) => (
+                        <SelectItem key={filter.value} value={filter.value}>
+                          {filter.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={kind}
+                    onValueChange={(value) => {
+                      setKind(value)
+                      setPage(1)
+                    }}
+                  >
+                    <SelectTrigger
+                      className="h-9! w-full bg-background sm:w-48"
+                      aria-label="Return kind"
+                    >
+                      <SelectValue placeholder="Kind" />
+                    </SelectTrigger>
+                    <SelectContent align="end">
+                      {KIND_FILTERS.map((filter) => (
+                        <SelectItem key={filter.value} value={filter.value}>
+                          {filter.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
+              ) : (
+                <Select value={vendorStatus} onValueChange={setVendorStatus}>
+                  <SelectTrigger
+                    className="h-9! w-full bg-background sm:w-56"
+                    aria-label="Shipment status"
+                  >
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    {VENDOR_STATUS_FILTERS.map((filter) => (
+                      <SelectItem key={filter.value} value={filter.value}>
+                        {filter.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          </div>
+
+          <TabsContent value="delivery" className="mt-0">
+            <AdminDeliveryReturnsTable
+              items={items}
+              isLoading={listQuery.isLoading}
+              isFetching={listQuery.isFetching}
+              errorMessage={errorMessage}
+              emptyLabel="Try another status or kind filter."
+              page={pagination?.page ?? page}
+              pageSize={pagination?.limit ?? pageSize}
+              total={pagination?.total ?? 0}
+              totalPages={pagination?.totalPages ?? 0}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              onRetry={() => void listQuery.refetch()}
+              onDetails={showOrderDetails}
+              onOpen={openOrder}
+            />
+          </TabsContent>
+
+          <TabsContent value="vendor" className="mt-0">
+            <VendorReturnShipmentsPanel embedded status={vendorStatus} />
+          </TabsContent>
+        </Tabs>
       </section>
 
-      {pagination && pagination.totalPages > 1 ? (
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            Page {pagination.page} of {pagination.totalPages}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page <= 1 || listQuery.isFetching}
-              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-            >
-              Previous
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page >= pagination.totalPages || listQuery.isFetching}
-              onClick={() => setPage((prev) => prev + 1)}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  )
-}
-
-export function AdminReturnsPageContent() {
-  const [tab, setTab] = useState("delivery")
-
-  return (
-    <div className="flex w-full min-w-0 flex-col gap-6">
-      <header className="space-y-1">
-        <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-          Returns
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Delivery returns and sellable products being shipped back to vendors.
-        </p>
-      </header>
-
-      <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className={dataTableTabsList}>
-          <TabsTrigger value="delivery" className={dataTableTabTrigger}>
-            Delivery returns
-          </TabsTrigger>
-          <TabsTrigger value="vendor" className={dataTableTabTrigger}>
-            Return to vendor
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="delivery" className="mt-4">
-          <DeliveryReturnsPanel />
-        </TabsContent>
-        <TabsContent value="vendor" className="mt-4">
-          <VendorReturnShipmentsPanel />
-        </TabsContent>
-      </Tabs>
+      <AdminOrderDetailsDialog
+        orderId={detailsOrderId}
+        open={Boolean(detailsOrderId)}
+        onClose={() => setDetailsOrderId(null)}
+        onUpdate={(order) => {
+          setDetailsOrderId(null)
+          navigate(`/commerce/orders/${order.id}`)
+        }}
+      />
     </div>
   )
 }

@@ -1,4 +1,6 @@
 export { AdminOrderDetailPageContent } from "./admin-order-detail-page"
+export { AdminOrderDetailsDialog } from "./admin-order-details-dialog"
 export { AdminOrdersPageContent } from "./admin-orders-page"
+export { AdminDeliveryReturnsTable } from "./admin-delivery-returns-table"
 export { AdminOrdersTable } from "./admin-orders-table"
 export { AdminReturnsPageContent } from "./admin-returns-page"

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -170,12 +171,15 @@ export function InspectVendorOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader className="shrink-0">
           <DialogTitle>Warehouse inspection</DialogTitle>
         </DialogHeader>
         {vendorOrder ? (
-          <div className="space-y-4">
+          <DialogBody
+            scrollClassName="min-h-0 flex-1"
+            className="space-y-4 px-0 py-0"
+          >
             <p className="text-sm text-muted-foreground">
               {vendorOrder.vendorOrderNumber} · {vendorOrder.storeName}
             </p>
@@ -272,9 +276,9 @@ export function InspectVendorOrderDialog({
               ))}
             </div>
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
-          </div>
+          </DialogBody>
         ) : null}
-        <DialogFooter className="gap-2 sm:justify-between">
+        <DialogFooter className="shrink-0 gap-2 sm:justify-between">
           <Button type="button" variant="outline" onClick={onAcceptAll}>
             Accept all sent qty
           </Button>

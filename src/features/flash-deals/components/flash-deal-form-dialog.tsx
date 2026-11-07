@@ -5,6 +5,7 @@ import type { ZodError } from "zod"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -19,7 +20,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { ApiError } from "@/lib/api/errors"
 
 import {
@@ -227,9 +227,8 @@ function FlashDealForm({
             </p>
           ) : null}
 
-          <ScrollArea
-            type="auto"
-            className="min-h-0 flex-1 overflow-hidden"
+          <DialogBody
+            scrollClassName="min-h-0 flex-1 overflow-hidden"
             viewportClassName="h-auto max-h-[min(32rem,calc(100dvh-16rem))]"
           >
             <FieldGroup className="gap-4 px-6 py-5">
@@ -283,7 +282,7 @@ function FlashDealForm({
                 <FieldError>{errors.endsAt}</FieldError>
               </Field>
             </FieldGroup>
-          </ScrollArea>
+          </DialogBody>
 
           <DialogFooter className="relative z-10 shrink-0 border-t border-border bg-card px-6 py-4">
             <Button
