@@ -97,11 +97,15 @@ export function AdminSidebar({
           collapsed && "lg:justify-center lg:px-2"
         )}
       >
-        <BrandLogo className={cn("h-8", collapsed && "lg:hidden")} />
         <BrandLogo
-          variant="mark"
-          className={cn("hidden", collapsed && "lg:block")}
+          className={cn(
+            "h-12 max-w-[calc(100%-2.5rem)] lg:max-w-none",
+            collapsed && "lg:hidden"
+          )}
         />
+        <div className={cn("hidden shrink-0", collapsed && "lg:block")}>
+          <BrandLogo variant="mark" className="h-12" />
+        </div>
         <button
           type="button"
           onClick={onClose}
