@@ -247,9 +247,9 @@ export function AdminOrdersTable({
   return (
     <div>
       <Table>
-        <TableHeader className="bg-muted/40">
+        <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="hover:bg-transparent">
+            <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id} className={dataTableHeadCell}>
                   {header.isPlaceholder
@@ -273,7 +273,7 @@ export function AdminOrdersTable({
               </TableRow>
             ))
           ) : errorMessage ? (
-            <TableRow className="hover:bg-transparent">
+            <TableRow>
               <TableCell colSpan={columns.length} className="px-5 py-16">
                 <div className="flex flex-col items-center text-center">
                   <p className="text-sm font-medium text-destructive">
@@ -291,7 +291,7 @@ export function AdminOrdersTable({
               </TableCell>
             </TableRow>
           ) : items.length === 0 ? (
-            <TableRow className="hover:bg-transparent">
+            <TableRow>
               <TableCell colSpan={columns.length} className="px-5 py-16">
                 <div className="mx-auto max-w-md text-center">
                   <p className="text-sm font-medium">No orders found</p>

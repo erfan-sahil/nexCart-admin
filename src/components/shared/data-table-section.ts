@@ -10,8 +10,9 @@ export const dataTableTabsList = "h-auto w-full gap-1 rounded-lg p-1 sm:w-auto"
 
 export const dataTableTabTrigger = "h-8 px-3 py-1 text-sm"
 
+/** Compact padding for tabbed list tables (column labels use shared TableHead styles). */
 export const dataTableHeadCell =
-  "h-8 px-3 py-0 text-xs font-medium text-muted-foreground first:pl-4 last:pr-4"
+  "h-9 px-3 py-0 normal-case first:pl-4 last:pr-4"
 
 export const dataTableBodyCell =
-  "px-3 py-1.5 text-sm align-middle first:pl-4 last:pr-4"
+  "px-3 py-2 text-sm align-middle first:pl-4 last:pr-4"

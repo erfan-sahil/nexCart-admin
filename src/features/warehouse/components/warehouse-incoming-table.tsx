@@ -207,14 +207,11 @@ export function WarehouseIncomingTable({
   return (
     <div>
       <Table>
-        <TableHeader className="bg-muted/50">
+        <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="hover:bg-transparent">
+            <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className="h-10 px-3 first:pl-4 last:pr-4"
-                >
+                <TableHead key={header.id}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(

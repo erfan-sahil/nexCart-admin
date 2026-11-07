@@ -61,15 +61,15 @@ export function StoresTable({
   return (
     <div>
       <Table>
-        <TableHeader className="bg-muted/50">
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="h-10 px-3 first:pl-4">Store</TableHead>
-            <TableHead className="h-10 px-3">Status</TableHead>
-            <TableHead className="h-10 px-3">Rating</TableHead>
-            <TableHead className="h-10 px-3">Products</TableHead>
-            <TableHead className="h-10 px-3">Sales</TableHead>
-            <TableHead className="h-10 px-3">Joined</TableHead>
-            <TableHead className="h-10 w-14 px-3 text-right last:pr-4">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Store</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Rating</TableHead>
+            <TableHead>Products</TableHead>
+            <TableHead>Sales</TableHead>
+            <TableHead>Joined</TableHead>
+            <TableHead className="w-14 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
           </TableRow>
@@ -84,7 +84,7 @@ export function StoresTable({
               </TableRow>
             ))
           ) : errorMessage ? (
-            <TableRow className="hover:bg-transparent">
+            <TableRow>
               <TableCell colSpan={7} className="px-5 py-16">
                 <div className="flex flex-col items-center text-center">
                   <p className="text-sm font-medium text-destructive">
@@ -102,7 +102,7 @@ export function StoresTable({
               </TableCell>
             </TableRow>
           ) : items.length === 0 ? (
-            <TableRow className="hover:bg-transparent">
+            <TableRow>
               <TableCell colSpan={7} className="px-5 py-16">
                 <div className="mx-auto max-w-md text-center">
                   <p className="text-sm font-medium">No stores found</p>

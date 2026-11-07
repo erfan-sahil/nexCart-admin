@@ -171,8 +171,8 @@ export function AdminWithdrawalsPage() {
       <>
         <div className="overflow-x-auto">
           <Table className="text-sm">
-            <TableHeader className="bg-muted/50">
-              <TableRow className="hover:bg-transparent">
+            <TableHeader>
+              <TableRow>
                 <TableHead className={dataTableHeadCell}>Requested</TableHead>
                 <TableHead className={dataTableHeadCell}>Store</TableHead>
                 <TableHead className={dataTableHeadCell}>Payout</TableHead>

@@ -65,13 +65,13 @@ export function CouponsTable({
     <div className="overflow-hidden rounded-xl border bg-card">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="h-9 px-3">Code</TableHead>
-            <TableHead className="h-9 px-3">Discount</TableHead>
-            <TableHead className="h-9 px-3">Window</TableHead>
-            <TableHead className="h-9 px-3">Usage</TableHead>
-            <TableHead className="h-9 px-3">Status</TableHead>
-            <TableHead className="h-9 w-14 px-3 text-right">Actions</TableHead>
+          <TableRow>
+            <TableHead>Code</TableHead>
+            <TableHead>Discount</TableHead>
+            <TableHead>Window</TableHead>
+            <TableHead>Usage</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="w-14 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

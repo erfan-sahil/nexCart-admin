@@ -62,12 +62,12 @@ export function SponsoredProductsTable({
     <div className="overflow-hidden rounded-xl border bg-card">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="h-9 px-3">Product</TableHead>
-            <TableHead className="h-9 px-3">Section</TableHead>
-            <TableHead className="h-9 px-3">Status</TableHead>
-            <TableHead className="h-9 px-3">CTA</TableHead>
-            <TableHead className="h-9 w-14 px-3 text-right">Actions</TableHead>
+          <TableRow>
+            <TableHead>Product</TableHead>
+            <TableHead>Section</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>CTA</TableHead>
+            <TableHead className="w-14 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

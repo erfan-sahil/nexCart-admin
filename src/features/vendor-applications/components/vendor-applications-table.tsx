@@ -276,14 +276,11 @@ export function VendorApplicationsTable({
   return (
     <div>
       <Table>
-        <TableHeader className="bg-muted/50">
+        <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="hover:bg-transparent">
+            <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className="h-10 px-3 text-xs font-medium text-muted-foreground first:pl-4 last:pr-4"
-                >
+                <TableHead key={header.id}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -311,7 +308,7 @@ export function VendorApplicationsTable({
               </TableRow>
             ))
           ) : errorMessage ? (
-            <TableRow className="hover:bg-transparent">
+            <TableRow>
               <TableCell colSpan={columns.length} className="px-5 py-16">
                 <div className="flex flex-col items-center text-center">
                   <p className="text-sm font-medium text-destructive">
@@ -329,7 +326,7 @@ export function VendorApplicationsTable({
               </TableCell>
             </TableRow>
           ) : items.length === 0 ? (
-            <TableRow className="hover:bg-transparent">
+            <TableRow>
               <TableCell colSpan={columns.length} className="px-5 py-16">
                 <div className="mx-auto max-w-md text-center">
                   <p className="text-sm font-medium">No records found</p>

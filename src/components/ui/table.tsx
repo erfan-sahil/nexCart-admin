@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import { cn } from "cn"
 
@@ -20,7 +22,11 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
+      className={cn(
+        "border-b-2 border-brand/20 bg-muted/45",
+        "[&_tr]:border-0 [&_tr]:hover:bg-transparent",
+        className
+      )}
       {...props}
     />
   )
@@ -54,7 +60,12 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
+        "border-b border-border/70",
+        "even:[&>td]:bg-muted/12",
+        "hover:[&>td]:bg-brand-soft/80 even:hover:[&>td]:bg-brand-soft/80",
+        "has-aria-expanded:[&>td]:bg-brand-soft",
+        "data-[state=selected]:[&>td]:bg-brand-soft",
+        "[&>td]:transition-colors",
         className
       )}
       {...props}
@@ -67,7 +78,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0",
+        "h-11 px-4 text-left align-middle text-[0.6875rem] font-semibold tracking-[0.08em] whitespace-nowrap text-muted-foreground uppercase first:pl-5 last:pr-5 [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -80,7 +91,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+        "px-4 py-3 align-middle whitespace-nowrap first:pl-5 last:pr-5 [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -101,6 +112,25 @@ function TableCaption({
   )
 }
 
+/** Matches {@link TableHeader} bar while list data is loading. */
+function TableSkeletonHeader({ columns = 5 }: { columns?: number }) {
+  return (
+    <div
+      className="border-b-2 border-brand/20 bg-muted/45 px-5 py-3.5"
+      aria-hidden="true"
+    >
+      <div className="flex min-w-max gap-8">
+        {Array.from({ length: columns }, (_, index) => (
+          <div
+            key={index}
+            className="h-2.5 w-14 animate-pulse rounded-sm bg-muted-foreground/15"
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export {
   Table,
   TableHeader,
@@ -110,4 +140,5 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  TableSkeletonHeader,
 }

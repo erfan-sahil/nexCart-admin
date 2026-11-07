@@ -56,14 +56,14 @@ export function ReviewsTable({
   return (
     <div>
       <Table>
-        <TableHeader className="bg-muted/50">
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="h-10 px-3 first:pl-4">Review</TableHead>
-            <TableHead className="h-10 px-3">Product</TableHead>
-            <TableHead className="h-10 px-3">Store</TableHead>
-            <TableHead className="h-10 px-3">Replies</TableHead>
-            <TableHead className="h-10 px-3">Date</TableHead>
-            <TableHead className="h-10 w-14 px-3 text-right last:pr-4">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Review</TableHead>
+            <TableHead>Product</TableHead>
+            <TableHead>Store</TableHead>
+            <TableHead>Replies</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead className="w-14 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
           </TableRow>
@@ -78,7 +78,7 @@ export function ReviewsTable({
               </TableRow>
             ))
           ) : errorMessage ? (
-            <TableRow className="hover:bg-transparent">
+            <TableRow>
               <TableCell colSpan={6} className="px-5 py-16">
                 <div className="flex flex-col items-center text-center">
                   <p className="text-sm font-medium text-destructive">
@@ -96,7 +96,7 @@ export function ReviewsTable({
               </TableCell>
             </TableRow>
           ) : items.length === 0 ? (
-            <TableRow className="hover:bg-transparent">
+            <TableRow>
               <TableCell colSpan={6} className="px-5 py-16">
                 <div className="mx-auto max-w-md text-center">
                   <p className="text-sm font-medium">No reviews found</p>
