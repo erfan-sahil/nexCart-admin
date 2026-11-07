@@ -69,7 +69,8 @@ export function ReviewsTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Review</TableHead>
+            <TableHead>Rating</TableHead>
+            <TableHead>Reviewer</TableHead>
             <TableHead>Product</TableHead>
             <TableHead>Store</TableHead>
             <TableHead>Replies</TableHead>
@@ -83,14 +84,14 @@ export function ReviewsTable({
           {isLoading ? (
             Array.from({ length: 6 }, (_, index) => (
               <TableRow key={index} className="hover:bg-transparent">
-                <TableCell colSpan={6} className="px-4 py-3">
+                <TableCell colSpan={7} className="px-4 py-3">
                   <div className="h-10 animate-pulse rounded-md bg-muted" />
                 </TableCell>
               </TableRow>
             ))
           ) : errorMessage ? (
             <TableRow>
-              <TableCell colSpan={6} className="px-5 py-16">
+              <TableCell colSpan={7} className="px-5 py-16">
                 <div className="flex flex-col items-center text-center">
                   <p className="text-sm font-medium text-destructive">
                     {errorMessage}
@@ -108,7 +109,7 @@ export function ReviewsTable({
             </TableRow>
           ) : items.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="px-5 py-16">
+              <TableCell colSpan={7} className="px-5 py-16">
                 <div className="mx-auto max-w-md text-center">
                   <p className="text-sm font-medium">No reviews found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -124,16 +125,13 @@ export function ReviewsTable({
                 className="cursor-pointer hover:bg-brand-soft/60"
                 onClick={() => onOpen(review)}
               >
-                <TableCell className="max-w-72 px-3 py-2.5 first:pl-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <ReviewStars rating={review.rating} />
-                      <span className="truncate text-xs text-muted-foreground">
-                        {review.author.displayName}
-                      </span>
-                    </div>
-                    <p className="line-clamp-2 text-sm">{review.body}</p>
-                  </div>
+                <TableCell className="px-3 py-2.5 first:pl-4">
+                  <ReviewStars rating={review.rating} />
+                </TableCell>
+                <TableCell className="max-w-40 px-3 py-2.5">
+                  <p className="truncate text-sm font-medium">
+                    {review.author.displayName}
+                  </p>
                 </TableCell>
                 <TableCell className="max-w-44 px-3 py-2.5">
                   <p className="truncate text-sm font-medium">

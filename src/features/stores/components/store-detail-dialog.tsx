@@ -1,4 +1,18 @@
-import { Ban, CircleCheck, Loader2, Trash2 } from "lucide-react"
+import {
+  CalendarClock,
+  Hash,
+  Layers,
+  Loader2,
+  Mail,
+  MapPin,
+  Package,
+  Phone,
+  ShoppingBag,
+  Star,
+  Store,
+  TrendingUp,
+  UserRound,
+} from "lucide-react"
 import type { ReactNode } from "react"
 
 import { UniversalBadge, badgeColors } from "@/components/shared"
@@ -12,10 +26,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { StoreAvatar } from "@/features/finance/components/finance-ui"
 import { formatBdt } from "@/features/finance/lib/format"
-import { formatDate } from "@/lib/format"
+import { formatDateTime } from "@/lib/format"
 import { ApiError } from "@/lib/api/errors"
+import { cn } from "@/lib/utils"
 
 import { useAdminStoreQuery } from "../hooks"
 import { STORE_LISTING_STATUS_LABEL, storeListingStatus } from "../labels"
@@ -34,8 +48,27 @@ type StoreDetailDialogProps = {
   store: AdminStoreSummary | null
   open: boolean
   onClose: () => void
-  onBan: () => void
-  onDelete: () => void
+}
+
+type DetailTone = "brand" | "emerald" | "amber" | "violet"
+
+const TONE_CLASS: Record<DetailTone, string> = {
+  brand: "bg-brand/15 text-brand-text",
+  emerald: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  amber: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  violet: "bg-violet-500/15 text-violet-700 dark:text-violet-300",
+}
+
+function storeInitials(name: string) {
+  const letters = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("")
+
+  return letters || "?"
 }
 
 function formatAddress(address: {
@@ -58,16 +91,75 @@ function formatAddress(address: {
     .join("\n")
 }
 
+function DetailItem({
+  icon: Icon,
+  label,
+  value,
+  tone,
+  nowrap = false,
+  className,
+  children,
+}: {
+  icon: typeof Phone
+  label: string
+  value?: string
+  tone: DetailTone
+  nowrap?: boolean
+  className?: string
+  children?: ReactNode
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-start gap-3 rounded-xl border border-border/80 bg-card px-3.5 py-3",
+        nowrap && "min-w-max flex-1",
+        className
+      )}
+    >
+      <span
+        className={cn(
+          "flex size-9 shrink-0 items-center justify-center rounded-lg",
+          TONE_CLASS[tone]
+        )}
+      >
+        <Icon className="size-4" />
+      </span>
+      <div className={cn(nowrap ? "shrink-0" : "min-w-0 flex-1")}>
+        <dt className="text-xs font-medium whitespace-nowrap text-muted-foreground">
+          {label}
+        </dt>
+        {children ?? (
+          <dd
+            className={cn(
+              "mt-0.5 text-sm font-medium text-foreground",
+              nowrap
+                ? "whitespace-nowrap"
+                : "wrap-break-word whitespace-pre-wrap"
+            )}
+          >
+            {value}
+          </dd>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <h3 className="text-xs font-semibold tracking-wide text-brand-text uppercase">
+      {children}
+    </h3>
+  )
+}
+
 export function StoreDetailDialog({
   store,
   open,
   onClose,
-  onBan,
-  onDelete,
 }: StoreDetailDialogProps) {
   const detailQuery = useAdminStoreQuery(store?.id ?? null, open)
   const detail = detailQuery.data
-  const status = store ? storeListingStatus(store) : "listed"
   const errorMessage =
     detailQuery.error instanceof ApiError
       ? detailQuery.error.message
@@ -75,82 +167,142 @@ export function StoreDetailDialog({
         ? "Could not load store details."
         : null
 
+  if (!open || !store) {
+    return null
+  }
+
+  const status = storeListingStatus(store)
+  const statusColors = STATUS_BADGE[status]
+
   return (
     <Dialog
       open={open}
-      onOpenChange={(next) => (!next ? onClose() : undefined)}
+      onOpenChange={(next) => {
+        if (!next) {
+          onClose()
+        }
+      }}
     >
-      <DialogContent className="max-w-lg">
-        <DialogHeader className="shrink-0">
-          <DialogTitle>Store details</DialogTitle>
-          <DialogDescription>
-            Public storefront profile and marketplace visibility.
-          </DialogDescription>
-        </DialogHeader>
-
-        {store ? (
-          <DialogBody
-            scrollClassName="min-h-0 flex-1"
-            className="space-y-4 px-0 py-0"
-          >
-            <div className="flex items-start gap-3">
-              <StoreAvatar name={store.name} />
-              <div className="min-w-0 flex-1 space-y-1">
-                <p className="text-base font-semibold">{store.name}</p>
-                <p className="text-xs text-muted-foreground">{store.slug}</p>
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <UniversalBadge
-                    name={STORE_LISTING_STATUS_LABEL[status]}
-                    colors={STATUS_BADGE[status]}
-                    showDot
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    Vendor {store.userId}
-                  </span>
-                </div>
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl">
+        <DialogHeader className="shrink-0 border-b border-brand/20 bg-brand-soft px-6 py-6 text-left">
+          <div className="flex items-center gap-4 pr-8">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-brand text-base font-semibold text-brand-foreground shadow-sm ring-4 ring-background">
+              {storeInitials(store.name)}
+            </span>
+            <div className="min-w-0">
+              <DialogTitle className="truncate text-lg font-semibold">
+                {store.name}
+              </DialogTitle>
+              <DialogDescription className="mt-1 truncate text-foreground/70">
+                {store.slug} · Vendor storefront
+              </DialogDescription>
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                <UniversalBadge
+                  name={STORE_LISTING_STATUS_LABEL[status]}
+                  colors={statusColors}
+                  showDot
+                />
+                <UniversalBadge
+                  name="Store"
+                  icon={Store}
+                  colors={badgeColors.vendor}
+                  showDot={false}
+                />
               </div>
             </div>
+          </div>
+        </DialogHeader>
 
-            {detailQuery.isLoading ? (
-              <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                Loading profile…
-              </div>
-            ) : errorMessage ? (
-              <p className="text-sm text-destructive">{errorMessage}</p>
-            ) : detail ? (
-              <>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Stat label="Products" value={String(detail.totalProducts)} />
-                  <Stat label="Orders" value={String(detail.totalOrders)} />
-                  <Stat
+        <DialogBody
+          scrollClassName="max-h-[calc(100dvh-16rem)] bg-muted/20"
+          viewportClassName="max-h-[calc(100dvh-16rem)]"
+          className="space-y-5 px-6 py-5"
+        >
+          {detailQuery.isLoading ? (
+            <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+              <Loader2 className="mr-2 size-4 animate-spin" />
+              Loading store profile…
+            </div>
+          ) : errorMessage ? (
+            <p className="text-sm text-destructive">{errorMessage}</p>
+          ) : detail ? (
+            <>
+              <section className="space-y-3">
+                <SectionLabel>Performance</SectionLabel>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  <DetailItem
+                    icon={Package}
+                    label="Products"
+                    value={String(detail.totalProducts)}
+                    tone="brand"
+                  />
+                  <DetailItem
+                    icon={ShoppingBag}
+                    label="Orders"
+                    value={String(detail.totalOrders)}
+                    tone="violet"
+                  />
+                  <DetailItem
+                    icon={TrendingUp}
                     label="Lifetime sales"
                     value={formatBdt(detail.totalSales)}
+                    tone="emerald"
                   />
-                  <Stat
+                  <DetailItem
+                    icon={Star}
                     label="Rating"
-                    value={`${detail.rating.average.toFixed(1)} (${detail.rating.count})`}
+                    value={`${detail.rating.average.toFixed(1)} (${detail.rating.count} reviews)`}
+                    tone="amber"
                   />
-                </div>
+                </dl>
+              </section>
 
-                <Section title="Contact">
-                  <p className="text-sm">{detail.contact.email || "—"}</p>
-                  <p className="text-sm">{detail.contact.phone || "—"}</p>
-                </Section>
+              <section className="space-y-3">
+                <SectionLabel>Contact</SectionLabel>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  <DetailItem
+                    icon={Mail}
+                    label="Email"
+                    value={detail.contact.email || "—"}
+                    tone="violet"
+                    className="sm:col-span-2"
+                  />
+                  <DetailItem
+                    icon={Phone}
+                    label="Phone"
+                    value={detail.contact.phone || "No phone on file"}
+                    tone="emerald"
+                  />
+                  <DetailItem
+                    icon={UserRound}
+                    label="Vendor user id"
+                    value={detail.userId}
+                    tone="brand"
+                  />
+                </dl>
+              </section>
 
-                <Section title="Address">
-                  <p className="text-sm whitespace-pre-wrap">
-                    {formatAddress(detail.address) || "—"}
-                  </p>
-                </Section>
+              <section className="space-y-3">
+                <SectionLabel>Location</SectionLabel>
+                <dl className="grid gap-3">
+                  <DetailItem
+                    icon={MapPin}
+                    label="Address"
+                    value={formatAddress(detail.address) || "—"}
+                    tone="brand"
+                  />
+                </dl>
+              </section>
 
-                <Section title="Categories">
+              <section className="space-y-3">
+                <SectionLabel>Catalog</SectionLabel>
+                <DetailItem icon={Layers} label="Categories" tone="violet">
                   {detail.categories.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="mt-0.5 text-sm font-medium text-muted-foreground">
                       None selected
                     </p>
                   ) : (
-                    <ul className="flex flex-wrap gap-2">
+                    <ul className="mt-1.5 flex flex-wrap gap-1.5">
                       {detail.categories.map((category) => (
                         <li key={category.id}>
                           <UniversalBadge
@@ -163,69 +315,51 @@ export function StoreDetailDialog({
                       ))}
                     </ul>
                   )}
-                </Section>
-
+                </DetailItem>
                 {detail.description ? (
-                  <Section title="Description">
-                    <p className="text-sm whitespace-pre-wrap">
-                      {detail.description}
-                    </p>
-                  </Section>
+                  <DetailItem
+                    icon={Store}
+                    label="Description"
+                    value={detail.description}
+                    tone="amber"
+                  />
                 ) : null}
+              </section>
 
-                <p className="text-xs text-muted-foreground">
-                  Joined {formatDate(detail.joinedAt)} · Store id {detail.id}
-                </p>
-              </>
-            ) : null}
-          </DialogBody>
-        ) : null}
+              <section className="space-y-3">
+                <SectionLabel>Record</SectionLabel>
+                <dl className="flex flex-wrap gap-3">
+                  <DetailItem
+                    icon={CalendarClock}
+                    label="Joined"
+                    value={formatDateTime(detail.joinedAt)}
+                    tone="brand"
+                    nowrap
+                  />
+                  <DetailItem
+                    icon={Hash}
+                    label="Store id"
+                    value={detail.id}
+                    tone="emerald"
+                    nowrap
+                  />
+                </dl>
+              </section>
+            </>
+          ) : null}
+        </DialogBody>
 
-        {store && detail && !detailQuery.isLoading && !errorMessage ? (
-          <DialogFooter className="shrink-0 flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full sm:w-auto"
-              onClick={onDelete}
-            >
-              <Trash2 />
-              Delete store
-            </Button>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Close
-              </Button>
-              <Button
-                type="button"
-                variant={store.isSuspended ? "default" : "destructive"}
-                onClick={onBan}
-              >
-                {store.isSuspended ? <CircleCheck /> : <Ban />}
-                {store.isSuspended ? "Lift ban" : "Ban store"}
-              </Button>
-            </div>
-          </DialogFooter>
-        ) : null}
+        <DialogFooter className="shrink-0 border-t border-border bg-card px-6 py-4">
+          <Button
+            type="button"
+            variant="outline"
+            className="cursor-pointer"
+            onClick={onClose}
+          >
+            Close
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-}
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="rounded-lg border border-border bg-muted/20 p-3">
-      <p className="text-xs font-medium text-muted-foreground">{title}</p>
-      <div className="mt-1.5 space-y-0.5">{children}</div>
-    </div>
-  )
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-border px-3 py-2">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-0.5 text-sm font-medium tabular-nums">{value}</p>
-    </div>
   )
 }

@@ -65,6 +65,14 @@ export function StoresPageContent() {
     setSelected(store)
   }, [])
 
+  const handleBan = useCallback((store: AdminStoreSummary) => {
+    setBanTarget(store)
+  }, [])
+
+  const handleDelete = useCallback((store: AdminStoreSummary) => {
+    setDeleteTarget(store)
+  }, [])
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
       <div>
@@ -160,6 +168,8 @@ export function StoresPageContent() {
           onPageChange={setPage}
           onRetry={() => void storesQuery.refetch()}
           onOpen={handleOpen}
+          onBan={handleBan}
+          onDelete={handleDelete}
         />
       </section>
 
@@ -167,16 +177,6 @@ export function StoresPageContent() {
         store={selected}
         open={Boolean(selected)}
         onClose={() => setSelected(null)}
-        onBan={() => {
-          if (selected) {
-            setBanTarget(selected)
-          }
-        }}
-        onDelete={() => {
-          if (selected) {
-            setDeleteTarget(selected)
-          }
-        }}
       />
 
       <StoreSuspensionDialog

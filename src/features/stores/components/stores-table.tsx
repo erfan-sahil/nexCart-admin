@@ -1,7 +1,23 @@
-import { ChevronLeft, ChevronRight, Eye, Loader2 } from "lucide-react"
+import {
+  Ban,
+  ChevronLeft,
+  ChevronRight,
+  CircleCheck,
+  Eye,
+  Loader2,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react"
 
 import { UniversalBadge, badgeColors } from "@/components/shared"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Table,
   TableBody,
@@ -39,6 +55,8 @@ type StoresTableProps = {
   onPageChange: (page: number) => void
   onRetry: () => void
   onOpen: (store: AdminStoreSummary) => void
+  onBan: (store: AdminStoreSummary) => void
+  onDelete: (store: AdminStoreSummary) => void
 }
 
 export function StoresTable({
@@ -54,6 +72,8 @@ export function StoresTable({
   onPageChange,
   onRetry,
   onOpen,
+  onBan,
+  onDelete,
 }: StoresTableProps) {
   const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1
   const rangeEnd = Math.min(page * pageSize, total)
@@ -158,19 +178,58 @@ export function StoresTable({
                   <TableCell className="px-3 py-3 text-sm text-muted-foreground">
                     {formatDate(store.joinedAt)}
                   </TableCell>
-                  <TableCell className="px-3 py-3 text-right last:pr-4">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={`View ${store.name}`}
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        onOpen(store)
-                      }}
-                    >
-                      <Eye />
-                    </Button>
+                  <TableCell
+                    className="px-3 py-3 text-right last:pr-4"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <div className="flex justify-end">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            className="cursor-pointer"
+                            aria-label={`Actions for ${store.name}`}
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              window.setTimeout(() => onOpen(store), 0)
+                            }}
+                          >
+                            <Eye className="size-3.5" />
+                            Details
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              window.setTimeout(() => onBan(store), 0)
+                            }}
+                          >
+                            {store.isSuspended ? (
+                              <CircleCheck className="size-3.5" />
+                            ) : (
+                              <Ban className="size-3.5" />
+                            )}
+                            {store.isSuspended ? "Lift ban" : "Ban store"}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onSelect={() => {
+                              window.setTimeout(() => onDelete(store), 0)
+                            }}
+                          >
+                            <Trash2 className="size-3.5" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               )
