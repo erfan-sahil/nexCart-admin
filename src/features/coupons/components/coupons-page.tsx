@@ -20,6 +20,7 @@ import {
 import { ApiError } from "@/lib/api/errors"
 import { useDebouncedValue } from "@/hooks"
 
+import { CouponDetailsDialog } from "./coupon-details-dialog"
 import { CouponFormDialog } from "./coupon-form-dialog"
 import { CouponsTable } from "./coupons-table"
 import { useCouponsQuery, useSetCouponEnabledMutation } from "../hooks"
@@ -33,6 +34,7 @@ export function CouponsPageContent() {
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
   const [creating, setCreating] = useState(false)
+  const [viewing, setViewing] = useState<Coupon | null>(null)
   const [editing, setEditing] = useState<Coupon | null>(null)
   const [toggleError, setToggleError] = useState<string | null>(null)
 
@@ -137,6 +139,7 @@ export function CouponsPageContent() {
         isLoading={couponsQuery.isLoading}
         isToggling={setEnabled.isPending}
         emptyMessage={emptyMessage}
+        onView={setViewing}
         onEdit={setEditing}
         onToggleEnabled={onToggleEnabled}
       />
@@ -147,6 +150,21 @@ export function CouponsPageContent() {
           Refreshing…
         </p>
       ) : null}
+
+      <CouponDetailsDialog
+        coupon={viewing}
+        open={Boolean(viewing)}
+        onClose={() => setViewing(null)}
+        onEdit={() => {
+          if (!viewing) {
+            return
+          }
+
+          const coupon = viewing
+          setViewing(null)
+          setEditing(coupon)
+        }}
+      />
 
       <CouponFormDialog
         open={creating}

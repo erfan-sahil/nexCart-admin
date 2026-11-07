@@ -16,6 +16,7 @@ import {
   useSponsoredPlacementsQuery,
   useUpsertSponsoredMutation,
 } from "../services/sponsored-placements.query"
+import { SponsoredProductDetailsDialog } from "./sponsored-product-details-dialog"
 import { SponsoredProductFormDialog } from "./sponsored-product-form-dialog"
 import { SponsoredProductsTable } from "./sponsored-products-table"
 
@@ -39,6 +40,7 @@ export function SponsoredProductPageContent() {
   const query = useSponsoredPlacementsQuery()
   const upsert = useUpsertSponsoredMutation()
   const [creating, setCreating] = useState(false)
+  const [viewing, setViewing] = useState<SponsoredPlacement | null>(null)
   const [editing, setEditing] = useState<SponsoredPlacement | null>(null)
   const [toggleError, setToggleError] = useState<string | null>(null)
 
@@ -140,8 +142,10 @@ export function SponsoredProductPageContent() {
           isLoading={query.isLoading}
           isToggling={upsert.isPending}
           emptyMessage="No sponsored products yet. Create one for Top selling or New arrivals."
+          onView={setViewing}
           onEdit={(placement) => {
             setCreating(false)
+            setViewing(null)
             setEditing(placement)
           }}
           onToggleActive={(placement, isActive) =>
@@ -167,6 +171,22 @@ export function SponsoredProductPageContent() {
           </div>
         ) : null}
       </section>
+
+      <SponsoredProductDetailsDialog
+        placement={viewing}
+        open={Boolean(viewing)}
+        onClose={() => setViewing(null)}
+        onEdit={() => {
+          if (!viewing) {
+            return
+          }
+
+          const placement = viewing
+          setViewing(null)
+          setCreating(false)
+          setEditing(placement)
+        }}
+      />
 
       <SponsoredProductFormDialog
         placement={null}

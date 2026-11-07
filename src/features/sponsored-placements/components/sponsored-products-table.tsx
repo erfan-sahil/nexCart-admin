@@ -1,4 +1,11 @@
-import { Loader2, MoreHorizontal, Pencil, Power, PowerOff } from "lucide-react"
+import {
+  Eye,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Power,
+  PowerOff,
+} from "lucide-react"
 
 import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
@@ -29,6 +36,7 @@ type SponsoredProductsTableProps = {
   isLoading: boolean
   isToggling: boolean
   emptyMessage: string
+  onView: (placement: SponsoredPlacement) => void
   onEdit: (placement: SponsoredPlacement) => void
   onToggleActive: (placement: SponsoredPlacement, isActive: boolean) => void
 }
@@ -38,6 +46,7 @@ export function SponsoredProductsTable({
   isLoading,
   isToggling,
   emptyMessage,
+  onView,
   onEdit,
   onToggleActive,
 }: SponsoredProductsTableProps) {
@@ -78,7 +87,11 @@ export function SponsoredProductsTable({
               : "—"
 
             return (
-              <TableRow key={placement.slot}>
+              <TableRow
+                key={placement.slot}
+                className="cursor-pointer"
+                onClick={() => onView(placement)}
+              >
                 <TableCell className="max-w-64 px-3 py-1.5 align-middle">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">
@@ -107,7 +120,10 @@ export function SponsoredProductsTable({
                   {placement.ctaLabel || "Shop now"}
                 </TableCell>
 
-                <TableCell className="px-3 py-1.5 text-right align-middle">
+                <TableCell
+                  className="px-3 py-1.5 text-right align-middle"
+                  onClick={(event) => event.stopPropagation()}
+                >
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -123,7 +139,18 @@ export function SponsoredProductsTable({
                     <DropdownMenuContent align="end" className="min-w-44">
                       <DropdownMenuItem
                         className="cursor-pointer"
-                        onClick={() => onEdit(placement)}
+                        onSelect={() => {
+                          window.setTimeout(() => onView(placement), 0)
+                        }}
+                      >
+                        <Eye className="size-3.5" />
+                        Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onSelect={() => {
+                          window.setTimeout(() => onEdit(placement), 0)
+                        }}
                       >
                         <Pencil className="size-3.5" />
                         Edit
@@ -131,7 +158,7 @@ export function SponsoredProductsTable({
                       <DropdownMenuItem
                         className="cursor-pointer"
                         disabled={isToggling}
-                        onClick={() =>
+                        onSelect={() =>
                           onToggleActive(placement, !placement.isActive)
                         }
                       >
