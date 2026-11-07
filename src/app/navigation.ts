@@ -300,6 +300,7 @@ export type AdminPath = ExtractPaths<typeof NAV>
 export type PageHandle = {
   title: string
   description: string
+  intro?: string
 }
 
 export function isNavGroup(

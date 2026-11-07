@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useState } from "react"
 import { Loader2 } from "lucide-react"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   Select,
@@ -84,15 +88,7 @@ export function ProductReportsPageContent() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          Reports
-        </h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Buyer complaints about product listings. Open a row to review details
-          and mark the report as handled.
-        </p>
-      </div>
+      <AdminPageIntro />
 
       <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
         <FieldGroup className="gap-4 sm:flex-row sm:items-end">

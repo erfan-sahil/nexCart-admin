@@ -20,8 +20,9 @@ export function AdminHeader({
   onToggleCollapsed,
 }: AdminHeaderProps) {
   const { theme, setTheme } = useTheme()
-  const { title, description } = usePageMeta()
+  const { title } = usePageMeta()
   const user = useAuthStore((state) => state.user)
+  const headerTitle = "NexCart Admin"
   const isDark = theme === "dark"
   const today = new Intl.DateTimeFormat("en", {
     weekday: "long",
@@ -60,8 +61,7 @@ export function AdminHeader({
       </Button>
 
       <div className="min-w-0 flex-1">
-        <h1 className="truncate text-base font-semibold">{title}</h1>
-        <p className="truncate text-xs text-muted-foreground">{description}</p>
+        <p className="truncate text-base font-semibold">{headerTitle}</p>
       </div>
 
       <p className="hidden text-sm text-muted-foreground md:block">{today}</p>

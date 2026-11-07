@@ -2,7 +2,11 @@ import { useMemo, useState } from "react"
 import { Loader2, Search } from "lucide-react"
 import { useNavigate } from "react-router"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import {
   dataTableTabsList,
   dataTableTabTrigger,
@@ -90,28 +94,24 @@ export function AdminOrdersPageContent() {
 
   return (
     <div className="flex w-full min-w-0 flex-col gap-4">
-      <header className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
-            Orders
-          </h1>
-          <UniversalBadge
-            name={pagination ? String(pagination.total) : "—"}
-            colors={badgeColors.neutral}
-            showDot={false}
-            className="normal-case tabular-nums"
-          />
-          {listQuery.isFetching && !listQuery.isLoading ? (
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Loader2 className="size-3.5 animate-spin" />
-              Refreshing
-            </span>
-          ) : null}
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Find orders, check payment, and open a record to fulfill.
-        </p>
-      </header>
+      <AdminPageIntro
+        trailing={
+          <>
+            <UniversalBadge
+              name={pagination ? String(pagination.total) : "—"}
+              colors={badgeColors.neutral}
+              showDot={false}
+              className="normal-case tabular-nums"
+            />
+            {listQuery.isFetching && !listQuery.isLoading ? (
+              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 animate-spin" />
+                Refreshing
+              </span>
+            ) : null}
+          </>
+        }
+      />
 
       <section className="min-w-0 overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
         <Tabs

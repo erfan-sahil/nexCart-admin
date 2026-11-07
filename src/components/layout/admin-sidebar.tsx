@@ -102,15 +102,10 @@ export function AdminSidebar({
           variant="mark"
           className={cn("hidden", collapsed && "lg:block")}
         />
-        <div className={cn("min-w-0 flex-1", collapsed && "lg:hidden")}>
-          <p className="truncate text-xs font-medium tracking-wide text-sidebar-foreground/55 uppercase">
-            Admin
-          </p>
-        </div>
         <button
           type="button"
           onClick={onClose}
-          className="grid size-8 place-items-center rounded-lg text-sidebar-foreground hover:bg-sidebar-accent lg:hidden"
+          className="ml-auto grid size-8 place-items-center rounded-lg text-sidebar-foreground hover:bg-sidebar-accent lg:hidden"
           aria-label="Close navigation"
         >
           <X className="size-4" />

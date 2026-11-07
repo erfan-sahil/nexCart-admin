@@ -7,7 +7,11 @@ import {
   Search,
 } from "lucide-react"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
@@ -132,6 +136,7 @@ export function CategoriesPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+      <AdminPageIntro />
       <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
         <FieldGroup className="gap-4 sm:flex-row sm:items-end">
           <Field className="min-w-0 flex-1">

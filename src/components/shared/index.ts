@@ -1,3 +1,4 @@
+export { AdminPageIntro } from "./admin-page-intro"
 export { BrandLogo } from "./brand-logo"
 export { PagePlaceholder } from "./page-placeholder"
 export { badgeColors } from "./badge-colors"

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { Loader2, MousePointerClick, Plus } from "lucide-react"
 
+import { AdminPageIntro } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import { ApiError } from "@/lib/api/errors"
 
@@ -88,16 +89,14 @@ export function SponsoredProductPageContent() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="inline-flex items-center gap-2 text-2xl font-semibold tracking-tight">
-            <MousePointerClick className="size-6 shrink-0 text-primary" />
-            Sponsored product
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Promote one product on Top selling and one on New arrivals. Each
-            section can only have a single sponsored product.
-          </p>
-        </div>
+        <AdminPageIntro
+          title={
+            <span className="inline-flex items-center gap-2">
+              <MousePointerClick className="size-6 shrink-0 text-primary" />
+              Sponsored product
+            </span>
+          }
+        />
         <Button
           type="button"
           className="shrink-0 cursor-pointer self-start whitespace-nowrap"

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { Loader2, Plus, Search, Zap } from "lucide-react"
 
+import { AdminPageIntro } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
@@ -82,17 +83,14 @@ export function FlashDealsPageContent() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="inline-flex items-center gap-2 text-2xl font-semibold tracking-tight">
-            <Zap className="size-6 shrink-0 text-primary" />
-            Flash deals
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Create a named deal with a schedule, then add products with their
-            own discounts. Only one flash deal can be active at a time; the
-            active deal name is the storefront section title.
-          </p>
-        </div>
+        <AdminPageIntro
+          title={
+            <span className="inline-flex items-center gap-2">
+              <Zap className="size-6 shrink-0 text-primary" />
+              Flash deals
+            </span>
+          }
+        />
         <Button
           type="button"
           className="shrink-0 cursor-pointer self-start whitespace-nowrap"

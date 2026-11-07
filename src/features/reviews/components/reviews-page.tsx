@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useState } from "react"
 import { Loader2, Search } from "lucide-react"
 
-import { badgeColors, UniversalBadge } from "@/components/shared"
+import {
+  AdminPageIntro,
+  badgeColors,
+  UniversalBadge,
+} from "@/components/shared"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   InputGroup,
@@ -66,15 +70,7 @@ export function ReviewsPageContent() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-      <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          Reviews
-        </h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          All buyer reviews across the marketplace. Open a row to read replies
-          or remove inappropriate feedback.
-        </p>
-      </div>
+      <AdminPageIntro />
 
       <section className="rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm sm:p-5">
         <FieldGroup className="gap-4 sm:flex-row sm:items-end">

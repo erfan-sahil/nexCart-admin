@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { Loader2, Plus, Search, Ticket } from "lucide-react"
 
+import { AdminPageIntro } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
@@ -72,15 +73,7 @@ export function CouponsPageContent() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
-            Coupons
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Create discount codes customers can apply at checkout. Usage limits
-            and active windows are enforced on the server.
-          </p>
-        </div>
+        <AdminPageIntro />
         <Button type="button" onClick={() => setCreating(true)}>
           <Plus className="size-4" />
           New coupon

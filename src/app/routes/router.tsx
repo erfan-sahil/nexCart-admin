@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate, type RouteObject } from "react-router"
 
 import { AdminShell } from "@/components/layout"
 import { RequireAdmin } from "@/features/auth/components"
+import { PAGE_INTROS } from "@/app/page-intros"
 import {
   groupBase,
   isNavGroup,
@@ -70,6 +71,7 @@ function handleFor(page: NavPage): PageHandle {
   return {
     title: page.label,
     description: page.description,
+    intro: PAGE_INTROS[page.path],
   }
 }
 
