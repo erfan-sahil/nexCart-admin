@@ -2,7 +2,7 @@ import { api } from "@/lib/api/client"
 import { toApiError } from "@/lib/api/errors"
 import type { ApiSuccess } from "@/lib/api/types"
 
-import type { Category, CategoryTreeNode } from "../categories/types"
+import type { Category, CategoryTreeNode } from "../../categories/types"
 
 export type FeaturedCategory = Category & {
   productCount: number

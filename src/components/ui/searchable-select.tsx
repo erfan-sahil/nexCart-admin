@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { Input } from "@/components/ui/input"
 import {
@@ -48,6 +48,19 @@ export function SearchableSelect({
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [pick, setPick] = useState(0)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    const focusId = window.setTimeout(() => {
+      searchInputRef.current?.focus()
+    }, 0)
+
+    return () => window.clearTimeout(focusId)
+  }, [open])
   const query = search.trim().toLowerCase()
   const visible = options.filter((option) => {
     if (!query || option.value === value) {
@@ -102,13 +115,6 @@ export function SearchableSelect({
         sideOffset={6}
         collisionPadding={16}
         className={contentClass}
-        onOpenAutoFocus={(event) => {
-          event.preventDefault()
-          const content = event.currentTarget
-          window.setTimeout(() => {
-            content.querySelector("input")?.focus()
-          }, 0)
-        }}
         onCloseAutoFocus={(event) => event.preventDefault()}
       >
         <div
@@ -117,6 +123,7 @@ export function SearchableSelect({
           onKeyDown={(event) => event.stopPropagation()}
         >
           <Input
+            ref={searchInputRef}
             value={search}
             className="h-8"
             placeholder={searchPlaceholder}

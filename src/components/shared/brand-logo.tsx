@@ -23,7 +23,7 @@ export function BrandLogo({ className, variant = "wordmark" }: BrandLogoProps) {
       alt="NexCart"
       style={{ objectViewBox: VIEW[variant] }}
       className={cn(
-        "w-auto max-w-none object-cover",
+        "w-auto max-w-none object-cover brightness-0 dark:brightness-100",
         variant === "mark" ? "aspect-[1.6/1] h-8" : "aspect-[4.79/1] h-9",
         className
       )}

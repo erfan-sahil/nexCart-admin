@@ -55,8 +55,8 @@
 :root {
   /*
    * Classic black and blue.
-   * Change --brand once. Fills, text, badges, charts, and the
-   * active sidebar item all take their blue from that value.
+   * Change --brand once. Fills, text, badges, charts, and primary
+   * actions use that sky blue. Sidebar tokens below are lighter mixes of --brand.
    */
   --brand: #0ea5e9;
   --brand-foreground: #ffffff;
@@ -88,13 +88,13 @@
   --chart-4: #667085;
   --chart-5: #98a2b3;
   --radius: 0.75rem;
-  --sidebar: color-mix(in srgb, var(--brand) 16%, #070b12);
-  --sidebar-foreground: #f8fafc;
+  --sidebar: color-mix(in srgb, var(--brand) 16%, #ffffff);
+  --sidebar-foreground: #0f172a;
   --sidebar-primary: var(--brand);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: color-mix(in srgb, var(--brand) 24%, #101826);
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: color-mix(in srgb, var(--brand) 28%, #101826);
+  --sidebar-primary-foreground: var(--brand-foreground);
+  --sidebar-accent: color-mix(in srgb, var(--brand) 22%, #f1f5f9);
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: color-mix(in srgb, var(--brand) 18%, #e2e8f0);
   --sidebar-ring: var(--brand);
 }
 
@@ -125,13 +125,13 @@
   --chart-3: color-mix(in srgb, var(--brand) 30%, #ffffff);
   --chart-4: #98a2b3;
   --chart-5: #667085;
-  --sidebar: color-mix(in srgb, var(--brand) 12%, #05080e);
-  --sidebar-foreground: #f8fafc;
+  --sidebar: color-mix(in srgb, var(--brand) 20%, #0a1220);
+  --sidebar-foreground: #e8f6fc;
   --sidebar-primary: var(--brand);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: color-mix(in srgb, var(--brand) 22%, #101826);
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: color-mix(in srgb, var(--brand) 26%, #101826);
+  --sidebar-primary-foreground: var(--brand-foreground);
+  --sidebar-accent: color-mix(in srgb, var(--brand) 28%, #101826);
+  --sidebar-accent-foreground: #f0f9ff;
+  --sidebar-border: color-mix(in srgb, var(--brand) 24%, #1c2940);
   --sidebar-ring: var(--brand);
 }
 

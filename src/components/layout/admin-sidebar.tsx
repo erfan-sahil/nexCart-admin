@@ -27,10 +27,10 @@ type AdminSidebarProps = {
 }
 
 const itemClass =
-  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 focus-visible:outline-none"
+  "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-sidebar-foreground/90 transition-[color,background-color,box-shadow] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-sidebar-ring/50 focus-visible:outline-none"
 
 const activeClass =
-  "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground"
+  "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm shadow-sidebar-primary/25 hover:bg-sidebar-primary hover:text-sidebar-primary-foreground dark:shadow-sidebar-primary/20"
 
 function PageLink({
   page,
@@ -93,7 +93,7 @@ export function AdminSidebar({
     >
       <div
         className={cn(
-          "flex h-16 items-center gap-3 border-b border-sidebar-border px-4",
+          "flex h-16 shrink-0 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4",
           collapsed && "lg:justify-center lg:px-2"
         )}
       >
@@ -103,7 +103,9 @@ export function AdminSidebar({
           className={cn("hidden", collapsed && "lg:block")}
         />
         <div className={cn("min-w-0 flex-1", collapsed && "lg:hidden")}>
-          <p className="truncate text-xs text-sidebar-foreground/60">Admin</p>
+          <p className="truncate text-xs font-medium tracking-wide text-sidebar-foreground/55 uppercase">
+            Admin
+          </p>
         </div>
         <button
           type="button"
@@ -116,7 +118,7 @@ export function AdminSidebar({
       </div>
 
       <nav
-        className="flex-1 space-y-1 overflow-y-auto px-3 py-4"
+        className="flex-1 space-y-0.5 overflow-y-auto px-2.5 py-3"
         aria-label="Admin"
       >
         {NAV.filter(
@@ -154,7 +156,13 @@ export function AdminSidebar({
                       open: { ...openGroups, [entry.label]: !open },
                     })
                   }
-                  className={cn(itemClass, "cursor-pointer")}
+                  className={cn(
+                    itemClass,
+                    "cursor-pointer",
+                    groupActive &&
+                      !open &&
+                      "bg-sidebar-accent/70 text-sidebar-accent-foreground"
+                  )}
                 >
                   <Icon className="size-4 shrink-0" aria-hidden="true" />
                   <span className="min-w-0 flex-1 truncate">{entry.label}</span>
@@ -200,7 +208,7 @@ export function AdminSidebar({
         })}
       </nav>
 
-      <div className="border-t border-sidebar-border p-3">
+      <div className="border-t border-sidebar-border bg-sidebar-accent/30 p-3 dark:bg-sidebar-accent/20">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
