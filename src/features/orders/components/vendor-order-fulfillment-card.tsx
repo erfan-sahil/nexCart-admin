@@ -24,6 +24,7 @@ import type {
   AdminOrderDetail,
   AdminVendorOrder,
 } from "../types/admin-orders.types"
+import { CancelVendorOrderDialog } from "./cancel-vendor-order-dialog"
 import { InspectVendorOrderDialog } from "./inspect-vendor-order-dialog"
 import { VendorReturnShipmentStepper } from "./vendor-return-shipment-status"
 
@@ -38,6 +39,7 @@ export function VendorOrderFulfillmentCard({
 }: VendorOrderFulfillmentCardProps) {
   const mutation = useUpdateAdminVendorOrderStatus(order.id)
   const [inspectOpen, setInspectOpen] = useState(false)
+  const [cancelOpen, setCancelOpen] = useState(false)
   const [adjustOpen, setAdjustOpen] = useState(false)
   const [targetDraft, setTargetDraft] = useState<
     { variantId: string; productName: string; targetQty: number; max: number }[]
@@ -321,7 +323,7 @@ export function VendorOrderFulfillmentCard({
             variant="destructive"
             className="ml-auto"
             disabled={mutation.isPending}
-            onClick={() => void runStatus({ status: "cancelled" })}
+            onClick={() => setCancelOpen(true)}
           >
             Cancel vendor slice
           </Button>
@@ -348,6 +350,20 @@ export function VendorOrderFulfillmentCard({
         isPending={mutation.isPending}
         onSubmit={async (items, decisionStatus) => {
           await runStatus({ status: decisionStatus, items })
+        }}
+      />
+
+      <CancelVendorOrderDialog
+        vendorOrder={vendorOrder}
+        open={cancelOpen}
+        onClose={() => setCancelOpen(false)}
+        isPending={mutation.isPending}
+        onConfirm={async () => {
+          setActionError(null)
+          await mutation.mutateAsync({
+            vendorOrderId: vendorOrder.id,
+            payload: { status: "cancelled" },
+          })
         }}
       />
 

@@ -3,7 +3,6 @@ import {
   Banknote,
   CircleDollarSign,
   ClipboardList,
-  CreditCard,
   Flag,
   FolderTree,
   Image,
@@ -155,13 +154,6 @@ export const NAV = defineNav([
         path: "/commerce/orders",
         description: "Platform orders and fulfillment state.",
         icon: ShoppingBag,
-      },
-      {
-        kind: "page",
-        label: "Payments",
-        path: "/commerce/payments",
-        description: "Charges, captures, and payment status.",
-        icon: CreditCard,
       },
       {
         kind: "page",

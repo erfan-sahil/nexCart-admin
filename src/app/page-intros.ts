@@ -22,8 +22,6 @@ export const PAGE_INTROS = {
     "Buyer complaints about product listings. Open a row to review details and mark the report as handled.",
   "/commerce/orders":
     "Find orders, check payment, and open a record to fulfill or inspect line items and delivery status.",
-  "/commerce/payments":
-    "Charges, captures, and payment status across marketplace orders. Records will appear here once the API is connected.",
   "/commerce/returns":
     "Delivery returns and sellable products being shipped back to vendors. Track refund decisions and return shipments.",
   "/finance/commissions":

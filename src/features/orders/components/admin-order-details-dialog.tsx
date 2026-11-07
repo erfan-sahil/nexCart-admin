@@ -32,6 +32,7 @@ import { useAdminOrder } from "../hooks"
 import {
   formatMoney,
   fulfillmentStatusBadge,
+  isPostShipmentStatus,
   orderStatusBadge,
   paymentStatusBadge,
 } from "../labels"
@@ -295,7 +296,8 @@ function AdminOrderDetailsBody({
                       tone="violet"
                       className="sm:col-span-2"
                     />
-                    {full.shipment ? (
+                    {full.shipment &&
+                    isPostShipmentStatus(full.shipment.status) ? (
                       <DetailItem
                         icon={Truck}
                         label="Shipment"
