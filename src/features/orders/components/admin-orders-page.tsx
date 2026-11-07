@@ -26,6 +26,7 @@ import { ApiError } from "@/lib/api/errors"
 import { useAdminOrders } from "../hooks"
 import { FULFILLMENT_STATUS_LABEL } from "../labels"
 import type { AdminOrderListItem } from "../types/admin-orders.types"
+import { AdminOrderDetailsDialog } from "./admin-order-details-dialog"
 import { AdminOrdersTable } from "./admin-orders-table"
 
 const FULFILLMENT_TABS = [
@@ -50,6 +51,7 @@ const PAYMENT_FILTERS = [
 
 export function AdminOrdersPageContent() {
   const navigate = useNavigate()
+  const [viewing, setViewing] = useState<AdminOrderListItem | null>(null)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [search, setSearch] = useState("")
@@ -190,11 +192,22 @@ export function AdminOrdersPageContent() {
               onPageChange={setPage}
               onPageSizeChange={setPageSize}
               onRetry={() => void listQuery.refetch()}
-              onOpen={openOrder}
+              onDetails={setViewing}
+              onUpdate={openOrder}
             />
           </TabsContent>
         </Tabs>
       </section>
+
+      <AdminOrderDetailsDialog
+        order={viewing}
+        open={Boolean(viewing)}
+        onClose={() => setViewing(null)}
+        onUpdate={(order) => {
+          setViewing(null)
+          openOrder(order)
+        }}
+      />
     </div>
   )
 }

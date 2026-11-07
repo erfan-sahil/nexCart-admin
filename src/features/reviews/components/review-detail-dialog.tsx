@@ -3,6 +3,7 @@ import { Loader2, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -43,7 +44,10 @@ export function ReviewDetailDialog({
         </DialogHeader>
 
         {review ? (
-          <div className="space-y-4">
+          <DialogBody
+            scrollClassName="min-h-0 flex-1"
+            className="space-y-4 px-0 py-0"
+          >
             <div className="space-y-1">
               <ReviewStars rating={review.rating} />
               <p className="text-sm font-medium">{review.author.displayName}</p>
@@ -97,10 +101,10 @@ export function ReviewDetailDialog({
                 </ul>
               )}
             </div>
-          </div>
+          </DialogBody>
         ) : null}
 
-        <DialogFooter className="gap-2 sm:justify-between">
+        <DialogFooter className="shrink-0 gap-2 sm:justify-between">
           <Button
             type="button"
             variant="destructive"

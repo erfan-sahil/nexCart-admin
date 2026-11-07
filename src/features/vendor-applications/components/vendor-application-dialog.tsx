@@ -5,6 +5,7 @@ import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -12,7 +13,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuthStore } from "@/features/auth/store"
 import { ApiError } from "@/lib/api/errors"
@@ -152,9 +152,8 @@ function ReviewPanel({
           </div>
         </DialogHeader>
 
-        <ScrollArea
-          type="auto"
-          className={cn(
+        <DialogBody
+          scrollClassName={cn(
             "bg-muted/20",
             prioritizeReview
               ? "max-h-[min(36vh,calc(100dvh-30rem))]"
@@ -178,7 +177,7 @@ function ReviewPanel({
               categoryNames={categoryNames}
             />
           </div>
-        </ScrollArea>
+        </DialogBody>
 
         <DialogFooter
           className={cn(

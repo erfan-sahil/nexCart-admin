@@ -14,13 +14,13 @@ import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatDateTime, fullName } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
@@ -179,77 +179,75 @@ export function UserDetailsDialog({
           </div>
         </DialogHeader>
 
-        <ScrollArea
-          type="auto"
-          className="max-h-[calc(100dvh-16rem)] bg-muted/20"
+        <DialogBody
+          scrollClassName="max-h-[calc(100dvh-16rem)] bg-muted/20"
           viewportClassName="max-h-[calc(100dvh-16rem)]"
+          className="space-y-5 px-6 py-5"
         >
-          <div className="space-y-5 px-6 py-5">
-            <section className="space-y-3">
-              <SectionLabel>Contact</SectionLabel>
-              <dl className="grid gap-3 sm:grid-cols-2">
-                <DetailItem
-                  icon={UserRound}
-                  label="First name"
-                  value={user.firstName}
-                  tone="brand"
-                />
-                <DetailItem
-                  icon={UserRound}
-                  label="Last name"
-                  value={user.lastName}
-                  tone="brand"
-                />
-                <DetailItem
-                  icon={Mail}
-                  label="Email"
-                  value={user.email}
-                  tone="violet"
-                  className="sm:col-span-2"
-                />
-                <DetailItem
-                  icon={Phone}
-                  label="Phone"
-                  value={user.phone ?? "No phone on file"}
-                  tone="emerald"
-                />
-                <DetailItem
-                  icon={BadgeCheck}
-                  label="Email verification"
-                  value={user.emailVerified ? "Verified" : "Not verified"}
-                  tone={user.emailVerified ? "emerald" : "amber"}
-                />
-              </dl>
-            </section>
+          <section className="space-y-3">
+            <SectionLabel>Contact</SectionLabel>
+            <dl className="grid gap-3 sm:grid-cols-2">
+              <DetailItem
+                icon={UserRound}
+                label="First name"
+                value={user.firstName}
+                tone="brand"
+              />
+              <DetailItem
+                icon={UserRound}
+                label="Last name"
+                value={user.lastName}
+                tone="brand"
+              />
+              <DetailItem
+                icon={Mail}
+                label="Email"
+                value={user.email}
+                tone="violet"
+                className="sm:col-span-2"
+              />
+              <DetailItem
+                icon={Phone}
+                label="Phone"
+                value={user.phone ?? "No phone on file"}
+                tone="emerald"
+              />
+              <DetailItem
+                icon={BadgeCheck}
+                label="Email verification"
+                value={user.emailVerified ? "Verified" : "Not verified"}
+                tone={user.emailVerified ? "emerald" : "amber"}
+              />
+            </dl>
+          </section>
 
-            <section className="space-y-3">
-              <SectionLabel>Account</SectionLabel>
-              <dl className="flex flex-wrap gap-3">
-                <DetailItem
-                  icon={Clock3}
-                  label="Last login"
-                  value={formatDateTime(user.lastLoginAt)}
-                  tone="amber"
-                  nowrap
-                />
-                <DetailItem
-                  icon={CalendarClock}
-                  label="Joined"
-                  value={formatDateTime(user.createdAt)}
-                  tone="brand"
-                  nowrap
-                />
-                <DetailItem
-                  icon={History}
-                  label="Last updated"
-                  value={formatDateTime(user.updatedAt)}
-                  tone="emerald"
-                  nowrap
-                />
-              </dl>
-            </section>
-          </div>
-        </ScrollArea>
+          <section className="space-y-3">
+            <SectionLabel>Account</SectionLabel>
+            <dl className="flex flex-wrap gap-3">
+              <DetailItem
+                icon={Clock3}
+                label="Last login"
+                value={formatDateTime(user.lastLoginAt)}
+                tone="amber"
+                nowrap
+              />
+              <DetailItem
+                icon={CalendarClock}
+                label="Joined"
+                value={formatDateTime(user.createdAt)}
+                tone="brand"
+                nowrap
+              />
+              <DetailItem
+                icon={History}
+                label="Last updated"
+                value={formatDateTime(user.updatedAt)}
+                tone="emerald"
+                nowrap
+              />
+            </dl>
+          </section>
+        </DialogBody>
 
         <DialogFooter className="shrink-0 border-t border-border bg-card px-6 py-4">
           <Button

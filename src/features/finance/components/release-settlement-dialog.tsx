@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -24,7 +25,6 @@ import {
 } from "@/components/ui/dialog"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError } from "@/lib/api/errors"
 import { cn } from "@/lib/utils"
@@ -192,9 +192,8 @@ function ReleaseSettlementForm({
         </div>
       </DialogHeader>
 
-      <ScrollArea
-        type="auto"
-        className="max-h-[calc(100dvh-16rem)] bg-muted/20"
+      <DialogBody
+        scrollClassName="max-h-[calc(100dvh-16rem)] bg-muted/20"
         viewportClassName="max-h-[calc(100dvh-16rem)]"
       >
         <div className="space-y-5 px-6 py-5">
@@ -337,7 +336,7 @@ function ReleaseSettlementForm({
             </p>
           ) : null}
         </div>
-      </ScrollArea>
+      </DialogBody>
 
       <DialogFooter className="shrink-0 border-t border-border bg-card px-6 py-4">
         <Button

@@ -6,6 +6,7 @@ import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -20,7 +21,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Select,
   SelectContent,
@@ -279,9 +279,8 @@ function CouponForm({
             </p>
           ) : null}
 
-          <ScrollArea
-            type="auto"
-            className="min-h-0 flex-1 overflow-hidden bg-muted/20"
+          <DialogBody
+            scrollClassName="min-h-0 flex-1 overflow-hidden bg-muted/20"
             viewportClassName="h-auto max-h-[min(32rem,calc(100dvh-16rem))]"
           >
             <div className="space-y-6 px-6 py-5">
@@ -530,7 +529,7 @@ function CouponForm({
                 </Field>
               </section>
             </div>
-          </ScrollArea>
+          </DialogBody>
 
           <DialogFooter className="relative z-10 shrink-0 border-t border-border bg-card px-6 py-4">
             <Button

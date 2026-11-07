@@ -4,6 +4,7 @@ import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -52,7 +53,10 @@ export function ReportDetailDialog({
         </DialogHeader>
 
         {report ? (
-          <div className="space-y-4">
+          <DialogBody
+            scrollClassName="min-h-0 flex-1"
+            className="space-y-4 px-0 py-0"
+          >
             <div className="flex flex-wrap items-center gap-2">
               <UniversalBadge
                 name={PRODUCT_REPORT_STATUS_LABEL[report.status]}
@@ -108,10 +112,10 @@ export function ReportDetailDialog({
                 </p>
               </div>
             </div>
-          </div>
+          </DialogBody>
         ) : null}
 
-        <DialogFooter className="gap-2 sm:justify-between">
+        <DialogFooter className="shrink-0 gap-2 sm:justify-between">
           {isOpen ? (
             <div className="flex flex-wrap gap-2">
               <Button

@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -11,7 +12,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError } from "@/lib/api/errors"
 import { cn } from "@/lib/utils"
@@ -104,9 +104,8 @@ function ReviewPanel({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea
-          type="auto"
-          className={cn(
+        <DialogBody
+          scrollClassName={cn(
             "bg-muted/20",
             prioritizeReview
               ? "max-h-[min(42vh,calc(100dvh-28rem))]"
@@ -121,7 +120,7 @@ function ReviewPanel({
           <div className="px-6 py-5">
             <ProductApprovalDetails product={product} />
           </div>
-        </ScrollArea>
+        </DialogBody>
 
         <DialogFooter className="shrink-0 flex-col items-stretch gap-3 border-t border-border bg-card px-6 py-4 sm:flex-col sm:items-stretch">
           {canAct && confirm === null ? (

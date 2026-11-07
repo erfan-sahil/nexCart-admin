@@ -5,6 +5,7 @@ import { UniversalBadge, badgeColors } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -79,8 +80,8 @@ export function StoreDetailDialog({
       open={open}
       onOpenChange={(next) => (!next ? onClose() : undefined)}
     >
-      <DialogContent className="max-h-[min(90vh,720px)] max-w-lg overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-lg">
+        <DialogHeader className="shrink-0">
           <DialogTitle>Store details</DialogTitle>
           <DialogDescription>
             Public storefront profile and marketplace visibility.
@@ -88,7 +89,10 @@ export function StoreDetailDialog({
         </DialogHeader>
 
         {store ? (
-          <div className="space-y-4">
+          <DialogBody
+            scrollClassName="min-h-0 flex-1"
+            className="space-y-4 px-0 py-0"
+          >
             <div className="flex items-start gap-3">
               <StoreAvatar name={store.name} />
               <div className="min-w-0 flex-1 space-y-1">
@@ -174,11 +178,11 @@ export function StoreDetailDialog({
                 </p>
               </>
             ) : null}
-          </div>
+          </DialogBody>
         ) : null}
 
         {store && detail && !detailQuery.isLoading && !errorMessage ? (
-          <DialogFooter className="flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:justify-between">
+          <DialogFooter className="shrink-0 flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:justify-between">
             <Button
               type="button"
               variant="outline"

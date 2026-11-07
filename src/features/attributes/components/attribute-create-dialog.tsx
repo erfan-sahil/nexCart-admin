@@ -5,6 +5,7 @@ import type { ZodError } from "zod"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -19,7 +20,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Select,
   SelectContent,
@@ -289,9 +289,8 @@ function AttributeForm({
           onSubmit={(event) => void submit(event)}
           noValidate
         >
-          <ScrollArea
-            type="auto"
-            className="max-h-[calc(100dvh-16rem)]"
+          <DialogBody
+            scrollClassName="max-h-[calc(100dvh-16rem)]"
             viewportClassName="max-h-[calc(100dvh-16rem)]"
           >
             <FieldGroup className="gap-4 px-6 py-5">
@@ -491,7 +490,7 @@ function AttributeForm({
                 </label>
               </div>
             </FieldGroup>
-          </ScrollArea>
+          </DialogBody>
 
           <DialogFooter className="shrink-0 border-t border-border bg-card px-6 py-4">
             <Button
