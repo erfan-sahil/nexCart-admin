@@ -72,10 +72,38 @@ export const FULFILLMENT_STATUS_LABEL: Record<string, string> = {
   cancelled: "Cancelled",
 }
 
+export const POST_SHIPMENT_STATUSES = [
+  "shipped",
+  "dispatched",
+  "in_transit",
+  "out_for_delivery",
+  "delivered",
+] as const
+
+export function isPostShipmentStatus(status: string) {
+  return (POST_SHIPMENT_STATUSES as readonly string[]).includes(status)
+}
+
+export const PRE_PACK_SHIPMENT_STATUSES = [
+  "awaiting_items",
+  "pending",
+  "ready_to_pack",
+] as const
+
+export function isPrePackShipmentStatus(status: string) {
+  return (PRE_PACK_SHIPMENT_STATUSES as readonly string[]).includes(status)
+}
+
+export function isPackedAwaitingShip(status: string) {
+  return status === "packed"
+}
+
 export const SHIPMENT_STATUS_LABEL: Record<string, string> = {
   awaiting_items: "Awaiting items",
   pending: "Pending",
+  ready_to_pack: "Ready to pack",
   packed: "Packed",
+  shipped: "Shipped",
   dispatched: "Dispatched",
   in_transit: "In transit",
   out_for_delivery: "Out for delivery",

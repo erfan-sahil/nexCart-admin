@@ -266,6 +266,7 @@ export type UpdateAdminOrderStatusPayload = {
     | "customer_rejected"
     | "returning_to_warehouse"
     | "returned_to_warehouse"
+    | "update_courier_details"
   carrier?: string
   trackingNumber?: string
   reason?: string

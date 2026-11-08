@@ -18,7 +18,6 @@ import { CategoriesPage } from "@/pages/catalog/categories/page"
 import { ProductApprovalsPage } from "@/pages/catalog/product-approvals/page"
 import { OrdersPage } from "@/pages/commerce/orders/page"
 import { AdminOrderDetailPage } from "@/pages/commerce/orders/detail/page"
-import { PaymentsPage } from "@/pages/commerce/payments/page"
 import { ReturnsPage } from "@/pages/commerce/returns/page"
 import { DashboardPage } from "@/pages/dashboard/page"
 import { CommissionsPage } from "@/pages/finance/commissions/page"
@@ -52,7 +51,6 @@ const pages: Record<AdminPath, ComponentType> = {
   "/moderation/reviews": ReviewsPage,
   "/moderation/reports": ReportsPage,
   "/commerce/orders": OrdersPage,
-  "/commerce/payments": PaymentsPage,
   "/commerce/returns": ReturnsPage,
   "/finance/commissions": CommissionsPage,
   "/finance/vendor-earnings": VendorEarningsPage,
