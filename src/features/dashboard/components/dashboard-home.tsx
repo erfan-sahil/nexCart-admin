@@ -5,7 +5,7 @@ import {
   CircleDollarSign,
   ShoppingCart,
   UserPlus,
-} from "lucide-react"
+} from "@/lib/icons"
 import { Link } from "react-router"
 
 import {

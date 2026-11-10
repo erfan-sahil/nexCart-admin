@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Star, Trash2 } from "lucide-react"
+import { Star, Trash2 } from "@/lib/icons"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"

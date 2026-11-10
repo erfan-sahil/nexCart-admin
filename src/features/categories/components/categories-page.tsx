@@ -5,7 +5,7 @@ import {
   Loader2,
   Plus,
   Search,
-} from "lucide-react"
+} from "@/lib/icons"
 
 import {
   AdminPageIntro,

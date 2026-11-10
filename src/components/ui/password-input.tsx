@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff } from "@/lib/icons"
 import { useState, type ComponentProps } from "react"
 
 import {

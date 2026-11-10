@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Loader2, MousePointerClick, Plus } from "lucide-react"
+import { Loader2, MousePointerClick, Plus } from "@/lib/icons"
 
 import { AdminPageIntro } from "@/components/shared"
 import { Button } from "@/components/ui/button"

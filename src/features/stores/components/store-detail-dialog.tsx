@@ -12,7 +12,8 @@ import {
   Store,
   TrendingUp,
   UserRound,
-} from "lucide-react"
+  type AppIcon,
+} from "@/lib/icons"
 import type { ReactNode } from "react"
 
 import { UniversalBadge, badgeColors } from "@/components/shared"
@@ -100,7 +101,7 @@ function DetailItem({
   className,
   children,
 }: {
-  icon: typeof Phone
+  icon: AppIcon
   label: string
   value?: string
   tone: DetailTone

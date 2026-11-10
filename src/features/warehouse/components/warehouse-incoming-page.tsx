@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Loader2, Search } from "lucide-react"
+import { Loader2, Search } from "@/lib/icons"
 import { useNavigate } from "react-router"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"

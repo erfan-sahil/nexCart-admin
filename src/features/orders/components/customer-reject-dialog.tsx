@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { RefreshCcw } from "lucide-react"
+import { RefreshCcw } from "@/lib/icons"
 
 import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"

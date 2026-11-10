@@ -10,7 +10,7 @@ import {
   Package,
   Scale,
   Wallet,
-} from "lucide-react"
+} from "@/lib/icons"
 
 import { ApiError } from "@/lib/api/errors"
 

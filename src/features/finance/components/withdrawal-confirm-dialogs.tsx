@@ -1,6 +1,6 @@
 "use client"
 
-import { Ban, CircleCheck, Loader2 } from "lucide-react"
+import { Ban, CircleCheck, Loader2 } from "@/lib/icons"
 import { useState } from "react"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"

@@ -11,7 +11,7 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
-} from "lucide-react"
+} from "@/lib/icons"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"

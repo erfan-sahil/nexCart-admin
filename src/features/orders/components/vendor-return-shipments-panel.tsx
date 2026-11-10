@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { ExternalLink, Eye, Loader2, MoreHorizontal } from "lucide-react"
+import { ExternalLink, Eye, Loader2, MoreHorizontal } from "@/lib/icons"
 import { useNavigate } from "react-router"
 
 import { Button } from "@/components/ui/button"

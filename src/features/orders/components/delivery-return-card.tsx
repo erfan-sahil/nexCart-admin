@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Loader2, PackageX, RotateCcw } from "lucide-react"
+import { Loader2, PackageX, RotateCcw } from "@/lib/icons"
 
 import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"

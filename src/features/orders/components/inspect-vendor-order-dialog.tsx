@@ -5,7 +5,8 @@ import {
   PackageCheck,
   Store,
   Tags,
-} from "lucide-react"
+  type AppIcon,
+} from "@/lib/icons"
 
 import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
@@ -84,7 +85,7 @@ function DetailItem({
   tone,
   className,
 }: {
-  icon: typeof Store
+  icon: AppIcon
   label: string
   value: string
   tone: DetailTone

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Ban, Truck } from "lucide-react"
+import { Ban, Truck } from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 import {

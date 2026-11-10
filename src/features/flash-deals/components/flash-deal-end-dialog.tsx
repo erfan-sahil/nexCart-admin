@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Zap } from "lucide-react"
+import { Zap } from "@/lib/icons"
 
 import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"

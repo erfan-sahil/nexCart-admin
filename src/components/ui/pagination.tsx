@@ -6,7 +6,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   MoreHorizontalIcon,
-} from "lucide-react"
+} from "@/lib/icons"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (

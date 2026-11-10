@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react"
-import { Package } from "lucide-react"
+import { Package } from "@/lib/icons"
 import type { ZodError } from "zod"
 
 import { Button } from "@/components/ui/button"

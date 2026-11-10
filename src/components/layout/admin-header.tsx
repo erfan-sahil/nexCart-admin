@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { Menu, Moon, PanelLeft, Sun } from "lucide-react"
+import { Menu, Moon, PanelLeft, Sun } from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/app/providers/theme-provider"

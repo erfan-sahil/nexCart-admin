@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Loader2, Pencil, Plus, Trash2, Zap } from "lucide-react"
+import { Loader2, Pencil, Plus, Trash2, Zap } from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 import {

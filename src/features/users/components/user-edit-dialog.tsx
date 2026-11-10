@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react"
-import { UserRound } from "lucide-react"
+import { UserRound } from "@/lib/icons"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"

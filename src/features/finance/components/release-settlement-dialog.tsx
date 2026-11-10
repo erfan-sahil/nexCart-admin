@@ -8,7 +8,7 @@ import {
   Loader2,
   ShieldAlert,
   Wallet,
-} from "lucide-react"
+} from "@/lib/icons"
 import { useState } from "react"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"

@@ -11,7 +11,8 @@ import {
   Truck,
   UserRound,
   Wallet,
-} from "lucide-react"
+  type AppIcon,
+} from "@/lib/icons"
 
 import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
@@ -66,7 +67,7 @@ function DetailItem({
   nowrap = false,
   className,
 }: {
-  icon: typeof Phone
+  icon: AppIcon
   label: string
   value: string
   tone: DetailTone

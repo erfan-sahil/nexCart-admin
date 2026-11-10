@@ -8,7 +8,7 @@ import {
   Pencil,
   Percent,
   Store,
-} from "lucide-react"
+} from "@/lib/icons"
 import { useMemo, useState } from "react"
 import { Link } from "react-router"
 

@@ -1,4 +1,4 @@
-import { Star } from "lucide-react"
+import { Star } from "@/lib/icons"
 
 import { cn } from "@/lib/utils"
 
@@ -21,11 +21,10 @@ export function ReviewStars({ rating, className }: ReviewStarsProps) {
         return (
           <Star
             key={index}
+            weight={filled ? "bold" : "linear"}
             className={cn(
               "size-3.5",
-              filled
-                ? "fill-amber-400 text-amber-400"
-                : "fill-transparent text-muted-foreground/40"
+              filled ? "text-amber-400" : "text-muted-foreground/40"
             )}
           />
         )

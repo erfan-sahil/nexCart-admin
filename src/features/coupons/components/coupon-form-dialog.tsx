@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react"
-import { Ticket } from "lucide-react"
+import { Ticket } from "@/lib/icons"
 import type { ZodError } from "zod"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"

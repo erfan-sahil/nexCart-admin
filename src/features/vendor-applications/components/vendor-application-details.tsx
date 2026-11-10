@@ -8,7 +8,8 @@ import {
   Phone,
   Store,
   UserRound,
-} from "lucide-react"
+  type AppIcon,
+} from "@/lib/icons"
 
 import { formatDate, formatDateTime } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -70,7 +71,7 @@ function DetailItem({
   tone,
   className,
 }: {
-  icon: typeof Phone
+  icon: AppIcon
   label: string
   value: string
   tone: DetailTone

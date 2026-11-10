@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Ban, Store } from "lucide-react"
+import { Ban, Store } from "@/lib/icons"
 
 import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
