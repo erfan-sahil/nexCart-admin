@@ -11,7 +11,8 @@ import {
   Loader2,
   Network,
   Text,
-} from "lucide-react"
+  type AppIcon,
+} from "@/lib/icons"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
@@ -66,7 +67,7 @@ function DetailItem({
   tone,
   className,
 }: {
-  icon: typeof Link2
+  icon: AppIcon
   label: string
   value: string
   tone: DetailTone

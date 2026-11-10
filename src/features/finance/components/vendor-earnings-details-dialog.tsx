@@ -8,7 +8,8 @@ import {
   Percent,
   Store,
   Wallet,
-} from "lucide-react"
+  type AppIcon,
+} from "@/lib/icons"
 import { useState } from "react"
 import { Link } from "react-router"
 
@@ -73,7 +74,7 @@ function DetailItem({
   tone,
   className,
 }: {
-  icon: typeof Wallet
+  icon: AppIcon
   label: string
   value: string
   tone: DetailTone

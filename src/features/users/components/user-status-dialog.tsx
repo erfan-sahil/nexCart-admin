@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Ban, CircleCheck, UserRound } from "lucide-react"
+import { Ban, CircleCheck, UserRound } from "@/lib/icons"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"

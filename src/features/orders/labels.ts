@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react"
+import type { AppIcon } from "@/lib/icons"
 import {
   Ban,
   CheckCircle2,
@@ -10,7 +10,7 @@ import {
   RefreshCcw,
   Truck,
   Wallet,
-} from "lucide-react"
+} from "@/lib/icons"
 
 import { badgeColors } from "@/components/shared"
 import type { BadgeColorCodes } from "@/components/shared/universal-badge"
@@ -42,7 +42,7 @@ const statusBadge = (
 export type StatusBadgeMeta = {
   name: string
   colors: BadgeColorCodes
-  icon?: LucideIcon
+  icon?: AppIcon
 }
 
 export const ORDER_STATUS_LABEL: Record<string, string> = {

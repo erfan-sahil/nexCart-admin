@@ -10,7 +10,8 @@ import {
   Store,
   UserRound,
   XCircle,
-} from "lucide-react"
+  type AppIcon,
+} from "@/lib/icons"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
@@ -71,7 +72,7 @@ function DetailItem({
   nowrap = false,
   className,
 }: {
-  icon: typeof UserRound
+  icon: AppIcon
   label: string
   value: string
   tone: DetailTone

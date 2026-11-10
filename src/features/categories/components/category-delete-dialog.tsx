@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { FolderTree, Trash2 } from "lucide-react"
+import { FolderTree, Trash2 } from "@/lib/icons"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"

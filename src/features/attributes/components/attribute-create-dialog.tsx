@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react"
-import { SlidersHorizontal } from "lucide-react"
+import { SlidersHorizontal } from "@/lib/icons"
 import type { ZodError } from "zod"
 
 import { Button } from "@/components/ui/button"

@@ -6,7 +6,7 @@ import {
   MessageSquare,
   MoreHorizontal,
   Trash2,
-} from "lucide-react"
+} from "@/lib/icons"
 
 import { UniversalBadge, badgeColors } from "@/components/shared"
 import { Button } from "@/components/ui/button"

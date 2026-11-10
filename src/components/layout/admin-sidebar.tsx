@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ChevronRight, ChevronUp, LogOut, Settings, X } from "lucide-react"
+import { ChevronRight, ChevronUp, LogOut, Settings, X } from "@/lib/icons"
 import { Link, NavLink, useLocation } from "react-router"
 
 import {

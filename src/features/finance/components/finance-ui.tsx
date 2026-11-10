@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, type LucideIcon } from "lucide-react"
+import { ChevronLeft, ChevronRight, type AppIcon } from "@/lib/icons"
 import type { ReactNode } from "react"
 import { Link } from "react-router"
 
@@ -101,7 +101,7 @@ const STAT_TONE: Record<StatTone, string> = {
 }
 
 type FinanceStatCardProps = {
-  icon: LucideIcon
+  icon: AppIcon
   tone?: StatTone
   label: string
   value: string

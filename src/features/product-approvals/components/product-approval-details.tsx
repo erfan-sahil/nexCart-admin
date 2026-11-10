@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Loader2, Package, Star } from "lucide-react"
+import { Loader2, Package, StarShine } from "@/lib/icons"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
@@ -81,7 +81,7 @@ export function ProductApprovalDetails({ product }: { product: Product }) {
             {product.isFeatured ? (
               <UniversalBadge
                 name="Featured"
-                icon={Star}
+                icon={StarShine}
                 colors={badgeColors.vendor}
                 showDot={false}
                 className="normal-case"

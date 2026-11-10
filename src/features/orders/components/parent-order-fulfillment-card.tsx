@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Ban, ChevronDown, Loader2, Package, Pencil, Truck } from "lucide-react"
+import { Ban, ChevronDown, Loader2, Package, Pencil, Truck } from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 import {

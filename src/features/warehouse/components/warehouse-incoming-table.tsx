@@ -9,7 +9,7 @@ import {
   ChevronRight,
   ExternalLink,
   MoreHorizontal,
-} from "lucide-react"
+} from "@/lib/icons"
 
 import { UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"

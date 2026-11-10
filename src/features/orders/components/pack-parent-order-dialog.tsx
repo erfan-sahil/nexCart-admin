@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Package, ShoppingBag } from "lucide-react"
+import { Package, ShoppingBag } from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 import {

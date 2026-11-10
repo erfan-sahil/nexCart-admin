@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Loader2, Plus, Search } from "lucide-react"
+import { Loader2, Plus, Search } from "@/lib/icons"
 
 import {
   AdminPageIntro,

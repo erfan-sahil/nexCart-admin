@@ -7,8 +7,8 @@ import {
   Package,
   Star,
   Store,
-  UserRound,
-} from "lucide-react"
+  type AppIcon,
+} from "@/lib/icons"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
@@ -62,7 +62,7 @@ function DetailItem({
   className,
   children,
 }: {
-  icon: typeof UserRound
+  icon: AppIcon
   label: string
   value?: string
   tone: DetailTone

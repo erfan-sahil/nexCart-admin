@@ -8,7 +8,7 @@ import {
   Loader2,
   Search,
   Wallet,
-} from "lucide-react"
+} from "@/lib/icons"
 import { useMemo, useState } from "react"
 import { Link } from "react-router"
 

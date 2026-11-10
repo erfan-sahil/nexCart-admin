@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Banknote } from "lucide-react"
+import { Banknote } from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"

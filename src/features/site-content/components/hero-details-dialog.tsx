@@ -1,4 +1,4 @@
-import { AlignLeft, Hash, Pencil, Type } from "lucide-react"
+import { AlignLeft, Hash, Pencil, Type, type AppIcon } from "@/lib/icons"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"
@@ -39,7 +39,7 @@ function DetailItem({
   tone,
   className,
 }: {
-  icon: typeof Type
+  icon: AppIcon
   label: string
   value: string
   tone: DetailTone

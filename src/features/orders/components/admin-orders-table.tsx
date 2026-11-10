@@ -10,7 +10,7 @@ import {
   Eye,
   MoreHorizontal,
   Pencil,
-} from "lucide-react"
+} from "@/lib/icons"
 
 import { UniversalBadge } from "@/components/shared"
 import {

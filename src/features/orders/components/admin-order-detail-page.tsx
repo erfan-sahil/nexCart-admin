@@ -1,4 +1,4 @@
-import { ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft, Loader2 } from "@/lib/icons"
 import { Link, useParams } from "react-router"
 
 import { UniversalBadge } from "@/components/shared"

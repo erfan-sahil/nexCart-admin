@@ -1,4 +1,4 @@
-import { CheckCircle2, Package, Truck } from "lucide-react"
+import { CheckCircle2, Package, Truck } from "@/lib/icons"
 
 import { UniversalBadge } from "@/components/shared"
 import { cn } from "@/lib/utils"

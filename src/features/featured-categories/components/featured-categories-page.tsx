@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Loader2 } from "lucide-react"
+import { ArrowDown, ArrowUp, Loader2 } from "@/lib/icons"
 
 import {
   AdminPageIntro,

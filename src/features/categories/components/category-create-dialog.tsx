@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from "react"
-import { FolderTree } from "lucide-react"
+import { FolderTree } from "@/lib/icons"
 import type { ZodError } from "zod"
 
 import { Button } from "@/components/ui/button"

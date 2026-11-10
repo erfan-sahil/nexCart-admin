@@ -1,7 +1,7 @@
 import { useEffect, useState, type ComponentProps } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm, useWatch } from "react-hook-form"
-import { Loader2 } from "lucide-react"
+import { Loader2 } from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"

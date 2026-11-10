@@ -1,5 +1,5 @@
 import { useRef, useState } from "react"
-import { ImagePlus, X } from "lucide-react"
+import { ImagePlus, X } from "@/lib/icons"
 
 import { Button } from "@/components/ui/button"
 import {

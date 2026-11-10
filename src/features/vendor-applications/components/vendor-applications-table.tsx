@@ -10,7 +10,7 @@ import {
   ClipboardCheck,
   Eye,
   MoreHorizontal,
-} from "lucide-react"
+} from "@/lib/icons"
 
 import { badgeColors, UniversalBadge } from "@/components/shared"
 import { Button } from "@/components/ui/button"

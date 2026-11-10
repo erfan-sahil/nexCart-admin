@@ -1,13 +1,7 @@
 "use client"
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import {
-  Banknote,
-  CircleDollarSign,
-  Clock,
-  Loader2,
-  Wallet,
-} from "lucide-react"
+import { Banknote, CircleDollarSign, Clock, Loader2, Wallet } from "@/lib/icons"
 import { useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
